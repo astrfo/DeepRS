@@ -21,7 +21,8 @@ class LinUCB(BaseContextualPolicy):
         """クラスの初期化"""
         super().__init__(n_arms, n_features, warmup, batch_size)
         self.alpha = alpha
-        self.name = 'LinUCB α={}'.format(self.alpha)
+        #self.name = 'LinUCB α={}'.format(self.alpha)
+        self.name = 'LinUCB'
 
         self.A_inv = np.array([np.identity(self.n_features) for _ in range(self.n_arms)])  # a*f*f
         self.b = np.zeros((self.n_arms, self.n_features))  # a*f

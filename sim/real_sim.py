@@ -41,8 +41,8 @@ class ContextualBanditSimulator(object):
   """指定されたアルゴリズムで文脈付きバンディットを実行する
 
   Args:
-    context_dim(int): 特徴量の次元数
-    num_actions(int): 行動数
+    context_dim(int): 特徴ベクトルの次元数
+    num_actions(int): 選択肢の数
     dataset(int, float): 特徴量 + 各行動の報酬が入ったデータセット
     algos(list of str): 使用するアルゴリズムのリスト
   """
@@ -95,8 +95,10 @@ class ContextualBanditSimulator(object):
     results_dir = 'csv/{0:%Y%m%d%H%M}/'.format(time_now)
     os.makedirs(results_dir, exist_ok=True)
 
-    time_now_r = datetime.datetime.now()
     results_dir = 'csv_reward_count/{0:%Y%m%d%H%M}/'.format(time_now)
+    os.makedirs(results_dir, exist_ok=True)
+
+    results_dir = 'csv_mse/{0:%Y%m%d%H%M}/'.format(time_now)
     os.makedirs(results_dir, exist_ok=True)
     """方策ごとに実行"""
     for policy in self.policy_list:
@@ -108,6 +110,7 @@ class ContextualBanditSimulator(object):
         regrets = np.zeros((self.n_sims, self.n_steps), dtype=float)
         entropy_of_reliability = np.zeros((self.n_sims, self.n_steps), dtype=float)
         errors = np.zeros((self.n_sims, self.n_steps), dtype=float)
+        mse_arm = np.zeros((self.n_sims, self.n_steps,self.n_arms), dtype=float)
         successes = np.zeros((self.n_sims, self.n_steps), dtype=int)
         accuracy = np.zeros((self.n_sims, self.n_steps), dtype=int)
         times = np.zeros((self.n_sims, self.n_steps), dtype=float)
@@ -123,6 +126,7 @@ class ContextualBanditSimulator(object):
             """初期化"""
             elapsed_time =0.0
             sum_reward, sum_regret = 0.0, 0.0
+            mse_tmp = np.zeros((self.n_steps, self.n_arms), dtype=float)
 
             """step開始"""
             for step in np.arange(self.n_steps):
@@ -142,14 +146,24 @@ class ContextualBanditSimulator(object):
                 success_greedy = 1 if chosen_arm == np.argmax(theta_hat) else 0#主観greedy
 
                 if self.data_type == 'mushroom':
-                  theta_error = np.sqrt(mean_squared_error([row[opt_actions[step]] for row in exp_rewards], theta_hat))
-                  #theta_error_me = np.average(np.array(theta_hat) -  [row[opt_actions[step]] for row in exp_rewards])
+                  theta_error = mean_squared_error([row[opt_actions[step]] for row in exp_rewards], theta_hat, squared=False) #True:MSE, False:RMSE
+                  #theta_error = mean_absolute_error([row[opt_actions[step]] for row in exp_rewards], theta_hat)
                 elif self.data_type == 'jester':
-                  theta_error = np.sqrt(mean_squared_error(exp_rewards[step], theta_hat))
+                  theta_error = mean_squared_error(exp_rewards[step], theta_hat, squared=False)
+                  #theta_error = mean_absolute_error(exp_rewards[step], theta_hat)
                 elif self.data_type.startswith('artificial'):
-                  theta_error = np.sqrt(mean_squared_error(exp_rewards[step], theta_hat))
+                  theta_error = mean_squared_error(exp_rewards[step], theta_hat, squared=False)
+                  #theta_error = mean_absolute_error(exp_rewards[step], theta_hat)
                 elif self.data_type.startswith('mixed_artificial'):
-                  theta_error = np.sqrt(mean_squared_error(exp_rewards[step], theta_hat))
+                  #theta_error = mean_squared_error(exp_rewards[step], theta_hat, squared=False)
+                  #theta_error = mean_absolute_error(exp_rewards[step], theta_hat)
+                  theta_error = np.average((exp_rewards[step]-theta_hat)/exp_rewards[step]) #MPE
+                  old_sort_mse= mean_squared_error([exp_rewards[step]], [theta_hat], multioutput='raw_values') #各腕ごとの MSE
+                  l = np.argsort(exp_rewards[step])[::-1]
+                  m = 0
+                  for k in l:
+                    mse_tmp[step,k] += old_sort_mse[m]
+                    m += 1
                 else:
                   print("The error for data_type is not calculated!!")
 
@@ -168,10 +182,13 @@ class ContextualBanditSimulator(object):
                 times[sim,step] +=elapsed_time
 
             print('{}'.format(regrets[sim, -1]))
+            mse_arm[sim,:,:]+= mse_tmp
 
         self.elapsed_time_tmp[i] = time.time() - start_tmp
         i += 1
         #print("経過時間 : {}".format(elapsed_time_tmp))
+        mse = np.mean(mse_arm,axis=0)
+        print("mse:",mse)
 
         ave_rewards, ave_regrets, accuracy,greedy_rate,errors,entropy_of_reliability,ave_times,min_data,max_data = \
            self.processing_data(rewards, regrets, accuracy,successes,errors,entropy_of_reliability,times)
@@ -185,13 +202,15 @@ class ContextualBanditSimulator(object):
         data_dic_pd.to_csv('csv/{0:%Y%m%d%H%M}/{1}.csv'.format(time_now, policy.name.replace(' ', '_')))
 
         reward_csv_pd = pd.DataFrame(reward_csv)
-        reward_csv_pd.to_csv('csv_reward_count/{0:%Y%m%d%H%M}/{1}.csv'.format(time_now_r, policy.name.replace(' ', '_')))
+        reward_csv_pd.to_csv('csv_reward_count/{0:%Y%m%d%H%M}/{1}.csv'.format(time_now, policy.name.replace(' ', '_')))
         print('rewards: {0}\nregrets: {1}\naccuracy: {2}\ngreedy_rate: {3}\nerrors:{4}\ntimes: {5}\n'
               'min_rewards: {6}\nmin_regrets: {7}\nmin_accuracy: {8}\nmin_greedy_rate: {9}\nmin_errors: {10}\nmin_times:{11}\n'
               'max_rewards: {12}\nmax_regrets: {13}\nmax_accuracy: {14}\nmax_greedy_rate: {15}\nmax_errors:{16}\nmax_times:{17}'
               .format(data_dic['rewards'], data_dic['regrets'],data_dic['accuracy'],data_dic['greedy_rate'],data_dic['errors'] ,data_dic['times'],
                       data_dic['min_rewards'],data_dic['min_regrets'], data_dic['min_accuracy'],data_dic['min_greedy_rate'],data_dic['min_errors'],data_dic['min_times'],
                       data_dic['max_rewards'], data_dic['max_regrets'],data_dic['max_accuracy'],data_dic['max_greedy_rate'],data_dic['max_errors'],data_dic['max_times']))
+        mse_pd = pd.DataFrame(mse)
+        mse_pd.to_csv('csv_mse/{0:%Y%m%d%H%M}/{1}.csv'.format(time_now, policy.name.replace(' ', '_')))
 
 
         self.result_list.append(data_dic)
@@ -204,13 +223,14 @@ class ContextualBanditSimulator(object):
 
   def run(self) -> None:
         """一連のシミュレーションを実行"""
-        self.run_sim()
-        self.plots()
+        self.run_sim() # 結果のlog採取
+        #self.plots() # plot は別
 
   def plots(self) -> None:
         """結果データのプロット"""
         mpl.rcParams['axes.xmargin'] = 0
         mpl.rcParams['axes.ymargin'] = 0
+        mpl.rcParams['font.family'] = 'Noto Sans CJK JP'
 
         time_now = datetime.datetime.now()
         results_dir = 'png/{0:%Y%m%d%H%M}/'.format(time_now)
@@ -226,12 +246,11 @@ class ContextualBanditSimulator(object):
                     """通常ver"""
                     #ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), self.result_list.at[j, data_name], label=policy_name,linewidth=1.5, alpha=0.8)
                     """移動平均ver"""
-                    b=np.ones(10)/10.0
+                    b=np.ones(30)/30.0
                     y3=np.convolve(self.result_list.at[j, data_name], b, mode='same')
-                    #ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), y3, label=policy_name+"moving_average", color=cmap(j), linewidth=1.5, alpha=0.8)
                     ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), y3, label=policy_name, color=cmap(j), linewidth=1.5, alpha=0.8)
                     ax.set_ylim([0.2, 1.1])
-                elif data_name =='errors' or data_name =='errors_greedy':
+                elif data_name =='errors':
                     """通常ver"""
                     #ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), self.result_list.at[j, data_name], label=policy_name, linewidth=1.5, alpha=0.8)
                     #ax.fill_between(x=np.linspace(1, self.n_steps, num=self.n_steps), y1=self.result_list.at[j, 'min_'+data_name], y2=self.result_list.at[j, 'max_'+data_name], alpha=0.1)
@@ -239,26 +258,38 @@ class ContextualBanditSimulator(object):
                     b=np.ones(10)/10.0
                     y3=np.convolve(self.result_list.at[j, data_name], b, mode='same')#移動平均
                     ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), y3, label=policy_name+"moving_average", color=cmap(j), linewidth=1.5, alpha=0.8)
-                    ax.set_ylim([0,20.0])
+                    ax.set_ylim([0,1.0])
                 elif data_name == 'entropy_of_reliability':
                     if 'LinRS' in policy_name:
                       ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), self.result_list.at[j, data_name], label=policy_name, linewidth=1.5, alpha=0.8)
                       ax.set_ylim([0,1.1])
                 else:
                     ax.plot(np.linspace(1, self.n_steps, num=self.n_steps), self.result_list.at[j, data_name], label=policy_name, linewidth=1.5, alpha=0.8)
-                    ax.fill_between(x=np.linspace(1, self.n_steps, num=self.n_steps), y1=self.result_list.at[j, 'min_'+data_name], y2=self.result_list.at[j, 'max_'+data_name], alpha=0.1)
-            ax.set_xlabel('steps',fontsize=14)
-            ax.set_ylabel(data_name,fontsize=14)
+                    #ax.fill_between(x=np.linspace(1, self.n_steps, num=self.n_steps), y1=self.result_list.at[j, 'min_'+data_name], y2=self.result_list.at[j, 'max_'+data_name], alpha=0.1)
+            ax.set_xlabel('step',fontsize=23)
+            if data_name == 'rewards':
+              ax.set_ylabel('reward',fontsize=23)
+            elif data_name == 'regrets':
+              ax.set_ylabel('regret',fontsize=23)
+            elif data_name == 'greedy_rate':
+              ax.set_ylabel('greedy rate',fontsize=23)
+            elif data_name == 'errors':
+              ax.set_ylabel('error',fontsize=23)
+            elif data_name == 'entropy_of_reliability':
+              ax.set_ylabel('entropy of reliability',fontsize=23)
+            else:
+              ax.set_ylabel(data_name,fontsize=23)
+            ax.spines["top"].set_linewidth(2)
+            ax.spines["left"].set_linewidth(2)
+            ax.spines["bottom"].set_linewidth(2)
+            ax.spines["right"].set_linewidth(2)
+
             if data_name == 'greedy_rate' or data_name =='accuracy':
               leg=ax.legend(loc='lower right', fontsize=23)
             elif data_name == 'entropy_of_reliability':
               leg=ax.legend(loc='lower left', fontsize=23)
             else:
               leg=ax.legend(loc='upper left', fontsize=23)
-            #leg.get_lines()[0].set_linewidth(3)
-            #leg.get_lines()[1].set_linewidth(3)
-            #leg.get_lines()[2].set_linewidth(3)
-            #leg.get_lines()[3].set_linewidth(3)
 
             plt.tick_params(labelsize=10)
             ax.grid(axis='y')

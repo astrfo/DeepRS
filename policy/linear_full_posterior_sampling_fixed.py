@@ -68,7 +68,8 @@ class LinearTSfixed(BaseContextualPolicy):
         self._b = np.zeros((self.n_arms, self.n_features + 1))
         self._c = np.zeros(self.n_arms)
 
-        self.name = 'LinTS λ={}'.format(self._lambda_proir)
+        #self.name = 'LinTS λ={}'.format(self._lambda_proir)
+        self.name = 'LinTS'
         self.theta_hat_x=np.zeros(self.n_arms)
 
         self.flag = True
