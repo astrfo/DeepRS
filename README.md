@@ -14,7 +14,7 @@
 # Real-World Datasets
 データセットの情報を setup_context.py で管理.  
 データのサンプリングを data_sampler.py で行う.  
-datasetsファイルに, 下記の実世界データ(3種類)と人工データ(2種類×5つの水準)が入っている. そのためdatasetの入手方法を示すが, 改めて入手する必要はない.
+datasetsファイルに, 下記の実世界データ(3種類)が入っている. そのためdatasetの入手方法を示すが, 改めて入手する必要はない.なお, csvファイルの大きさの都合上, 人工データ(2種類×5つの水準)は含まれていないため各自で作成する必要がある.
 
 * Mushroom data
     * キノコの22の特徴から可食を判別する.(n=8124) 特徴はone-hotベクトルに変換するため, 特徴ベクトルは117次元. 行動は食べるか食べないかの2種類. 食用キノコを食べると正の報酬が得られ, 毒キノコを食べると確率 p で正の報酬, 確率 1-p で大きな負の報酬が得られる. 食べない時の報酬は0. すべての報酬, および p の値はカスタマイズ可能. データセットは[UCI Machin Learning Repository](https://archive.ics.uci.edu/ml/datasets/mushroom)より取得できる.
@@ -34,6 +34,7 @@ datasetsファイルに, 下記の実世界データ(3種類)と人工データ(
             * 報酬確率から sigmoid をかます前のパラメータWを推定
                 * W = -log_e (1/P - 1) で求められる
     * パターン2 パターン1のデータセットを使って混合特徴量の生成
+        * 現在使用している人工データセットはこちら
         * 1番高い報酬確率を持つ腕が一致する one-hot特徴ベクトルを抽出
         * 一致する one-hot 特徴ベクトル群から混合係数 λ を生成
             * 一致する one-hot 特徴ベクトル群の中で 1 が入っている次元の箇所に混合係数 λ を割り当てる
@@ -53,7 +54,7 @@ datasetsファイルに, 下記の実世界データ(3種類)と人工データ(
         python artificial_data_generator_new.py
         ```
         * パターン2 の特徴ベクトルは artificial_data_generator_new.py 内の FLAG = True に設定して下記を実行すると生成できる
-            * artificial_feature_data_mixed.csv と artificial_param_mixed.csv が生成される
+            * artificial_feature_data_mixed_希求水準.csv と artificial_param_mixed_希求水準.csv が生成される
             * 注意：パターン1 のdataset を使って生成するため、パターン1を実行してから実行する必要あり
         ```bash
         python artificial_data_generator_new.py
@@ -66,7 +67,7 @@ datasetsファイルに, 下記の実世界データ(3種類)と人工データ(
 python real_world_main.py
 ```
 用いるアルゴリズムや各種パラメータなどシミュレーション設定はreal_world_main.py内で変更可能.  
-基本的な結果はcsv, 生存率の計算に必要な結果はcsv_reward_countに格納
+基本的な結果はcsv, 生存率の計算に必要な結果はcsv_reward_count, 報酬期待値が同じ腕ごとの平均二乗誤差の結果はcsv_mseに格納される.
 
 (2)基本的な結果のプロット
 ```bash
@@ -81,8 +82,9 @@ python plot/plot.py csv/結果が入っているディレクトリ
     * エージェントが最適だと思う行動を選択した割合(greedy率)
 * accuracy.png
 * errors.png
-    * RMSE誤差
-    
+    * 平均誤差率 (MPE)
+* entropy_of_reliability
+    * LinRS 系の信頼度の推定値に対するエントロピー
     また,各アルゴリズムの 1 sim あたりの平均実行時間は 1 sim time: [ ] でprint される.
 
 (3)生存率の結果のプロット
@@ -90,6 +92,12 @@ python plot/plot.py csv/結果が入っているディレクトリ
 python plot/plot_survival_rate.py.py csv_reward_count/結果が入っているディレクトリ 生存ライン 1日のstep数
 ```
 実行した結果はpng/survival_rateディレクトリに保存される. 
+
+(4)真の報酬期待値が同じ腕ごとのMSEの平均の結果のプロット
+```bash
+python plot/plot_mse.py csv_mse/結果が入っているディレクトリ
+```
+実行した結果はpng_mseディレクトリに保存される. 
 # Note
 以下の点が整備しきれていないため注意が必要.
 
