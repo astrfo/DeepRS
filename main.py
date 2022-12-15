@@ -9,13 +9,11 @@ from replay_buffer import ReplayBuffer
 
 if __name__ == '__main__':
     sim = 1
-    epi = 300
+    epi = 400
     alpha = 0.0005
     gamma = 0.98
     epsilon = 0.1
     hidden_size = 128
-    action_space = 2
-    state_shape = 4
     sync_interval = 20
     memory_capacity = 10**4
     batch_size = 32

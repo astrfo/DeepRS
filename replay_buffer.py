@@ -29,5 +29,14 @@ class ReplayBuffer:
 
 if __name__ == '__main__':
     print('started replay_buffer')
-    memory = ReplayBuffer(memory_capacity=10, batch_size=2)
+    rb = ReplayBuffer(memory_capacity=3, batch_size=2)
+    print(f'memory0: {rb.memory}')
+    rb.add(state=[1, 2], action=0, reward=1, next_state=[2, 2], done=False)
+    print(f'memory1: {rb.memory}')
+    rb.add(state=[2, 2], action=1, reward=1, next_state=[2, 3], done=False)
+    print(f'memory2: {rb.memory}')
+    rb.add(state=[2, 3], action=0, reward=0, next_state=[1, 3], done=False)
+    print(f'memory3: {rb.memory}')
+    rb.add(state=[1, 3], action=1, reward=0, next_state=[1, 2], done=True)
+    print(f'memory4: {rb.memory}')
     print('finished replay_buffer')
