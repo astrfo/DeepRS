@@ -120,40 +120,7 @@ class RegionalLinRS(BaseContextualPolicy):
             elif len(context_x) > self.k:
                 k_num = self.k
 
-            nbrs = NearestNeighbors(n_neighbors = k_num, algorithm='brute', metric='euclidean').fit(context_x)
-            distance, indices = nbrs.kneighbors(x) #現状態xと特徴群の距離を算出
-
-            #print (indices)#ラベル
-            #print (distance)#距離
-
-            # 次元が多いので削除して計算しやすいようにする
-            distance = np.squeeze(distance)
-            action_vec = action_vec[indices]
-            action_vec = np.squeeze(action_vec)
-
-            # カーネルの計算の準備
-            ## 平方ユークリッド距離(ユークリッドの2乗)を計算しd_kに格納
-            d_k = np.asarray(distance) ** 2
-            ## d_kを使ってユークリッド距離の移動平均d^2_mを計算
-            d_m_ave = np.average(d_k)
-            ## カーネル値の分母の分数を計算(d_kの正則化)
-            #d_n = d_k / d_m_ave #ここでときどきinvalid value encountered in true_divideが起きる→0除算によりNanが生まれるため発生、代わりに0を置き換えるようにする
-            d_n = np.divide(d_k, d_m_ave, out=np.zeros_like(d_k), where = d_m_ave!=0)
-            ## d_nをクラスタリング(具体的にはあまりに小さい場合0に更新)
-            d_n -= self.zeta
-            d_n = [i if i > 0 else 0 for i in d_n]
-            ## 入力と近傍値のカーネル値(類似度)K_vを計算
-            K_v = [self.epsilon / (i + self.epsilon) for i in d_n]
-            # 類似度K_vから総和が1となる重み生成。疑似試行回数 n の総和を1にしたいため
-            sum_K = np.sum(K_v)
-            weight = [K_i/sum_K for K_i in K_v]
-            #類似度から算出した重みと action vector で加重平均を行い疑似試行割合を計算
-            self.n = np.average(action_vec, weights = weight, axis = 0)
-            
-            if self.stable_flag:
-                base = self.counts / self.steps
-                self.n = base * (1-self.w) + self.n * self.w
-
+            self.calculate_reliability(x, k_num, context_x, action_vec) # 信頼度の計算
             self.rs = self.n *(self.theta_hat_x - self.aleph)  # a*1,[2]
 
             result = np.argmax(self.rs)
@@ -190,7 +157,39 @@ class RegionalLinRS(BaseContextualPolicy):
             
             self._A_inv, self._b = np.copy(self.A_inv), np.copy(self.b)
 
+    def calculate_reliability(self, x: np.ndarray, k_num: int, context_x: np.ndarray, action_vec: np.ndarray) -> None:
+        nbrs = NearestNeighbors(n_neighbors = k_num, algorithm='brute', metric='euclidean').fit(context_x)
+        distance, indices = nbrs.kneighbors(x) #現状態xと特徴群の距離を算出
 
+        #print (indices)#ラベル
+        #print (distance)#距離
+
+        # 次元が多いので削除して計算しやすいようにする
+        distance = np.squeeze(distance)
+        action_vec = action_vec[indices]
+        action_vec = np.squeeze(action_vec)
+
+        # カーネルの計算の準備
+        ## 平方ユークリッド距離(ユークリッドの2乗)を計算しd_kに格納
+        d_k = np.asarray(distance) ** 2
+        ## d_kを使ってユークリッド距離の移動平均d^2_mを計算
+        d_m_ave = np.average(d_k)
+        ## カーネル値の分母の分数を計算(d_kの正則化)
+        #d_n = d_k / d_m_ave #ここでときどきinvalid value encountered in true_divideが起きる→0除算によりNanが生まれるため発生、代わりに0を置き換えるようにする
+        d_n = np.divide(d_k, d_m_ave, out=np.zeros_like(d_k), where = d_m_ave!=0)
+        ## d_nをクラスタリング(具体的にはあまりに小さい場合0に更新)
+        d_n -= self.zeta
+        d_n = [i if i > 0 else 0 for i in d_n]
+        ## 入力と近傍値のカーネル値(類似度)K_vを計算
+        K_v = [self.epsilon / (i + self.epsilon) for i in d_n]
+        # 類似度K_vから総和が1となる重み生成。疑似試行回数 n の総和を1にしたいため
+        sum_K = np.sum(K_v)
+        weight = [K_i/sum_K for K_i in K_v]
+        #類似度から算出した重みと action vector で加重平均を行い疑似試行割合を計算
+        self.n = np.average(action_vec, weights = weight, axis = 0)
+        if self.stable_flag:
+            base = self.counts / self.steps
+            self.n = base * (1-self.w) + self.n * self.w
 
     def get_theta(self) -> np.ndarray:
         """推定量を返す"""
