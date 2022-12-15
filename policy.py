@@ -21,16 +21,16 @@ class QNet(nn.Module):
 
 
 class DQN:
-    def __init__(self):
-        self.alpha = 0.0005
-        self.gamma = 0.98
-        self.epsilon = 0.1
-        self.hidden_size = 128
-        self.action_space = 2
-        self.state_shape = 4
-        self.sync_interval = 20
-        self.memory_capacity = 10**4
-        self.batch_size = 32
+    def __init__(self, **kwargs):
+        self.alpha = kwargs.get('alpha', 0.0001)
+        self.gamma = kwargs.get('gamma', 0.99)
+        self.epsilon = kwargs.get('epsilon', 0.01)
+        self.hidden_size = kwargs.get('hidden_size', 128)
+        self.action_space = kwargs['action_space']
+        self.state_shape = kwargs['state_shape']
+        self.sync_interval = kwargs.get('sync_interval', 20)
+        self.memory_capacity = kwargs.get('memory_capacity', 10**4)
+        self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cpu')
         self.model = QNet(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
