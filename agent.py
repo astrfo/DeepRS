@@ -1,14 +1,14 @@
-from replay_buffer import ReplayBuffer
-
 class Agent:
-    def __init__(self):
-        pass
+    def __init__(self, policy):
+        self.policy = policy
 
     def reset(self):
-        pass
+        self.policy.reset()
 
-    def observe(self):
-        pass
+    def action(self, state):
+        action = self.policy.action(state)
+        return action
 
-    def action(self):
-        pass
+    def update(self, state, action, reward, next_state, done):
+        self.policy.update(state, action, reward, next_state, done)
+        

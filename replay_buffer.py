@@ -3,12 +3,12 @@ import numpy as np
 
 class ReplayBuffer:
     def __init__(self, memory_capacity, batch_size):
-        self.memory = deque(maxlen=memory_capacity)
         self.memory_capacity = memory_capacity
         self.batch_size = batch_size
+        self.memory = deque(maxlen=self.memory_capacity)
 
     def reset(self):
-        self.memory = deque(maxlen=memory_capacity)
+        self.memory = deque(maxlen=self.memory_capacity)
 
     def add(self, state, action, reward, next_state, done):
         data = (state, action, reward, next_state, done)
@@ -16,7 +16,7 @@ class ReplayBuffer:
 
     def encode(self):
         states, actions, rewards, next_states, dones = [], [], [], [], []
-        indices = np.random.randint(len(self.memory), self.batch_size)
+        indices = np.random.randint(0, len(self.memory), self.batch_size)
         for index in indices:
             s, a, r, ns, d = self.memory[index]
             states.append(s)

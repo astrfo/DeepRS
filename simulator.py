@@ -1,18 +1,32 @@
 import numpy as np
+from tqdm import tqdm
 
-def simulation(sims, epis, aleph, env, result_dir_path):
+def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     for sim in range(sims):
         total_reward_list = []
-        for epi in range(epis):
+        agent.reset()
+        for epi in tqdm(range(epis)):
             total_reward = 0
-            observation = env.reset()
+            state = env.reset()[0]
             done = False
             while not done:
-                action = env.action_space.sample()
-                observation, reward, done, _, info = env.step(action)
+                action = agent.action(state)
+                next_state, reward, done, _, info = env.step(action)
+                agent.update(state, action, reward, next_state, done)
+                state = next_state
                 total_reward += reward
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
     average_reward_list /= sims
-    np.savetxt(result_dir_path + 'average_reward.csv', average_reward_list, delimiter=",")
+    np.savetxt(result_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
+    env.close()
+
+
+if __name__ == '__main__':
+    import gym
+    env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
+    state = env.reset()
+    print(f'state: {state}') #shape: (4,)
+    env.close()
+
