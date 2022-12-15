@@ -16,6 +16,8 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 agent.update(state, action, reward, next_state, done)
                 state = next_state
                 total_reward += reward
+            if epi % agent.policy.sync_interval == 0:
+                agent.policy.sync_model()
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
     average_reward_list /= sims

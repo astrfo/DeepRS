@@ -22,10 +22,9 @@ class QNet(nn.Module):
 
 class DQN:
     def __init__(self):
-        self.alpha = 0.01
-        self.gamma = 0.99
+        self.alpha = 0.0005
+        self.gamma = 0.98
         self.epsilon = 0.1
-        self.batch_size = 32
         self.hidden_size = 128
         self.action_space = 2
         self.state_shape = 4
@@ -39,7 +38,7 @@ class DQN:
         self.model_target = QNet(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.criterion = nn.MSELoss()
+        self.criterion = nn.MSELoss(reduction='sum')
 
     def reset(self):
         self.replay_buffer.reset()
@@ -62,12 +61,13 @@ class DQN:
         s = torch.tensor(s, dtype=torch.float32).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
         r = torch.tensor(r, dtype=torch.float32).to(self.device)
+        d = torch.tensor(d, dtype=torch.float32).to(self.device)
 
         q = self.model(s)
         q = q[np.arange(self.batch_size), a]
         next_q = self.model_target(ns)
         next_q = torch.amax(next_q, dim=1)
-        target = r + self.gamma * next_q
+        target = r + self.gamma * next_q * (1 - d)
 
         self.optimizer.zero_grad()
         loss = self.criterion(target, q)

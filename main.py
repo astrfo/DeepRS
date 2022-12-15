@@ -8,8 +8,8 @@ from replay_buffer import ReplayBuffer
 
 
 if __name__ == '__main__':
-    sim = 5
-    epi = 10
+    sim = 1
+    epi = 200
     env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
 
     policy = DQN()
