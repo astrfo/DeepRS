@@ -16,6 +16,8 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
+                if total_reward >= 500:
+                    break
             if epi % agent.policy.sync_interval == 0:
                 agent.policy.sync_model()
             total_reward_list.append(total_reward)
