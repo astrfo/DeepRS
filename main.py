@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 import gym
 
-from simulator import simulation
+from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, QNet
+from policy import DQN, ConvDQN, QNet, ConvQNet
 
 
 if __name__ == '__main__':
@@ -14,10 +14,15 @@ if __name__ == '__main__':
     gamma = 0.98
     epsilon = 0.1
     hidden_size = 128
+    embed_size = 64
     sync_interval = 20
+    neighbor_frames = 4
     memory_capacity = 10**4
     batch_size = 32
     env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
+
+    env.reset()
+    init_frame = get_screen(env)
 
     param = {
         'sim': sim,
@@ -26,16 +31,21 @@ if __name__ == '__main__':
         'gamma': gamma,
         'epsilon': epsilon,
         'hidden_size': hidden_size,
+        'embed_size': embed_size,
         'action_space': env.action_space.n,
         'state_shape': env.observation_space.shape[0],
+        'frame_shape': init_frame.shape,
         'sync_interval': sync_interval,
+        'neighbor_frames': neighbor_frames,
         'memory_capacity': memory_capacity,
         'batch_size': batch_size,
         'env': env,
-        'model': QNet
+        # 'model': QNet,
+        'model': ConvQNet,
     }
 
-    policy = DQN(**param)
+    # policy = DQN(**param)
+    policy = ConvDQN(**param)
     agent = Agent(policy)
 
     time_now = datetime.now()
@@ -45,4 +55,5 @@ if __name__ == '__main__':
     f.write(f'param: {param}\n')
     f.close()
 
-    simulation(sim, epi, env, agent, result_dir_path)
+    # simulation(sim, epi, env, agent, result_dir_path)
+    conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
