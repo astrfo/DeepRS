@@ -3,8 +3,7 @@ from datetime import datetime
 import gym
 from simulator import simulation
 from agent import Agent
-from policy import DQN
-from replay_buffer import ReplayBuffer
+from policy import DQN, QNet
 
 
 if __name__ == '__main__':
@@ -32,6 +31,7 @@ if __name__ == '__main__':
         'memory_capacity': memory_capacity,
         'batch_size': batch_size,
         'env': env,
+        'model': QNet
     }
 
     policy = DQN(**param)

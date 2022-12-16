@@ -9,11 +9,11 @@ def simulation(sims, epis, env, agent, result_dir_path):
         for epi in tqdm(range(epis)):
             total_reward = 0
             state = env.reset()[0]
-            done = False
-            while not done:
+            terminated = False
+            while True:
                 action = agent.action(state)
-                next_state, reward, done, _, info = env.step(action)
-                agent.update(state, action, reward, next_state, done)
+                next_state, reward, terminated, truncated, info = env.step(action)
+                agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
             if epi % agent.policy.sync_interval == 0:
