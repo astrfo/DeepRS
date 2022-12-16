@@ -28,29 +28,38 @@ class ReplayBuffer:
 
 
 class EpisodicMemory:
-    def __init__(self, memory_capacity, batch_size):
+    def __init__(self, memory_capacity, batch_size, action_space):
         self.memory_capacity = memory_capacity
         self.batch_size = batch_size
-        self.memory = deque(maxlen=self.memory_capacity)
+        self.action_space = action_space
+        self.memory = []
 
     def reset(self):
-        self.memory = deque(maxlen=self.memory_capacity)
+        self.memory = []
 
     def add(self, controllable_state, action):
-        data = (controllable_state, action)
+        if len(self.memory) > self.memory_capacity:
+            self.memory.pop(0)
+        action_one_hot = np.zeros((self.action_space))
+        action_one_hot[action] = 1
+        data = np.append(controllable_state, action_one_hot, axis=0)
         self.memory.append(data)
 
 
 if __name__ == '__main__':
     print('started replay_buffer')
-    rb = ReplayBuffer(memory_capacity=3, batch_size=2)
-    print(f'memory0: {rb.memory}')
-    rb.add(state=[1, 2], action=0, reward=1, next_state=[2, 2], done=False)
-    print(f'memory1: {rb.memory}')
-    rb.add(state=[2, 2], action=1, reward=1, next_state=[2, 3], done=False)
-    print(f'memory2: {rb.memory}')
-    rb.add(state=[2, 3], action=0, reward=0, next_state=[1, 3], done=False)
-    print(f'memory3: {rb.memory}')
-    rb.add(state=[1, 3], action=1, reward=0, next_state=[1, 2], done=True)
-    print(f'memory4: {rb.memory}')
+    em = EpisodicMemory(memory_capacity=3, batch_size=2)
+    em.add([1, 1], 1)
+    print(em.memory)
+    em.add([1, 2], 0)
+    print(em.memory)
+    em.add([2, 2], 0)
+    print(em.memory)
+    a = np.array([r for r in em.memory])
+    b = a[:, :2]
+    c = a[:, 2:]
+    print(f'state: {b}')
+    print(f'action: {c}')
+    em.memory.pop(0)
+    print(em.memory)
     print('finished replay_buffer')

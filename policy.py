@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.neighbors import NearestNeighbors
 from copy import deepcopy
 import torch
 import torch.nn as nn
@@ -243,7 +244,7 @@ class RSRS(nn.Module):
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
-        self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size)
+        self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.frame_shape, embed_size=self.embed_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
@@ -261,7 +262,7 @@ class RSRS(nn.Module):
         self.model_target = self.model_class(input_size=self.frame_shape, embed_size=self.embed_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.n = np.zeros(self.action_space) #信頼度初期化
+        self.n = np.zeros(self.action_space)
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
@@ -273,38 +274,33 @@ class RSRS(nn.Module):
         with torch.no_grad():
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
-    #self.epsilon -> self.epsilon
-    #self.K -> self.action_space
-    #self.aleph -> self.aleph
-    #self.V -> self.q_value(state)
-    #self.n -> 信頼度計算したn
-    #self.N -> sum(self.n)
-    #self.Z -> 1 / (np.sum(1 / (self.aleph - self.q_value(state))))
-    #self.rho -> self.Z / (self.aleph - self.q_value(state))
-    #self.b -> self.n / self.rho - self.N + self.epsilon
-    #self.SRS -> (self.N + max(self.b)) * self.rho - self.n()
-    #self.pi -> self.SRS / np.sum(self.SRS)
     def action(self, state):
-        #SRS
-        self.q = self.q_value(state)
-        adjusted_q = deepcopy(self.q)
-        if max(self.q) > self.aleph:
-            adjusted_q = self.q - (max(self.q) - self.aleph) - self.epsilon
-        self.Z = 1 / (np.sum(1 / (self.aleph - adjusted_q)))
-        self.rho = self.Z / (self.aleph - adjusted_q)
-        self.b = self.n / self.rho - self.N + self.epsilon
-        self.SRS = (self.N + max(self.b)) * self.rho - self.n
-        self.pi = self.SRS / np.sum(self.SRS)
-        action = np.random.choice(len(self.pi), p=self.pi)
+        if len(self.episodic_memory.memory) < 10: #warmup
+            controllable_state = self.embed(state)
+            action = np.random.choice(self.action_space)
+            self.episodic_memory.add(controllable_state, action)
+        else:
+            #SRS
+            controllable_state = self.embed(state)
+            self.calculate_reliability(controllable_state)
+            self.N = np.sum(self.n)
+            self.q = self.q_value(state)
+            adjusted_q = deepcopy(self.q)
+            if max(self.q) > self.aleph:
+                adjusted_q = self.q - (max(self.q) - self.aleph) - self.epsilon
+            self.Z = 1 / (np.sum(1 / (self.aleph - adjusted_q)))
+            self.rho = self.Z / (self.aleph - adjusted_q)
+            self.b = self.n / self.rho - self.N + self.epsilon
+            self.SRS = (self.N + max(self.b)) * self.rho - self.n
+            self.pi = self.SRS / np.sum(self.SRS)
+            action = np.random.choice(len(self.pi), p=self.pi)
+            self.episodic_memory.add(controllable_state, action)
         return action
 
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
             return
-
-        controllable_state = self.embed(state)
-        self.episodic_memory.add(controllable_state, action)
 
         s, a, r, ns, d = self.replay_buffer.encode()
         s = torch.tensor(s, dtype=torch.float32).to(self.device)
@@ -322,6 +318,28 @@ class RSRS(nn.Module):
         loss = self.criterion(target, q)
         loss.backward()
         self.optimizer.step()
+
+    def calculate_reliability(self, controllable_state):
+        controllable_state_and_action = np.array([e for e in self.episodic_memory.memory])
+        controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
+        action_vec = controllable_state_and_action[:, len(controllable_state):]
+        controllable_state = np.expand_dims(controllable_state, axis=0)
+        K_neighbor = NearestNeighbors(n_neighbors=5, algorithm='brute', metric='euclidean').fit(controllable_state_vec)
+        distance, indices = K_neighbor.kneighbors(controllable_state)
+
+        distance = np.squeeze(distance)
+        action_vec = action_vec[indices]
+        action_vec = np.squeeze(action_vec)
+        
+        squared_distance = np.asarray(distance) ** 2
+        average_squared_distance = np.average(squared_distance)
+        regularization_squared_distance = squared_distance / average_squared_distance
+        regularization_squared_distance -= 0.008 #zeta
+        np.putmask(regularization_squared_distance, regularization_squared_distance < 0, 0)
+        inverse_kernel_function = [self.epsilon / (i + self.epsilon) for i in regularization_squared_distance]
+        sum_kernel = np.sum(inverse_kernel_function)
+        weight = [k_i/sum_kernel for k_i in inverse_kernel_function]
+        self.n = np.average(action_vec, weights=weight, axis=0)
 
     def sync_model(self):
         self.model_target.load_state_dict(self.model.state_dict())
