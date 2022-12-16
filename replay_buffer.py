@@ -1,5 +1,5 @@
-from collections import deque
 import numpy as np
+from collections import deque
 
 class ReplayBuffer:
     def __init__(self, memory_capacity, batch_size):

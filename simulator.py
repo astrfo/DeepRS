@@ -6,7 +6,9 @@ def simulation(sims, epis, env, agent, result_dir_path):
     for sim in range(sims):
         total_reward_list = []
         agent.reset()
-        for epi in tqdm(range(epis)):
+        for epi in tqdm(range(epis), 
+                        bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
+                        desc=f'[{sim+1}/{sims} agent]'):
             total_reward = 0
             state = env.reset()[0]
             terminated, truncated = False, False
