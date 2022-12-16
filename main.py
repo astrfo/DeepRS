@@ -1,21 +1,19 @@
 import os
 from datetime import datetime
 import gym
+
 from simulator import simulation
 from agent import Agent
-from policy import DQN
-from replay_buffer import ReplayBuffer
+from policy import DQN, QNet
 
 
 if __name__ == '__main__':
     sim = 1
-    epi = 300
+    epi = 400
     alpha = 0.0005
     gamma = 0.98
     epsilon = 0.1
     hidden_size = 128
-    action_space = 2
-    state_shape = 4
     sync_interval = 20
     memory_capacity = 10**4
     batch_size = 32
@@ -34,6 +32,7 @@ if __name__ == '__main__':
         'memory_capacity': memory_capacity,
         'batch_size': batch_size,
         'env': env,
+        'model': QNet
     }
 
     policy = DQN(**param)

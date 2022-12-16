@@ -21,7 +21,7 @@ class QNet(nn.Module):
 
 
 class DQN:
-    def __init__(self, **kwargs):
+    def __init__(self, model=QNet, **kwargs):
         self.alpha = kwargs.get('alpha', 0.0001)
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
@@ -33,15 +33,21 @@ class DQN:
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cpu')
-        self.model = QNet(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_class = model
+        self.model = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = QNet(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
 
     def reset(self):
         self.replay_buffer.reset()
+        self.model = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model.to(self.device)
+        self.model_target = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target.to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
 
     def action(self, state):
         if np.random.rand() < self.epsilon:
