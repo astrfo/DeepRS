@@ -9,8 +9,8 @@ def simulation(sims, epis, env, agent, result_dir_path):
         for epi in tqdm(range(epis)):
             total_reward = 0
             state = env.reset()[0]
-            terminated = False
-            while True:
+            terminated, truncated = False, False
+            while not(terminated or truncated):
                 action = agent.action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
                 agent.update(state, action, reward, next_state, terminated)
