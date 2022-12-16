@@ -4,12 +4,13 @@ import gym
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, ConvDQN, QNet, ConvQNet
+from policy import DQN, ConvDQN, QNet, ConvQNet, RSRS, ConvRSNet
 
 
 if __name__ == '__main__':
     sim = 1
     epi = 400
+    aleph = 0.6
     alpha = 0.0005
     gamma = 0.98
     epsilon = 0.1
@@ -27,6 +28,7 @@ if __name__ == '__main__':
     param = {
         'sim': sim,
         'epi': epi,
+        'aleph': aleph,
         'alpha': alpha,
         'gamma': gamma,
         'epsilon': epsilon,
@@ -41,11 +43,13 @@ if __name__ == '__main__':
         'batch_size': batch_size,
         'env': env,
         # 'model': QNet,
-        'model': ConvQNet,
+        # 'model': ConvQNet,
+        'model': ConvRSNet,
     }
 
     # policy = DQN(**param)
-    policy = ConvDQN(**param)
+    # policy = ConvDQN(**param)
+    policy = RSRS(**param)
     agent = Agent(policy)
 
     time_now = datetime.now()

@@ -27,6 +27,20 @@ class ReplayBuffer:
         return np.array(states), np.array(actions), np.array(rewards), np.array(next_states), np.array(dones)
 
 
+class EpisodicMemory:
+    def __init__(self, memory_capacity, batch_size):
+        self.memory_capacity = memory_capacity
+        self.batch_size = batch_size
+        self.memory = deque(maxlen=self.memory_capacity)
+
+    def reset(self):
+        self.memory = deque(maxlen=self.memory_capacity)
+
+    def add(self, controllable_state, action):
+        data = (controllable_state, action)
+        self.memory.append(data)
+
+
 if __name__ == '__main__':
     print('started replay_buffer')
     rb = ReplayBuffer(memory_capacity=3, batch_size=2)
