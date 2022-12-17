@@ -281,7 +281,6 @@ class RSRS(nn.Module):
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
-            #SRS
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
             self.N = np.sum(self.n)
@@ -321,7 +320,7 @@ class RSRS(nn.Module):
         self.optimizer.step()
 
     def calculate_reliability(self, controllable_state):
-        controllable_state_and_action = np.array([e for e in self.episodic_memory.memory])
+        controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
         controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
         action_vec = controllable_state_and_action[:, len(controllable_state):]
         controllable_state = np.expand_dims(controllable_state, axis=0)
@@ -334,7 +333,7 @@ class RSRS(nn.Module):
         
         squared_distance = np.asarray(distance) ** 2
         average_squared_distance = np.average(squared_distance)
-        regularization_squared_distance = squared_distance / average_squared_distance
+        regularization_squared_distance = np.divide(squared_distance, average_squared_distance, out=np.zeros_like(squared_distance), where=average_squared_distance!=0)
         regularization_squared_distance -= self.zeta
         np.putmask(regularization_squared_distance, regularization_squared_distance < 0, 0)
         inverse_kernel_function = [self.epsilon / (i + self.epsilon) for i in regularization_squared_distance]

@@ -9,14 +9,14 @@ from policy import DQN, ConvDQN, QNet, ConvQNet, RSRS, ConvRSNet
 
 if __name__ == '__main__':
     sim = 1
-    epi = 400
-    aleph = 0.6
+    epi = 600
+    aleph = 0.7
     warmup = 10
     k = 5
     zeta = 0.008
-    alpha = 0.0005
+    alpha = 0.001
     gamma = 0.98
-    epsilon = 0.1
+    epsilon = 0.001
     hidden_size = 128
     embed_size = 64
     sync_interval = 20
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     result_dir_path = f'log/{time_now:%Y%m%d%H%M}/'
     os.makedirs(result_dir_path, exist_ok=True)
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
-    f.write(f'param: {param}\n')
+    f.write(f'param: {param}\npolicy: {policy}\n')
     f.close()
 
     # simulation(sim, epi, env, agent, result_dir_path)

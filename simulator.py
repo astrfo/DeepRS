@@ -21,7 +21,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
-                        desc=f'[{sys._getframe().f_code.co_name} {sim+1}/{sims} agent]'):
+                        desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
             total_reward = 0
             state = env.reset()[0]
             terminated, truncated = False, False
@@ -49,7 +49,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
-                        desc=f'[{sys._getframe().f_code.co_name} {sim+1}/{sims} agent]'):
+                        desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
             total_reward = 0
             env.reset()
             frame = get_screen(env)
