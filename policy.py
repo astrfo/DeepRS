@@ -283,17 +283,16 @@ class RSRS(nn.Module):
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            self.N = np.sum(self.n)
             self.q = self.q_value(state)
             adjusted_q = deepcopy(self.q)
             if max(self.q) > self.aleph:
                 adjusted_q = self.q - (max(self.q) - self.aleph) - self.epsilon
-            self.Z = 1 / (np.sum(1 / (self.aleph - adjusted_q)))
-            self.rho = self.Z / (self.aleph - adjusted_q)
-            self.b = self.n / self.rho - self.N + self.epsilon
-            self.SRS = (self.N + max(self.b)) * self.rho - self.n
-            self.pi = self.SRS / np.sum(self.SRS)
-            action = np.random.choice(len(self.pi), p=self.pi)
+            Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
+            rho = Z / (self.aleph - adjusted_q)
+            b = self.n / rho - 1.0 + self.epsilon
+            SRS = (1.0 + max(b)) * rho - self.n
+            pi = SRS / np.sum(SRS)
+            action = np.random.choice(len(pi), p=pi)
             self.episodic_memory.add(controllable_state, action)
         return action
 

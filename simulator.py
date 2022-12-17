@@ -25,7 +25,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
             total_reward = 0
             state = env.reset()[0]
             terminated, truncated = False, False
-            while not(terminated or truncated):
+            while not (terminated or truncated):
                 action = agent.action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
                 agent.update(state, action, reward, next_state, terminated)
@@ -57,7 +57,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
             state = np.stack(frames, axis=1)[0,:]
 
             terminated, truncated = False, False
-            while not(terminated or truncated):
+            while not (terminated or truncated):
                 action = agent.action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
 

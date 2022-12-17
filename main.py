@@ -62,7 +62,7 @@ if __name__ == '__main__':
     result_dir_path = f'log/{time_now:%Y%m%d%H%M}/'
     os.makedirs(result_dir_path, exist_ok=True)
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
-    f.write(f'param: {param}\npolicy: {policy}\n')
+    f.write(f'param: {param}\nagent: {agent}\npolicy: {policy}\n')
     f.close()
 
     # simulation(sim, epi, env, agent, result_dir_path)
