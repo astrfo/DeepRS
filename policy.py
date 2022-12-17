@@ -231,13 +231,14 @@ class RSRS(nn.Module):
     def __init__(self, model=ConvRSNet, **kwargs):
         super().__init__()
         self.aleph = kwargs.get('aleph', 0.7)
+        self.warmup = kwargs.get('warmup', 10)
+        self.k = kwargs.get('k', 5)
+        self.zeta = kwargs.get('zeta', 0.008)
         self.alpha = kwargs.get('alpha', 0.0001)
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
-        self.hidden_size = kwargs.get('hidden_size', 128)
         self.embed_size = kwargs.get('embed_size', 64)
         self.action_space = kwargs['action_space']
-        self.state_shape = kwargs['state_shape']
         self.frame_shape = kwargs['frame_shape']
         self.sync_interval = kwargs.get('sync_interval', 20)
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
@@ -275,7 +276,7 @@ class RSRS(nn.Module):
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
-        if len(self.episodic_memory.memory) < 10: #warmup
+        if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
@@ -324,7 +325,7 @@ class RSRS(nn.Module):
         controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
         action_vec = controllable_state_and_action[:, len(controllable_state):]
         controllable_state = np.expand_dims(controllable_state, axis=0)
-        K_neighbor = NearestNeighbors(n_neighbors=5, algorithm='brute', metric='euclidean').fit(controllable_state_vec)
+        K_neighbor = NearestNeighbors(n_neighbors=self.k, algorithm='kd_tree', metric='euclidean').fit(controllable_state_vec)
         distance, indices = K_neighbor.kneighbors(controllable_state)
 
         distance = np.squeeze(distance)
@@ -334,7 +335,7 @@ class RSRS(nn.Module):
         squared_distance = np.asarray(distance) ** 2
         average_squared_distance = np.average(squared_distance)
         regularization_squared_distance = squared_distance / average_squared_distance
-        regularization_squared_distance -= 0.008 #zeta
+        regularization_squared_distance -= self.zeta
         np.putmask(regularization_squared_distance, regularization_squared_distance < 0, 0)
         inverse_kernel_function = [self.epsilon / (i + self.epsilon) for i in regularization_squared_distance]
         sum_kernel = np.sum(inverse_kernel_function)

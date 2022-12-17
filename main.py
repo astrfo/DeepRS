@@ -11,6 +11,9 @@ if __name__ == '__main__':
     sim = 1
     epi = 400
     aleph = 0.6
+    warmup = 10
+    k = 5
+    zeta = 0.008
     alpha = 0.0005
     gamma = 0.98
     epsilon = 0.1
@@ -29,6 +32,9 @@ if __name__ == '__main__':
         'sim': sim,
         'epi': epi,
         'aleph': aleph,
+        'warmup': warmup,
+        'k': k,
+        'zeta': zeta,
         'alpha': alpha,
         'gamma': gamma,
         'epsilon': epsilon,
