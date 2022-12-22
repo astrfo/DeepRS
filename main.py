@@ -1,15 +1,26 @@
 import os
 from datetime import datetime
 import gym
+from gym.spaces.discrete import Discrete
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
 from policy import DQN, ConvDQN, QNet, ConvQNet, RSRS, ConvRSNet
 
 
+def space2size(space):
+    if type(space) is Discrete:
+        size = space.n
+    else:
+        size = 1
+        for s in space.shape:
+            size *= s
+    return size
+
+
 if __name__ == '__main__':
     sim = 1
-    epi = 600
+    epi = 400
     aleph = 0.7
     warmup = 10
     k = 5
@@ -24,6 +35,7 @@ if __name__ == '__main__':
     memory_capacity = 10**4
     batch_size = 32
     env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
+    # env = gym.make('CliffWalking-v0', render_mode='rgb_array').unwrapped
 
     env.reset()
     init_frame = get_screen(env)
@@ -40,8 +52,8 @@ if __name__ == '__main__':
         'epsilon': epsilon,
         'hidden_size': hidden_size,
         'embed_size': embed_size,
-        'action_space': env.action_space.n,
-        'state_shape': env.observation_space.shape[0],
+        'action_space': space2size(env.action_space),
+        'state_shape': space2size(env.observation_space),
         'frame_shape': init_frame.shape,
         'sync_interval': sync_interval,
         'neighbor_frames': neighbor_frames,

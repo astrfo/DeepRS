@@ -4,6 +4,7 @@ from tqdm import tqdm
 from collections import deque
 import torchvision.transforms as T
 
+
 def get_screen(env):
     resize = T.Compose([T.ToPILImage(),
                     T.Resize(size=(84, 84)),

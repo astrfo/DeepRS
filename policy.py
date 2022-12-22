@@ -162,9 +162,7 @@ class ConvDQN(nn.Module):
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
         self.hidden_size = kwargs.get('hidden_size', 128)
-        self.embed_size = kwargs.get('embed_size', 64)
         self.action_space = kwargs['action_space']
-        self.state_shape = kwargs['state_shape']
         self.frame_shape = kwargs['frame_shape']
         self.sync_interval = kwargs.get('sync_interval', 20)
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
@@ -283,10 +281,10 @@ class RSRS(nn.Module):
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            self.q = self.q_value(state)
-            adjusted_q = deepcopy(self.q)
-            if max(self.q) > self.aleph:
-                adjusted_q = self.q - (max(self.q) - self.aleph) - self.epsilon
+            q_values = self.q_value(state)
+            adjusted_q = deepcopy(q_values)
+            if max(q_values) > self.aleph:
+                adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
             Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
             rho = Z / (self.aleph - adjusted_q)
             b = self.n / rho - 1.0 + self.epsilon
