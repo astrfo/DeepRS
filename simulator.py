@@ -34,8 +34,6 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 total_reward += reward
                 if total_reward >= 500:
                     break
-            if epi % agent.policy.sync_interval == 0:
-                agent.policy.sync_model()
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
     average_reward_list /= sims
@@ -71,8 +69,6 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 total_reward += reward
                 if total_reward >= 500:
                     break
-            if epi % agent.policy.sync_interval == 0:
-                agent.policy.sync_model()
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
     average_reward_list /= sims

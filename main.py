@@ -20,17 +20,18 @@ def space2size(space):
 
 if __name__ == '__main__':
     sim = 1
-    epi = 10
+    epi = 100
     aleph = 0.7
     warmup = 10
     k = 5
     zeta = 0.008
     alpha = 0.001
     gamma = 0.98
-    epsilon = 0.001
+    epsilon = 0.01
+    tau = 0.001
     hidden_size = 128
     embed_size = 64
-    sync_interval = 20
+    # sync_interval = 20
     neighbor_frames = 4
     memory_capacity = 10**4
     batch_size = 32
@@ -50,12 +51,13 @@ if __name__ == '__main__':
         'alpha': alpha,
         'gamma': gamma,
         'epsilon': epsilon,
+        'tau': tau,
         'hidden_size': hidden_size,
         'embed_size': embed_size,
         'action_space': space2size(env.action_space),
         'state_space': space2size(env.observation_space),
         'frame_shape': init_frame.shape,
-        'sync_interval': sync_interval,
+        # 'sync_interval': sync_interval,
         'neighbor_frames': neighbor_frames,
         'memory_capacity': memory_capacity,
         'batch_size': batch_size,

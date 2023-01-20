@@ -96,10 +96,11 @@ class DQN:
         self.alpha = kwargs.get('alpha', 0.0001)
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
+        self.tau = kwargs.get('tau', 0.01)
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
-        self.sync_interval = kwargs.get('sync_interval', 20)
+        # self.sync_interval = kwargs.get('sync_interval', 20)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
@@ -150,9 +151,12 @@ class DQN:
         loss = self.criterion(target, q)
         loss.backward()
         self.optimizer.step()
+        self.sync_model()
 
     def sync_model(self):
-        self.model_target.load_state_dict(self.model.state_dict())
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
 
 
 class ConvDQN(nn.Module):
@@ -161,10 +165,11 @@ class ConvDQN(nn.Module):
         self.alpha = kwargs.get('alpha', 0.0001)
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
+        self.tau = kwargs.get('tau', 0.01)
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
         self.frame_shape = kwargs['frame_shape']
-        self.sync_interval = kwargs.get('sync_interval', 20)
+        # self.sync_interval = kwargs.get('sync_interval', 20)
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
@@ -220,9 +225,12 @@ class ConvDQN(nn.Module):
         loss = self.criterion(target, q)
         loss.backward()
         self.optimizer.step()
+        self.sync_model()
 
     def sync_model(self):
-        self.model_target.load_state_dict(self.model.state_dict())
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
 
 
 class RSRS(nn.Module):
@@ -235,10 +243,11 @@ class RSRS(nn.Module):
         self.alpha = kwargs.get('alpha', 0.0001)
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
+        self.tau = kwargs.get('tau', 0.01)
         self.embed_size = kwargs.get('embed_size', 64)
         self.action_space = kwargs['action_space']
         self.frame_shape = kwargs['frame_shape']
-        self.sync_interval = kwargs.get('sync_interval', 20)
+        # self.sync_interval = kwargs.get('sync_interval', 20)
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
@@ -315,6 +324,7 @@ class RSRS(nn.Module):
         loss = self.criterion(target, q)
         loss.backward()
         self.optimizer.step()
+        self.sync_model()
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
@@ -339,7 +349,9 @@ class RSRS(nn.Module):
         self.n = np.average(action_vec, weights=weight, axis=0)
 
     def sync_model(self):
-        self.model_target.load_state_dict(self.model.state_dict())
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
 
     def extract(self, target, inputs):
         self.feature = None
