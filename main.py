@@ -20,7 +20,7 @@ def space2size(space):
 
 if __name__ == '__main__':
     sim = 1
-    epi = 400
+    epi = 10
     aleph = 0.7
     warmup = 10
     k = 5
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         'hidden_size': hidden_size,
         'embed_size': embed_size,
         'action_space': space2size(env.action_space),
-        'state_shape': space2size(env.observation_space),
+        'state_space': space2size(env.observation_space),
         'frame_shape': init_frame.shape,
         'sync_interval': sync_interval,
         'neighbor_frames': neighbor_frames,
@@ -65,17 +65,24 @@ if __name__ == '__main__':
         'model': ConvRSNet,
     }
 
-    # policy = DQN(**param)
-    # policy = ConvDQN(**param)
-    policy = RSRS(**param)
-    agent = Agent(policy)
-
     time_now = datetime.now()
     result_dir_path = f'log/{time_now:%Y%m%d%H%M}/'
     os.makedirs(result_dir_path, exist_ok=True)
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
-    f.write(f'param: {param}\nagent: {agent}\npolicy: {policy}\n')
     f.close()
 
-    # simulation(sim, epi, env, agent, result_dir_path)
-    conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+
+    if param['model'] == QNet:
+        policy = DQN(**param)
+        agent = Agent(policy)
+        simulation(sim, epi, env, agent, result_dir_path)
+    elif param['model'] == ConvQNet:
+        policy = ConvDQN(**param)
+        agent = Agent(policy)
+        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+    elif param['model'] == ConvRSNet:
+        policy = RSRS(**param)
+        agent = Agent(policy)
+        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+    else:
+        print(f'Not found model {param["model"]}')

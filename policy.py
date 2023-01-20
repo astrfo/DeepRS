@@ -98,25 +98,25 @@ class DQN:
         self.epsilon = kwargs.get('epsilon', 0.01)
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
-        self.state_shape = kwargs['state_shape']
+        self.state_space = kwargs['state_space']
         self.sync_interval = kwargs.get('sync_interval', 20)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_shape, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
 
