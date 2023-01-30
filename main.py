@@ -20,7 +20,7 @@ def space2size(space):
 
 if __name__ == '__main__':
     sim = 1
-    epi = 100
+    epi = 10
     aleph = 0.7
     warmup = 10
     k = 5
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     alpha = 0.001
     gamma = 0.98
     epsilon = 0.01
-    tau = 0.001
+    tau = 0.01
     hidden_size = 128
     embed_size = 64
     # sync_interval = 20
@@ -63,16 +63,16 @@ if __name__ == '__main__':
         'batch_size': batch_size,
         'env': env,
         # 'model': QNet,
-        # 'model': ConvQNet,
-        'model': ConvRSNet,
+        'model': ConvQNet,
+        # 'model': ConvRSNet,
     }
 
     time_now = datetime.now()
     result_dir_path = f'log/{time_now:%Y%m%d%H%M}/'
     os.makedirs(result_dir_path, exist_ok=True)
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
+    f.write(f'param: {param}\n')
     f.close()
-
 
     if param['model'] == QNet:
         policy = DQN(**param)

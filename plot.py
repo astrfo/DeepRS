@@ -14,6 +14,7 @@ def plot(args):
     plt.ylabel('Reward')
     plt.savefig('./log/' + args[1] + '/average_reward.png')
     plt.show()
+    plt.close()
 
 if __name__ == '__main__':
     args = sys.argv

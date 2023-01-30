@@ -23,17 +23,16 @@ def simulation(sims, epis, env, agent, result_dir_path):
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
-            total_reward = 0
             state = env.reset()[0]
+            total_reward, step = 0, 0
             terminated, truncated = False, False
-            while not (terminated or truncated):
+            while not (terminated or truncated) and (step < 500):
                 action = agent.action(state)
                 next_state, reward, terminated, truncated, info = env.step(action)
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
-                if total_reward >= 500:
-                    break
+                step += 1
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
     average_reward_list /= sims
@@ -49,16 +48,16 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
-            total_reward = 0
-            env.reset()
+            discrete_state = env.reset()[0]
             frame = get_screen(env)
             frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
             state = np.stack(frames, axis=1)[0,:]
 
+            total_reward, step = 0, 0
             terminated, truncated = False, False
-            while not (terminated or truncated):
+            while not (terminated or truncated) and (step < 500):
                 action = agent.action(state)
-                next_state, reward, terminated, truncated, info = env.step(action)
+                discrete_state, reward, terminated, truncated, info = env.step(action)
 
                 frame = get_screen(env)
                 frames.append(frame)
@@ -67,8 +66,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
-                if total_reward >= 500:
-                    break
+                step += 1
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
     average_reward_list /= sims
@@ -82,4 +80,3 @@ if __name__ == '__main__':
     state = env.reset()
     print(f'state: {state}') #shape: (4,)
     env.close()
-
