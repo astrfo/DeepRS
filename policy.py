@@ -52,7 +52,7 @@ class ConvQNet(nn.Module):
 
 
 class ConvRSNet(nn.Module):
-    def __init__(self, input_size, embed_size, output_size, neighbor_frames):
+    def __init__(self, input_size, hidden_size, output_size, neighbor_frames):
         super().__init__()
         C, H, W = input_size
 
@@ -67,8 +67,8 @@ class ConvRSNet(nn.Module):
         convh = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(H)))
         linear_input_size = convw * convh * 32
         self.fc1 = nn.Linear(linear_input_size, 512)
-        self.embed = nn.Linear(512, embed_size)
-        self.head = nn.Linear(embed_size, output_size)
+        self.embed = nn.Linear(512, hidden_size)
+        self.head = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
@@ -244,7 +244,7 @@ class RSRS(nn.Module):
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
         self.tau = kwargs.get('tau', 0.01)
-        self.embed_size = kwargs.get('embed_size', 64)
+        self.hidden_size = kwargs.get('hidden_size', 64)
         self.action_space = kwargs['action_space']
         self.frame_shape = kwargs['frame_shape']
         # self.sync_interval = kwargs.get('sync_interval', 20)
@@ -255,9 +255,9 @@ class RSRS(nn.Module):
         self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.frame_shape, embed_size=self.embed_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, embed_size=self.embed_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
@@ -265,9 +265,9 @@ class RSRS(nn.Module):
     def reset(self):
         self.replay_buffer.reset()
         self.episodic_memory.reset()
-        self.model = self.model_class(input_size=self.frame_shape, embed_size=self.embed_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, embed_size=self.embed_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.n = np.zeros(self.action_space)
