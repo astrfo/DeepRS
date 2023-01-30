@@ -100,7 +100,6 @@ class DQN:
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
-        # self.sync_interval = kwargs.get('sync_interval', 20)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
@@ -169,7 +168,6 @@ class ConvDQN(nn.Module):
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
         self.frame_shape = kwargs['frame_shape']
-        # self.sync_interval = kwargs.get('sync_interval', 20)
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
@@ -247,7 +245,6 @@ class RSRS(nn.Module):
         self.hidden_size = kwargs.get('hidden_size', 64)
         self.action_space = kwargs['action_space']
         self.frame_shape = kwargs['frame_shape']
-        # self.sync_interval = kwargs.get('sync_interval', 20)
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
