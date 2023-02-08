@@ -19,7 +19,7 @@ def space2size(space):
 
 
 def compare_base_make_folder(algo, ex_param):
-    if algo == 'DQN' or algo == 'DDQN':
+    if algo == 'sDQN' or algo == 'sDDQN' or algo == 'DQN' or algo == 'DDQN':
         base_param = {
             'algo': algo,
             'sim': 100,

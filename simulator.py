@@ -81,7 +81,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 step += 1
             total_reward_list.append(total_reward)
         average_reward_list += total_reward_list
-        np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=",")
+        np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
         sub_plot(sim_dir_path, 'reward', total_reward_list)
     average_reward_list /= sims
     average_dir_path = result_dir_path + 'average/'

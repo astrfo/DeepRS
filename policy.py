@@ -120,6 +120,7 @@ class DQN:
         self.state_space = kwargs['state_space']
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
+        self.sync_interval = kwargs.get('sync_interval', 20)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cpu')
         self.model_class = model
@@ -138,12 +139,16 @@ class DQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
 
+    def q_value(self, state):
+        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        with torch.no_grad():
+            return self.model(s).squeeze().to('cpu').detach().numpy().copy()
+
     def action(self, state):
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
-            s = torch.tensor(state, dtype=torch.float32).to(self.device)
-            q_values = self.model(s)
+            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -159,18 +164,94 @@ class DQN:
         d = torch.tensor(d, dtype=torch.float32).to(self.device)
 
         q = self.model(s)
-        q = q[np.arange(self.batch_size), a]
-        next_q = self.model_target(ns)
-        next_q = torch.amax(next_q, dim=1)
-        target = r + self.gamma * next_q * (1 - d)
+        qa = q[np.arange(self.batch_size), a]
+        next_q_target = self.model_target(ns)
+        next_qa_target = torch.amax(next_q_target, dim=1)
+        target = r + self.gamma * next_qa_target * (1 - d)
 
         self.optimizer.zero_grad()
-        loss = self.criterion(target, q)
+        loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
         self.sync_model()
 
     def sync_model(self):
+        # self.model_target.load_state_dict(self.model.state_dict())
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+
+
+class DDQN:
+    def __init__(self, model=QNet, **kwargs):
+        self.alpha = kwargs.get('alpha', 0.0001)
+        self.gamma = kwargs.get('gamma', 0.99)
+        self.epsilon = kwargs.get('epsilon', 0.01)
+        self.tau = kwargs.get('tau', 0.01)
+        self.hidden_size = kwargs.get('hidden_size', 128)
+        self.action_space = kwargs['action_space']
+        self.state_space = kwargs['state_space']
+        self.memory_capacity = kwargs.get('memory_capacity', 10**4)
+        self.batch_size = kwargs.get('batch_size', 32)
+        self.sync_interval = kwargs.get('sync_interval', 20)
+        self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
+        self.device = torch.device('cpu')
+        self.model_class = model
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model.to(self.device)
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target.to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.criterion = nn.MSELoss(reduction='sum')
+
+    def reset(self):
+        self.replay_buffer.reset()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model.to(self.device)
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target.to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+
+    def q_value(self, state):
+        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        with torch.no_grad():
+            return self.model(s).squeeze().to('cpu').detach().numpy().copy()
+
+    def action(self, state):
+        if np.random.rand() < self.epsilon:
+            action = np.random.choice(self.action_space)
+        else:
+            q_values = self.q_value(state)
+            action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
+    def update(self, state, action, reward, next_state, done):
+        self.replay_buffer.add(state, action, reward, next_state, done)
+        if len(self.replay_buffer.memory) < self.batch_size:
+            return
+
+        s, a, r, ns, d = self.replay_buffer.encode()
+        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
+        r = torch.tensor(r, dtype=torch.float32).to(self.device)
+        d = torch.tensor(d, dtype=torch.float32).to(self.device)
+
+        q = self.model(s)
+        qa = q[np.arange(self.batch_size), a]
+        next_q = self.model(ns)
+        next_qa = torch.argmax(next_q, dim=1, keepdim=True)
+        next_q_target = self.model_target(ns)
+        next_qa_target = next_q_target.gather(1, next_qa).squeeze()
+        target = r + self.gamma * next_qa_target * (1 - d)
+
+        self.optimizer.zero_grad()
+        loss = self.criterion(qa, target)
+        loss.backward()
+        self.optimizer.step()
+        self.sync_model()
+
+    def sync_model(self):
+        # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
                 target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
@@ -189,6 +270,7 @@ class ConvDQN(nn.Module):
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
+        self.sync_interval = kwargs.get('sync_interval', 20)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cpu')
         self.model_class = model
@@ -232,18 +314,96 @@ class ConvDQN(nn.Module):
         d = torch.tensor(d, dtype=torch.float32).to(self.device)
 
         q = self.model(s)
-        q = q[np.arange(self.batch_size), a]
-        next_q = self.model_target(ns)
-        next_q = torch.amax(next_q, dim=1)
-        target = r + self.gamma * next_q * (1 - d)
+        qa = q[np.arange(self.batch_size), a]
+        next_q_target = self.model_target(ns)
+        next_qa_target = torch.amax(next_q_target, dim=1)
+        target = r + self.gamma * next_qa_target * (1 - d)
 
         self.optimizer.zero_grad()
-        loss = self.criterion(target, q)
+        loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
         self.sync_model()
 
     def sync_model(self):
+        # self.model_target.load_state_dict(self.model.state_dict())
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+
+
+class ConvDDQN(nn.Module):
+    def __init__(self, model=ConvQNet, **kwargs):
+        super().__init__()
+        self.alpha = kwargs.get('alpha', 0.0001)
+        self.gamma = kwargs.get('gamma', 0.99)
+        self.epsilon = kwargs.get('epsilon', 0.01)
+        self.tau = kwargs.get('tau', 0.01)
+        self.hidden_size = kwargs.get('hidden_size', 128)
+        self.action_space = kwargs['action_space']
+        self.frame_shape = kwargs['frame_shape']
+        self.neighbor_frames = kwargs.get('neighbor_frames', 4)
+        self.memory_capacity = kwargs.get('memory_capacity', 10**4)
+        self.batch_size = kwargs.get('batch_size', 32)
+        self.sync_interval = kwargs.get('sync_interval', 20)
+        self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
+        self.device = torch.device('cpu')
+        self.model_class = model
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model.to(self.device)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model_target.to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.criterion = nn.MSELoss(reduction='sum')
+
+    def reset(self):
+        self.replay_buffer.reset()
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model.to(self.device)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model_target.to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+
+    def q_value(self, state):
+        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        with torch.no_grad():
+            return self.model(s).squeeze().to('cpu').detach().numpy().copy()
+
+    def action(self, state):
+        if np.random.rand() < self.epsilon:
+            action = np.random.choice(self.action_space)
+        else:
+            q_values = self.q_value(state)
+            action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
+    def update(self, state, action, reward, next_state, done):
+        self.replay_buffer.add(state, action, reward, next_state, done)
+        if len(self.replay_buffer.memory) < self.batch_size:
+            return
+
+        s, a, r, ns, d = self.replay_buffer.encode()
+        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
+        r = torch.tensor(r, dtype=torch.float32).to(self.device)
+        d = torch.tensor(d, dtype=torch.float32).to(self.device)
+
+        q = self.model(s)
+        qa = q[np.arange(self.batch_size), a]
+        next_q = self.model(ns)
+        next_qa = torch.argmax(next_q, dim=1, keepdim=True)
+        next_q_target = self.model_target(ns)
+        next_qa_target = next_q_target.gather(1, next_qa).squeeze()
+        target = r + self.gamma * next_qa_target * (1 - d)
+
+        self.optimizer.zero_grad()
+        loss = self.criterion(qa, target)
+        loss.backward()
+        self.optimizer.step()
+        self.sync_model()
+
+    def sync_model(self):
+        # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
                 target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
