@@ -28,6 +28,8 @@ def sub_plot(sim_dir_path, name, thing):
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     for sim in range(sims):
+        sim_dir_path = result_dir_path + f'{sim+1}/'
+        os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
@@ -44,9 +46,14 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 total_reward += reward
                 step += 1
             total_reward_list.append(total_reward)
+        np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
+        sub_plot(sim_dir_path, 'reward', total_reward_list)
         average_reward_list += total_reward_list
     average_reward_list /= sims
-    np.savetxt(result_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
+    average_dir_path = result_dir_path + 'average/'
+    os.makedirs(average_dir_path, exist_ok=True)
+    np.savetxt(average_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
+    sub_plot(average_dir_path, 'average_reward', average_reward_list)
     env.close()
 
 
