@@ -274,6 +274,7 @@ class ConvDQN(nn.Module):
         self.tau = kwargs.get('tau', 0.01)
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
+        self.state_space = kwargs['state_space']
         self.frame_shape = kwargs['frame_shape']
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
@@ -288,6 +289,7 @@ class ConvDQN(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -296,17 +298,19 @@ class ConvDQN(nn.Module):
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state):
+    def action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
-            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -331,13 +335,13 @@ class ConvDQN(nn.Module):
         loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
-        self.sync_model()
+        # self.sync_model()
 
     def sync_model(self):
-        # self.model_target.load_state_dict(self.model.state_dict())
-        with torch.no_grad():
-            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+        self.model_target.load_state_dict(self.model.state_dict())
+        # with torch.no_grad():
+        #     for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+        #         target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
 
 
 class ConvDDQN(nn.Module):
@@ -349,6 +353,7 @@ class ConvDDQN(nn.Module):
         self.tau = kwargs.get('tau', 0.01)
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
+        self.state_space = kwargs['state_space']
         self.frame_shape = kwargs['frame_shape']
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
@@ -363,6 +368,7 @@ class ConvDDQN(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -371,17 +377,19 @@ class ConvDDQN(nn.Module):
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state):
+    def action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
-            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -408,13 +416,13 @@ class ConvDDQN(nn.Module):
         loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
-        self.sync_model()
+        # self.sync_model()
 
     def sync_model(self):
-        # self.model_target.load_state_dict(self.model.state_dict())
-        with torch.no_grad():
-            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+        self.model_target.load_state_dict(self.model.state_dict())
+        # with torch.no_grad():
+        #     for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+        #         target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
 
 
 class RSRS(nn.Module):

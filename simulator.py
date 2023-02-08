@@ -62,8 +62,8 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
-            # if epi % agent.policy.sync_interval == 0:
-            #     agent.policy.sync_model()
+            if epi % agent.policy.sync_interval == 0:
+                agent.policy.sync_model()
             total_reward_list.append(total_reward)
         for i in range(agent.policy.state_space):
             np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
@@ -97,18 +97,22 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
             total_reward, step = 0, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
-                action = agent.action(state)
-                discrete_state, reward, terminated, truncated, info = env.step(action)
+                action = agent.action(state, discrete_state)
+                discrete_next_state, reward, terminated, truncated, info = env.step(action)
 
                 frame = get_screen(env)
                 frames.append(frame)
                 next_state = np.stack(frames, axis=1)[0,:]
                 
                 agent.update(state, action, reward, next_state, terminated)
+                discrete_state = discrete_next_state
                 state = next_state
                 total_reward += reward
                 step += 1
             total_reward_list.append(total_reward)
+        for i in range(agent.policy.state_space):
+            np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
+            qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
         average_reward_list += total_reward_list
         np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
         sub_plot(sim_dir_path, 'reward', total_reward_list)

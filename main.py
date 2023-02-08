@@ -19,7 +19,7 @@ def space2size(space):
 
 
 def compare_base_make_folder(algo, ex_param):
-    if algo == 'sDQN' or algo == 'sDDQN' or algo == 'DQN' or algo == 'DDQN':
+    if algo == 'sDQN' or algo == 'sDDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -29,7 +29,6 @@ def compare_base_make_folder(algo, ex_param):
             'epsilon': 0.01,
             'tau': 0.01,
             'hidden_size': 8,
-            'neighbor_frames': 4,
             'memory_capacity': 10**4,
             'batch_size': 32,
             'sync_interval': 2,
@@ -43,7 +42,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    else:
+    elif algo == 'DQN' or algo == 'DDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -53,9 +52,34 @@ def compare_base_make_folder(algo, ex_param):
             'epsilon': 0.01,
             'tau': 0.01,
             'hidden_size': 8,
-            'neighbor_frames': 4,
             'memory_capacity': 10**4,
             'batch_size': 32,
+            'sync_interval': 2,
+            'neighbor_frames': 4,
+        }
+        folder_name = algo
+        for (base_k, base_v), (ex_k, ex_v) in zip(base_param.items(), ex_param.items()):
+            if (base_k == ex_k) and (base_v != ex_v):
+                folder_name += f'_{ex_k}{ex_v}'
+        ex_folder_path = f'log/{folder_name}/'
+        os.makedirs(ex_folder_path, exist_ok=True)
+        time_now = datetime.now()
+        results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
+        os.makedirs(results_dir, exist_ok=True)
+    elif algo == 'RSRS':
+        base_param = {
+            'algo': algo,
+            'sim': 100,
+            'epi': 1000,
+            'alpha': 0.001,
+            'gamma': 0.999,
+            'epsilon': 0.01,
+            'tau': 0.01,
+            'hidden_size': 8,
+            'memory_capacity': 10**4,
+            'batch_size': 32,
+            'sync_interval': 2,
+            'neighbor_frames': 4,
             'aleph': 0.7,
             'warmup': 10,
             'k': 5,
@@ -70,6 +94,9 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
+    else:
+        print(f'Not found algorithm {algo}')
+        exit(1)
     return results_dir
 
 
@@ -85,18 +112,18 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'sDQN' #sDQN or sDDQN or DQN or DDQN or RSRS
+    algo = 'DQN' #sDQN or sDDQN or DQN or DDQN or RSRS
     sim = 1
-    epi = 1000
+    epi = 10000
     alpha = 0.01
     gamma = 0.9
     epsilon = 0.1
     tau = 0.01
     hidden_size = 64
-    neighbor_frames = 4
     memory_capacity = 10**4
     batch_size = 32
     sync_interval = 20
+    neighbor_frames = 4
     aleph = 0.7
     warmup = 10
     k = 5
@@ -117,6 +144,7 @@ if __name__ == '__main__':
         model = ConvRSNet
     else:
         print(f'Not found algorithm {algo}')
+        exit(1)
 
     param = {
         'algo': algo,
@@ -127,10 +155,10 @@ if __name__ == '__main__':
         'epsilon': epsilon,
         'tau': tau,
         'hidden_size': hidden_size,
-        'neighbor_frames': neighbor_frames,
         'memory_capacity': memory_capacity,
         'batch_size': batch_size,
         'sync_interval': sync_interval,
+        'neighbor_frames': neighbor_frames,
         'aleph': aleph,
         'warmup': warmup,
         'k': k,
@@ -169,3 +197,4 @@ if __name__ == '__main__':
         conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
     else:
         print(f'Not found algorithm {algo}')
+        exit(1)
