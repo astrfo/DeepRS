@@ -5,7 +5,7 @@ from gym.spaces.discrete import Discrete
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, ConvDQN, QNet, ConvQNet, RSRS, ConvRSNet
+from policy import DQN, DDQN, ConvDQN, ConvDDQN, QNet, ConvQNet, RSRS, ConvRSNet
 
 
 def space2size(space):
@@ -19,9 +19,9 @@ def space2size(space):
 
 
 def compare_base_make_folder(algo, ex_param):
-    if algo == 'DQN':
+    if algo == 'DQN' or algo == 'DDQN':
         base_param = {
-            'algo': 'DQN',
+            'algo': algo,
             'sim': 100,
             'epi': 1000,
             'alpha': 0.001,
@@ -32,6 +32,7 @@ def compare_base_make_folder(algo, ex_param):
             'neighbor_frames': 4,
             'memory_capacity': 10**4,
             'batch_size': 32,
+            'sync_interval': 2,
         }
         folder_name = algo
         for (base_k, base_v), (ex_k, ex_v) in zip(base_param.items(), ex_param.items()):
@@ -44,7 +45,7 @@ def compare_base_make_folder(algo, ex_param):
         os.makedirs(results_dir, exist_ok=True)
     else:
         base_param = {
-            'algo': 'RSRS',
+            'algo': algo,
             'sim': 100,
             'epi': 1000,
             'alpha': 0.001,
@@ -84,31 +85,35 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'DQN' #DQN or RSRS
-    sim = 100
+    algo = 'sDQN' #sDQN or sDDQN or DQN or DDQN or RSRS
+    sim = 1
     epi = 1000
-    alpha = 0.001
-    gamma = 0.999
-    epsilon = 0.01
+    alpha = 0.01
+    gamma = 0.9
+    epsilon = 0.1
     tau = 0.01
-    hidden_size = 8
+    hidden_size = 64
     neighbor_frames = 4
     memory_capacity = 10**4
     batch_size = 32
+    sync_interval = 20
     aleph = 0.7
     warmup = 10
     k = 5
     zeta = 0.008
     env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
-    # env = gym.make('CliffWalking-v0', render_mode='rgb_array').unwrapped
 
     env.reset()
     init_frame = get_screen(env)
 
-    if algo == 'DQN':
+    if algo == 'sDQN' or algo == 'sDDQN':
+        model = QNet
+    elif algo == 'DQN' or algo == 'DDQN':
         model = ConvQNet
-    else:
+    elif algo == 'RSRS':
         model = ConvRSNet
+    else:
+        print(f'Not found algorithm {algo}')
 
     param = {
         'algo': algo,
@@ -122,6 +127,7 @@ if __name__ == '__main__':
         'neighbor_frames': neighbor_frames,
         'memory_capacity': memory_capacity,
         'batch_size': batch_size,
+        'sync_interval': sync_interval,
         'aleph': aleph,
         'warmup': warmup,
         'k': k,
@@ -133,15 +139,30 @@ if __name__ == '__main__':
         'model': model
     }
 
-    if param['model'] == ConvQNet:
+    if algo == 'sDQN':
+        policy = DQN(**param)
+        agent = Agent(policy)
+        result_dir_path = make_param_file(algo, param, model, policy, agent)
+        simulation(sim, epi, env, agent, result_dir_path)
+    elif algo == 'sDDQN':
+        policy = DDQN(**param)
+        agent = Agent(policy)
+        result_dir_path = make_param_file(algo, param, model, policy, agent)
+        simulation(sim, epi, env, agent, result_dir_path)
+    elif algo == 'DQN':
         policy = ConvDQN(**param)
         agent = Agent(policy)
         result_dir_path = make_param_file(algo, param, model, policy, agent)
         conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
-    elif param['model'] == ConvRSNet:
+    elif algo == 'DDQN':
+        policy = ConvDDQN(**param)
+        agent = Agent(policy)
+        result_dir_path = make_param_file(algo, param, model, policy, agent)
+        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+    elif algo == 'RSRS':
         policy = RSRS(**param)
         agent = Agent(policy)
         result_dir_path = make_param_file(algo, param, model, policy, agent)
         conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
     else:
-        print(f'Not found model {param["model"]}')
+        print(f'Not found algorithm {algo}')
