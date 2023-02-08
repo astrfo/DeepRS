@@ -25,6 +25,14 @@ def sub_plot(sim_dir_path, name, thing):
     plt.close()
 
 
+def qvalue_plot(sim_dir_path, name, thing):
+    plt.plot(thing)
+    plt.title(name)
+    plt.xlabel('Step')
+    plt.savefig(sim_dir_path + f'{name}.png')
+    plt.close()
+
+
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     for sim in range(sims):
@@ -118,7 +126,12 @@ def grid_simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
+            # if epi % agent.policy.sync_interval == 0:
+            #     agent.policy.sync_model()
             total_reward_list.append(total_reward)
+        for i in range(9):
+            np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
+            qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
         np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
         sub_plot(sim_dir_path, 'reward', total_reward_list)
         average_reward_list += total_reward_list
