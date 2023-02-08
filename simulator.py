@@ -25,6 +25,12 @@ def sub_plot(sim_dir_path, name, thing):
     plt.close()
 
 
+def one_hot(discrete_state, state_space):
+    one_hot_array = np.zeros(state_space)
+    one_hot_array[discrete_state] = 1
+    return one_hot_array
+
+
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     for sim in range(sims):
@@ -35,12 +41,14 @@ def simulation(sims, epis, env, agent, result_dir_path):
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
-            state = env.reset()[0]
+            discrete_state = env.reset()[0]
+            state = one_hot(discrete_state, agent.policy.state_space)
             total_reward, step = 0, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
                 action = agent.action(state)
-                next_state, reward, terminated, truncated, info = env.step(action)
+                discrete_next_state, reward, terminated, truncated, info = env.step(action)
+                next_state = one_hot(discrete_next_state, agent.policy.state_space)
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward

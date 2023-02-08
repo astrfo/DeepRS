@@ -101,7 +101,10 @@ if __name__ == '__main__':
     warmup = 10
     k = 5
     zeta = 0.008
-    env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
+    desc=[
+        'SFFFFFFFG'
+    ]
+    env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
 
     env.reset()
     init_frame = get_screen(env)
