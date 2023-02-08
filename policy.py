@@ -130,6 +130,7 @@ class DQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -138,6 +139,7 @@ class DQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
@@ -145,10 +147,12 @@ class DQN:
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
+        q_values = self.q_value(state)
+        one_index = [i for i, x in enumerate(state) if x == 1][0]
+        self.q_list[one_index].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
-            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -203,6 +207,7 @@ class DDQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -211,6 +216,7 @@ class DDQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
@@ -218,10 +224,12 @@ class DDQN:
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
+        q_values = self.q_value(state)
+        one_index = [i for i, x in enumerate(state) if x == 1][0]
+        self.q_list[one_index].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
-            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 

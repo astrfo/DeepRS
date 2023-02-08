@@ -25,6 +25,15 @@ def sub_plot(sim_dir_path, name, thing):
     plt.close()
 
 
+def qvalue_plot(sim_dir_path, name, thing):
+    plt.plot(thing, label=['left', 'down', 'right', 'up'])
+    plt.title(name)
+    plt.xlabel('Step')
+    plt.legend()
+    plt.savefig(sim_dir_path + f'{name}.png')
+    plt.close()
+
+
 def one_hot(discrete_state, state_space):
     one_hot_array = np.zeros(state_space)
     one_hot_array[discrete_state] = 1
@@ -53,7 +62,12 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
+            # if epi % agent.policy.sync_interval == 0:
+            #     agent.policy.sync_model()
             total_reward_list.append(total_reward)
+        for i in range(agent.policy.state_space):
+            np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
+            qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
         np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
         sub_plot(sim_dir_path, 'reward', total_reward_list)
         average_reward_list += total_reward_list
