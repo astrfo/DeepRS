@@ -146,10 +146,9 @@ class DQN:
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state):
+    def action(self, state, discrete_state):
         q_values = self.q_value(state)
-        one_index = [i for i, x in enumerate(state) if x == 1][0]
-        self.q_list[one_index].append(q_values)
+        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
@@ -223,10 +222,9 @@ class DDQN:
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state):
+    def action(self, state, discrete_state):
         q_values = self.q_value(state)
-        one_index = [i for i, x in enumerate(state) if x == 1][0]
-        self.q_list[one_index].append(q_values)
+        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:

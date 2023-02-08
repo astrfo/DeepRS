@@ -55,10 +55,11 @@ def simulation(sims, epis, env, agent, result_dir_path):
             total_reward, step = 0, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
-                action = agent.action(state)
+                action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
                 next_state = one_hot(discrete_next_state, agent.policy.state_space)
                 agent.update(state, action, reward, next_state, terminated)
+                discrete_state = discrete_next_state
                 state = next_state
                 total_reward += reward
                 step += 1

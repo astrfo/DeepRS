@@ -112,7 +112,7 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'DQN' #sDQN or sDDQN or DQN or DDQN or RSRS
+    algo = 'sDQN' #sDQN or sDDQN or DQN or DDQN or RSRS
     sim = 1
     epi = 10000
     alpha = 0.01
@@ -129,7 +129,8 @@ if __name__ == '__main__':
     k = 5
     zeta = 0.008
     desc=[
-        'SFFFFFFFG'
+        'SFFFFFFFF',
+        'FFFFFFFFG',
     ]
     env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
 
