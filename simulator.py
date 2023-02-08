@@ -98,6 +98,38 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
     env.close()
 
 
+def grid_simulation(sims, epis, env, agent, result_dir_path):
+    average_reward_list = np.zeros(epis)
+    for sim in range(sims):
+        sim_dir_path = result_dir_path + f'{sim+1}/'
+        os.makedirs(sim_dir_path, exist_ok=True)
+        total_reward_list = []
+        agent.reset()
+        for epi in tqdm(range(epis), 
+                        bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
+                        desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
+            state = env.reset()
+            total_reward, step = 0, 0
+            terminated, truncated = False, False
+            while not (terminated or truncated) and (step < 500):
+                action = agent.action(state)
+                next_state, reward, terminated, truncated, info = env.step(action)
+                agent.update(state, action, reward, next_state, terminated)
+                state = next_state
+                total_reward += reward
+                step += 1
+            total_reward_list.append(total_reward)
+        np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
+        sub_plot(sim_dir_path, 'reward', total_reward_list)
+        average_reward_list += total_reward_list
+    average_reward_list /= sims
+    average_dir_path = result_dir_path + 'average/'
+    os.makedirs(average_dir_path, exist_ok=True)
+    np.savetxt(average_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
+    sub_plot(average_dir_path, 'average_reward', average_reward_list)
+    env.close()
+
+
 if __name__ == '__main__':
     import gym
     env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped

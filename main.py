@@ -3,9 +3,10 @@ from datetime import datetime
 import gym
 from gym.spaces.discrete import Discrete
 
-from simulator import simulation, conv_simulation, get_screen
+from simulator import simulation, conv_simulation, grid_simulation, get_screen
 from agent import Agent
 from policy import DQN, DDQN, ConvDQN, ConvDDQN, QNet, ConvQNet, RSRS, ConvRSNet
+from gridworld import GridWorld
 
 
 def space2size(space):
@@ -85,7 +86,7 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'sDQN' #sDQN or sDDQN or DQN or DDQN or RSRS
+    algo = 'sDQN' #sDQN or sDDQN
     sim = 1
     epi = 1000
     alpha = 0.01
@@ -101,17 +102,10 @@ if __name__ == '__main__':
     warmup = 10
     k = 5
     zeta = 0.008
-    env = gym.make('CartPole-v1', render_mode='rgb_array').unwrapped
-
-    env.reset()
-    init_frame = get_screen(env)
+    env = GridWorld()
 
     if algo == 'sDQN' or algo == 'sDDQN':
         model = QNet
-    elif algo == 'DQN' or algo == 'DDQN':
-        model = ConvQNet
-    elif algo == 'RSRS':
-        model = ConvRSNet
     else:
         print(f'Not found algorithm {algo}')
 
@@ -132,9 +126,8 @@ if __name__ == '__main__':
         'warmup': warmup,
         'k': k,
         'zeta': zeta,
-        'action_space': space2size(env.action_space),
-        'state_space': space2size(env.observation_space),
-        'frame_shape': init_frame.shape,
+        'action_space': len(env.actions),
+        'state_space': len(env.map.flatten()),
         'env': env,
         'model': model
     }
@@ -143,26 +136,11 @@ if __name__ == '__main__':
         policy = DQN(**param)
         agent = Agent(policy)
         result_dir_path = make_param_file(algo, param, model, policy, agent)
-        simulation(sim, epi, env, agent, result_dir_path)
+        grid_simulation(sim, epi, env, agent, result_dir_path)
     elif algo == 'sDDQN':
         policy = DDQN(**param)
         agent = Agent(policy)
         result_dir_path = make_param_file(algo, param, model, policy, agent)
-        simulation(sim, epi, env, agent, result_dir_path)
-    elif algo == 'DQN':
-        policy = ConvDQN(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
-    elif algo == 'DDQN':
-        policy = ConvDDQN(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
-    elif algo == 'RSRS':
-        policy = RSRS(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+        grid_simulation(sim, epi, env, agent, result_dir_path)
     else:
         print(f'Not found algorithm {algo}')
