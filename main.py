@@ -5,7 +5,7 @@ from gym.spaces.discrete import Discrete
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, DDQN, ConvDQN, ConvDDQN, QNet, ConvQNet, RSRS, ConvRSNet
+from policy import DQN, DDQN, RSRS, ConvDQN, ConvDDQN, ConvRSRS, QNet, RSNet, ConvQNet, ConvRSNet
 
 
 def space2size(space):
@@ -66,7 +66,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRS':
+    elif algo == 'sRSRS' or algo == 'RSRS':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -112,7 +112,7 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'sDQN' #sDQN or sDDQN or DQN or DDQN or RSRS
+    algo = 'RSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
     sim = 1
     epi = 10000
     alpha = 0.01
@@ -124,13 +124,17 @@ if __name__ == '__main__':
     batch_size = 32
     sync_interval = 20
     neighbor_frames = 4
-    aleph = 0.7
+    aleph = 0.9
     warmup = 10
     k = 5
     zeta = 0.008
+    # desc=[
+    #     'SFFFFFFFF',
+    #     'FFFFFFFFF',
+    #     'FFFFFFFFG',
+    # ]
     desc=[
-        'SFFFFFFFF',
-        'FFFFFFFFG',
+        'SFFFFFFFG',
     ]
     env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
 
@@ -141,6 +145,8 @@ if __name__ == '__main__':
         model = QNet
     elif algo == 'DQN' or algo == 'DDQN':
         model = ConvQNet
+    elif algo == 'sRSRS':
+        model = RSNet
     elif algo == 'RSRS':
         model = ConvRSNet
     else:
@@ -181,6 +187,11 @@ if __name__ == '__main__':
         agent = Agent(policy)
         result_dir_path = make_param_file(algo, param, model, policy, agent)
         simulation(sim, epi, env, agent, result_dir_path)
+    elif algo == 'sRSRS':
+        policy = RSRS(**param)
+        agent = Agent(policy)
+        result_dir_path = make_param_file(algo, param, model, policy, agent)
+        simulation(sim, epi, env, agent, result_dir_path)
     elif algo == 'DQN':
         policy = ConvDQN(**param)
         agent = Agent(policy)
@@ -192,7 +203,7 @@ if __name__ == '__main__':
         result_dir_path = make_param_file(algo, param, model, policy, agent)
         conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
     elif algo == 'RSRS':
-        policy = RSRS(**param)
+        policy = ConvRSRS(**param)
         agent = Agent(policy)
         result_dir_path = make_param_file(algo, param, model, policy, agent)
         conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
