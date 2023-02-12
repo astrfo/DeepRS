@@ -114,28 +114,28 @@ def make_param_file(algo, param, model, policy, agent):
 if __name__ == '__main__':
     algo = 'RSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
     sim = 1
-    epi = 10000
+    epi = 1000
     alpha = 0.01
     gamma = 0.9
     epsilon = 0.1
-    tau = 0.01
-    hidden_size = 64
+    tau = 0.1
+    hidden_size = 8
     memory_capacity = 10**4
     batch_size = 32
     sync_interval = 20
     neighbor_frames = 4
-    aleph = 0.9
+    aleph = 0.5
     warmup = 10
     k = 5
-    zeta = 0.008
-    # desc=[
-    #     'SFFFFFFFF',
-    #     'FFFFFFFFF',
-    #     'FFFFFFFFG',
-    # ]
+    zeta = 0.01
     desc=[
-        'SFFFFFFFG',
+        'SFFFFFFFF',
+        'FFFFFFFFF',
+        'FFFFFFFFG',
     ]
+    # desc=[
+    #     'SFFFFFFFG',
+    # ]
     env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
 
     env.reset()

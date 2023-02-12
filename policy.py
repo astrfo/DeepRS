@@ -1,6 +1,7 @@
+import sys
+from copy import deepcopy
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
-from copy import deepcopy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -38,7 +39,7 @@ class RSNet(nn.Module):
 
     def embedding(self, x):
         x = F.relu(self.fc1(x))
-        x = F.relu(self.embed(x))
+        x = self.embed(x)
         return x
 
 
@@ -342,16 +343,20 @@ class RSRS:
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
+            RS = self.n * (q_values - self.aleph)
+            action = np.random.choice(np.where(RS == max(RS))[0])
             # q_values = self.q_value(state)
-            adjusted_q = deepcopy(q_values)
-            if max(q_values) > self.aleph:
-                adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
-            Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
-            rho = Z / (self.aleph - adjusted_q)
-            b = self.n / rho - 1.0 + self.epsilon
-            SRS = (1.0 + max(b)) * rho - self.n
-            pi = SRS / np.sum(SRS)
-            action = np.random.choice(len(pi), p=pi)
+            # adjusted_q = deepcopy(q_values)
+            # if max(q_values) > self.aleph:
+            #     adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
+            # Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
+            # rho = Z / (self.aleph - adjusted_q)
+            # b = self.n / rho - 1.0 + self.epsilon
+            # SRS = (1.0 + max(b)) * rho - self.n
+            # SRS = np.nan_to_num(SRS, nan=sys.float_info.epsilon)
+            # pi = SRS / np.sum(SRS)
+            # pi[pi < 0] = sys.float_info.epsilon
+            # action = np.random.choice(len(pi), p=pi)
             self.episodic_memory.add(controllable_state, action)
         return action
 

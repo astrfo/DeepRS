@@ -42,10 +42,12 @@ def one_hot(discrete_state, state_space):
 
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
+    average_goal_step_list = np.zeros(epis)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
+        total_goal_step_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
@@ -63,29 +65,36 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
-            if epi % agent.policy.sync_interval == 0:
-                agent.policy.sync_model()
             total_reward_list.append(total_reward)
+            total_goal_step_list.append(step)
         for i in range(agent.policy.state_space):
             np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
             qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
         np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
         sub_plot(sim_dir_path, 'reward', total_reward_list)
+        np.savetxt(sim_dir_path + 'goal_step.csv', total_goal_step_list, delimiter=',')
+        sub_plot(sim_dir_path, 'goal_step', total_goal_step_list)
         average_reward_list += total_reward_list
+        average_goal_step_list += total_goal_step_list
     average_reward_list /= sims
+    average_goal_step_list /= sims
     average_dir_path = result_dir_path + 'average/'
     os.makedirs(average_dir_path, exist_ok=True)
     np.savetxt(average_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
     sub_plot(average_dir_path, 'average_reward', average_reward_list)
+    np.savetxt(average_dir_path + 'average_goal_step.csv', average_goal_step_list, delimiter=',')
+    sub_plot(average_dir_path, 'average_goal_step', average_goal_step_list)
     env.close()
 
 
 def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
     average_reward_list = np.zeros(epis)
+    average_goal_step_list = np.zeros(epis)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
+        total_goal_step_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
@@ -111,17 +120,24 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 total_reward += reward
                 step += 1
             total_reward_list.append(total_reward)
+            total_goal_step_list.append(step)
         for i in range(agent.policy.state_space):
             np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
             qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
-        average_reward_list += total_reward_list
         np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
         sub_plot(sim_dir_path, 'reward', total_reward_list)
+        np.savetxt(sim_dir_path + 'goal_step.csv', total_goal_step_list, delimiter=',')
+        sub_plot(sim_dir_path, 'goal_step', total_goal_step_list)
+        average_reward_list += total_reward_list
+        average_goal_step_list += total_goal_step_list
     average_reward_list /= sims
+    average_goal_step_list /= sims
     average_dir_path = result_dir_path + 'average/'
     os.makedirs(average_dir_path, exist_ok=True)
     np.savetxt(average_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
     sub_plot(average_dir_path, 'average_reward', average_reward_list)
+    np.savetxt(average_dir_path + 'average_goal_step.csv', average_goal_step_list, delimiter=',')
+    sub_plot(average_dir_path, 'average_goal_step', average_goal_step_list)
     env.close()
 
 
