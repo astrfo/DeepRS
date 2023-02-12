@@ -310,6 +310,11 @@ class RSRS:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
         self.n = np.zeros(self.action_space)
+        #GRCパラメータ
+        self.gamma_G = 0.9
+        self.aleph_G = 0.9
+        self.E_G = 0
+        # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
@@ -321,6 +326,7 @@ class RSRS:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.n = np.zeros(self.action_space)
+        self.E_G = 0
         self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
@@ -343,7 +349,9 @@ class RSRS:
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            RS = self.n * (q_values - self.aleph)
+            delta_G = min(self.E_G - self.aleph_G, 0)
+            aleph = max(q_values) - delta_G
+            RS = self.n * (q_values - aleph)
             action = np.random.choice(np.where(RS == max(RS))[0])
             # q_values = self.q_value(state)
             # adjusted_q = deepcopy(q_values)
@@ -382,6 +390,9 @@ class RSRS:
         loss.backward()
         self.optimizer.step()
         self.sync_model()
+
+    def EG_update(self, total_reward):
+        self.E_G = total_reward
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
@@ -602,6 +613,11 @@ class ConvRSRS(nn.Module):
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
         self.n = np.zeros(self.action_space)
+        #GRCパラメータ
+        self.gamma_G = 0.9
+        self.aleph_G = 0.9
+        self.E_G = 0
+        # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
@@ -613,6 +629,7 @@ class ConvRSRS(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.n = np.zeros(self.action_space)
+        self.E_G = 0
         self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
@@ -635,16 +652,20 @@ class ConvRSRS(nn.Module):
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
+            delta_G = min(self.E_G - self.aleph_G, 0)
+            aleph = max(q_values) - delta_G
+            RS = self.n * (q_values - aleph)
+            action = np.random.choice(np.where(RS == max(RS))[0])
             # q_values = self.q_value(state)
-            adjusted_q = deepcopy(q_values)
-            if max(q_values) > self.aleph:
-                adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
-            Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
-            rho = Z / (self.aleph - adjusted_q)
-            b = self.n / rho - 1.0 + self.epsilon
-            SRS = (1.0 + max(b)) * rho - self.n
-            pi = SRS / np.sum(SRS)
-            action = np.random.choice(len(pi), p=pi)
+            # adjusted_q = deepcopy(q_values)
+            # if max(q_values) > self.aleph:
+            #     adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
+            # Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
+            # rho = Z / (self.aleph - adjusted_q)
+            # b = self.n / rho - 1.0 + self.epsilon
+            # SRS = (1.0 + max(b)) * rho - self.n
+            # pi = SRS / np.sum(SRS)
+            # action = np.random.choice(len(pi), p=pi)
             self.episodic_memory.add(controllable_state, action)
         return action
 
@@ -670,6 +691,9 @@ class ConvRSRS(nn.Module):
         loss.backward()
         self.optimizer.step()
         self.sync_model()
+
+    def EG_update(self, total_reward):
+        self.E_G = total_reward
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])

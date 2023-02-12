@@ -65,6 +65,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
+            agent.policy.EG_update(total_reward)
             total_reward_list.append(total_reward)
             total_goal_step_list.append(step)
         for i in range(agent.policy.state_space):
@@ -119,6 +120,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
+            agent.policy.EG_update(total_reward)
             total_reward_list.append(total_reward)
             total_goal_step_list.append(step)
         for i in range(agent.policy.state_space):
