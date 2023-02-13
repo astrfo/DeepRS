@@ -40,6 +40,12 @@ def one_hot(discrete_state, state_space):
     return one_hot_array
 
 
+def frozenlake_position(env, discrete_state):
+    X = discrete_state % env.ncol
+    Y = discrete_state // env.ncol
+    return env.desc[Y, X]
+
+
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
@@ -54,7 +60,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
             discrete_state = env.reset()[0]
             state = one_hot(discrete_state, agent.policy.state_space)
-            total_reward, step = 0, 0
+            step, total_reward = 0, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
                 action = agent.action(state, discrete_state)
@@ -105,7 +111,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
             frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
             state = np.stack(frames, axis=1)[0,:]
 
-            total_reward, step = 0, 0
+            step, total_reward = 0, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
                 action = agent.action(state, discrete_state)

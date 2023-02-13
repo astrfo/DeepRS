@@ -198,6 +198,9 @@ class DQN:
         self.optimizer.step()
         self.sync_model()
 
+    def EG_update(self, total_reward):
+        pass
+
     def sync_model(self):
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
@@ -276,6 +279,9 @@ class DDQN:
         self.optimizer.step()
         self.sync_model()
 
+    def EG_update(self, total_reward):
+        pass
+
     def sync_model(self):
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
@@ -353,18 +359,6 @@ class RSRS:
             aleph = max(q_values) - delta_G
             RS = self.n * (q_values - aleph)
             action = np.random.choice(np.where(RS == max(RS))[0])
-            # q_values = self.q_value(state)
-            # adjusted_q = deepcopy(q_values)
-            # if max(q_values) > self.aleph:
-            #     adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
-            # Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
-            # rho = Z / (self.aleph - adjusted_q)
-            # b = self.n / rho - 1.0 + self.epsilon
-            # SRS = (1.0 + max(b)) * rho - self.n
-            # SRS = np.nan_to_num(SRS, nan=sys.float_info.epsilon)
-            # pi = SRS / np.sum(SRS)
-            # pi[pi < 0] = sys.float_info.epsilon
-            # action = np.random.choice(len(pi), p=pi)
             self.episodic_memory.add(controllable_state, action)
         return action
 
@@ -495,6 +489,9 @@ class ConvDQN(nn.Module):
         self.optimizer.step()
         self.sync_model()
 
+    def EG_update(self, total_reward):
+        pass
+
     def sync_model(self):
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
@@ -574,13 +571,16 @@ class ConvDDQN(nn.Module):
         loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
-        # self.sync_model()
+        self.sync_model()
+
+    def EG_update(self, total_reward):
+        pass
 
     def sync_model(self):
-        self.model_target.load_state_dict(self.model.state_dict())
-        # with torch.no_grad():
-        #     for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-        #         target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+        # self.model_target.load_state_dict(self.model.state_dict())
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
 
 
 class ConvRSRS(nn.Module):
@@ -656,16 +656,6 @@ class ConvRSRS(nn.Module):
             aleph = max(q_values) - delta_G
             RS = self.n * (q_values - aleph)
             action = np.random.choice(np.where(RS == max(RS))[0])
-            # q_values = self.q_value(state)
-            # adjusted_q = deepcopy(q_values)
-            # if max(q_values) > self.aleph:
-            #     adjusted_q = q_values - (max(q_values) - self.aleph) - self.epsilon
-            # Z = 1.0 / np.sum(1.0 / (self.aleph - adjusted_q))
-            # rho = Z / (self.aleph - adjusted_q)
-            # b = self.n / rho - 1.0 + self.epsilon
-            # SRS = (1.0 + max(b)) * rho - self.n
-            # pi = SRS / np.sum(SRS)
-            # action = np.random.choice(len(pi), p=pi)
             self.episodic_memory.add(controllable_state, action)
         return action
 
