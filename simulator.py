@@ -13,7 +13,7 @@ def get_screen(env):
                     T.Grayscale(num_output_channels=1)])
     screen = resize(env.render())
     screen = np.expand_dims(np.asarray(screen), axis=2).transpose((2, 0, 1))
-    screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
+    screen = np.ascontiguousarray(screen, dtype=np.float64) / 255
     return screen
 
 
@@ -71,7 +71,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
-            agent.policy.EG_update(total_reward)
+            agent.policy.EG_update(total_reward, step)
             total_reward_list.append(total_reward)
             total_goal_step_list.append(step)
         for i in range(agent.policy.state_space):
