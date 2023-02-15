@@ -198,7 +198,7 @@ class DQN:
         self.optimizer.step()
         self.sync_model()
 
-    def EG_update(self, total_reward):
+    def EG_update(self, *args):
         pass
 
     def sync_model(self):
@@ -279,7 +279,7 @@ class DDQN:
         self.optimizer.step()
         self.sync_model()
 
-    def EG_update(self, total_reward):
+    def EG_update(self, *args):
         pass
 
     def sync_model(self):
@@ -357,8 +357,28 @@ class RSRS:
             self.calculate_reliability(controllable_state)
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
-            RS = self.n * (q_values - aleph)
-            action = np.random.choice(np.where(RS == max(RS))[0])
+            if max(q_values) >= aleph:
+                fix_aleph = max(q_values) + sys.float_info.epsilon
+                diff = fix_aleph - q_values
+                if min(diff) < 0: diff -= min(diff)
+                Z = 1.0 / np.sum(1.0 / diff)
+                rho = Z / diff
+            else:
+                Z = 1 / np.sum(1.0 / (aleph - q_values))
+                rho = Z / (aleph - q_values)
+            b = self.n / rho - 1.0 + sys.float_info.epsilon
+            SRS = (1.0 + max(b)) * rho - self.n
+            if min(SRS) < 0: SRS -= min(SRS)
+            pi = SRS / np.sum(SRS)
+
+            prob = np.random.rand()
+            top, bottom = self.action_space, -1
+            while (top - bottom > 1):
+                mid = int(bottom + (top - bottom)/2)
+                if prob < np.sum(pi[0:mid]): top = mid
+                else: bottom = mid
+            if mid == bottom: action = mid
+            else: action = mid-1
             self.episodic_memory.add(controllable_state, action)
         return action
 
@@ -489,7 +509,7 @@ class ConvDQN(nn.Module):
         self.optimizer.step()
         self.sync_model()
 
-    def EG_update(self, total_reward):
+    def EG_update(self, *args):
         pass
 
     def sync_model(self):
@@ -573,7 +593,7 @@ class ConvDDQN(nn.Module):
         self.optimizer.step()
         self.sync_model()
 
-    def EG_update(self, total_reward):
+    def EG_update(self, *args):
         pass
 
     def sync_model(self):

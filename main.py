@@ -112,7 +112,7 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'RSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
+    algo = 'sRSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
     sim = 1
     epi = 1000
     alpha = 0.01
