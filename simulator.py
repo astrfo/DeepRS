@@ -17,7 +17,23 @@ def get_screen(env):
     return screen
 
 
+def plus_csv_plot(metrics, metric, path, name):
+    metrics += metric
+    np.savetxt(path + f'{name}.csv', metric, delimiter=',')
+    sub_plot(path, name, metric)
+    return metrics
+
+
+def divide_csv_plot(metrics, path, name, sims):
+    os.makedirs(path + 'average', exist_ok=True)
+    average_path = path + 'average/'
+    metrics /= sims
+    np.savetxt(average_path + f'average_{name}.csv', metrics, delimiter=',')
+    sub_plot(average_path, f'average_{name}', metrics)
+
+
 def sub_plot(sim_dir_path, name, thing):
+    plt.figure(figsize=(12, 8))
     plt.plot(thing, label=name)
     plt.title(name)
     plt.xlabel('Episode')
@@ -26,7 +42,18 @@ def sub_plot(sim_dir_path, name, thing):
 
 
 def qvalue_plot(sim_dir_path, name, thing):
-    plt.plot(thing, label=['left', 'down', 'right', 'up'])
+    plt.figure(figsize=(12, 8))
+    plt.plot(thing, label=['LEFT', 'DOWN', 'RIGHT', 'UP'])
+    plt.title(name)
+    plt.xlabel('Step')
+    plt.legend()
+    plt.savefig(sim_dir_path + f'{name}.png')
+    plt.close()
+
+
+def pi_plot(sim_dir_path, name, thing):
+    plt.figure(figsize=(12, 8))
+    plt.plot(thing, label=['LEFT', 'DOWN', 'RIGHT', 'UP'], alpha=0.2)
     plt.title(name)
     plt.xlabel('Step')
     plt.legend()
@@ -49,23 +76,32 @@ def frozenlake_position(env, discrete_state):
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
+    average_fall_hole_list = np.zeros(epis)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
         total_goal_step_list = []
+        total_fall_hole_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
             discrete_state = env.reset()[0]
             state = one_hot(discrete_state, agent.policy.state_space)
-            step, total_reward = 0, 0
+            step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
+                letter = frozenlake_position(env, discrete_next_state)
+                if letter == b'G':
+                    goal_step = step
+                elif letter == b'H':
+                    reward = -1
+                    fall_hole += 1
                 next_state = one_hot(discrete_next_state, agent.policy.state_space)
+
                 agent.update(state, action, reward, next_state, terminated)
                 discrete_state = discrete_next_state
                 state = next_state
@@ -73,35 +109,34 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 step += 1
             agent.policy.EG_update(total_reward, step)
             total_reward_list.append(total_reward)
-            total_goal_step_list.append(step)
+            total_goal_step_list.append(goal_step)
+            total_fall_hole_list.append(fall_hole)
+        average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
+        average_goal_step_list = plus_csv_plot(average_goal_step_list, total_goal_step_list, sim_dir_path, 'goal_step')
+        average_fall_hole_list = plus_csv_plot(average_fall_hole_list, total_fall_hole_list, sim_dir_path, 'fall_hole')
         for i in range(agent.policy.state_space):
             np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
             qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
-        np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
-        sub_plot(sim_dir_path, 'reward', total_reward_list)
-        np.savetxt(sim_dir_path + 'goal_step.csv', total_goal_step_list, delimiter=',')
-        sub_plot(sim_dir_path, 'goal_step', total_goal_step_list)
-        average_reward_list += total_reward_list
-        average_goal_step_list += total_goal_step_list
-    average_reward_list /= sims
-    average_goal_step_list /= sims
-    average_dir_path = result_dir_path + 'average/'
-    os.makedirs(average_dir_path, exist_ok=True)
-    np.savetxt(average_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
-    sub_plot(average_dir_path, 'average_reward', average_reward_list)
-    np.savetxt(average_dir_path + 'average_goal_step.csv', average_goal_step_list, delimiter=',')
-    sub_plot(average_dir_path, 'average_goal_step', average_goal_step_list)
+        np.savetxt(sim_dir_path + 'batchreward.csv', agent.policy.batch_reward_list, delimiter=',')
+        sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
+        # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
+        # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
+    divide_csv_plot(average_reward_list, sim_dir_path, 'reward', sims)
+    divide_csv_plot(average_goal_step_list, sim_dir_path, 'goal_step', sims)
+    divide_csv_plot(average_fall_hole_list, sim_dir_path, 'fall_hole', sims)
     env.close()
 
 
 def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
+    average_fall_hole_list = np.zeros(epis)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
         total_goal_step_list = []
+        total_fall_hole_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
@@ -111,11 +146,18 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
             frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
             state = np.stack(frames, axis=1)[0,:]
 
-            step, total_reward = 0, 0
+            step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
+
+                letter = frozenlake_position(env, discrete_next_state)
+                if letter == b'G':
+                    goal_step = step
+                elif letter == b'H':
+                    reward = -1
+                    fall_hole += 1
 
                 frame = get_screen(env)
                 frames.append(frame)
@@ -126,26 +168,23 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 state = next_state
                 total_reward += reward
                 step += 1
-            agent.policy.EG_update(total_reward)
+            agent.policy.EG_update(total_reward, step)
             total_reward_list.append(total_reward)
-            total_goal_step_list.append(step)
+            total_goal_step_list.append(goal_step)
+            total_fall_hole_list.append(fall_hole)
+        average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
+        average_goal_step_list = plus_csv_plot(average_goal_step_list, total_goal_step_list, sim_dir_path, 'goal_step')
+        average_fall_hole_list = plus_csv_plot(average_fall_hole_list, total_fall_hole_list, sim_dir_path, 'fall_hole')
         for i in range(agent.policy.state_space):
             np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
             qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
-        np.savetxt(sim_dir_path + 'reward.csv', total_reward_list, delimiter=',')
-        sub_plot(sim_dir_path, 'reward', total_reward_list)
-        np.savetxt(sim_dir_path + 'goal_step.csv', total_goal_step_list, delimiter=',')
-        sub_plot(sim_dir_path, 'goal_step', total_goal_step_list)
-        average_reward_list += total_reward_list
-        average_goal_step_list += total_goal_step_list
-    average_reward_list /= sims
-    average_goal_step_list /= sims
-    average_dir_path = result_dir_path + 'average/'
-    os.makedirs(average_dir_path, exist_ok=True)
-    np.savetxt(average_dir_path + 'average_reward.csv', average_reward_list, delimiter=',')
-    sub_plot(average_dir_path, 'average_reward', average_reward_list)
-    np.savetxt(average_dir_path + 'average_goal_step.csv', average_goal_step_list, delimiter=',')
-    sub_plot(average_dir_path, 'average_goal_step', average_goal_step_list)
+        np.savetxt(sim_dir_path + 'batchreward.csv', agent.policy.batch_reward_list, delimiter=',')
+        sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
+        # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
+        # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
+    divide_csv_plot(average_reward_list, sim_dir_path, 'reward', sims)
+    divide_csv_plot(average_goal_step_list, sim_dir_path, 'goal_step', sims)
+    divide_csv_plot(average_fall_hole_list, sim_dir_path, 'fall_hole', sims)
     env.close()
 
 

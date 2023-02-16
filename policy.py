@@ -153,6 +153,7 @@ class DQN:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
         self.q_list = [[] for _ in range(self.state_space)]
+        self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -162,6 +163,7 @@ class DQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.q_list = [[] for _ in range(self.state_space)]
+        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -183,6 +185,8 @@ class DQN:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
+        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
+
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -207,7 +211,7 @@ class DQN:
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
 
 
 class DDQN:
@@ -288,7 +292,7 @@ class DDQN:
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
 
 
 class RSRS:
@@ -319,12 +323,13 @@ class RSRS:
         self.criterion = nn.MSELoss(reduction='sum')
         self.n = np.zeros(self.action_space)
         self.total_step = 0
-        #GRCパラメータ
         self.gamma_G = 0.9
         self.aleph_G = 0.9
         self.E_G = 0
         # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]
+        self.pi_list = []
+        self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -338,6 +343,8 @@ class RSRS:
         self.total_step = 0
         self.E_G = 0
         self.q_list = [[] for _ in range(self.state_space)]
+        self.pi_list = []
+        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -359,22 +366,23 @@ class RSRS:
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            if (self.n == 1.0).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
+            if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
                 fix_aleph = max(q_values) + sys.float_info.epsilon
                 diff = fix_aleph - q_values
                 if min(diff) < 0: diff -= min(diff)
-                Z = 1.0 / np.sum(1.0 / diff)
+                Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
                 rho = Z / diff
             else:
-                Z = 1 / np.sum(1.0 / (aleph - q_values))
+                Z = 1 / np.sum(np.float64(1.0) / (aleph - q_values))
                 rho = Z / (aleph - q_values)
-            b = self.n / rho - 1.0 + sys.float_info.epsilon
-            SRS = (1.0 + max(b)) * rho - self.n
+            b = self.n / rho - np.float64(1.0) + sys.float_info.epsilon
+            SRS = (np.float64(1.0) + max(b)) * rho - self.n
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
+            self.pi_list.append(pi)
 
             prob = np.random.rand()
             top, bottom = self.action_space, -1
@@ -393,6 +401,8 @@ class RSRS:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
+        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
+
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -440,7 +450,7 @@ class RSRS:
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
 
 
 class ConvDQN(nn.Module):
@@ -468,6 +478,7 @@ class ConvDQN(nn.Module):
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
         self.q_list = [[] for _ in range(self.state_space)]
+        self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -477,6 +488,7 @@ class ConvDQN(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.q_list = [[] for _ in range(self.state_space)]
+        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -498,6 +510,8 @@ class ConvDQN(nn.Module):
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
+        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
+
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -522,7 +536,7 @@ class ConvDQN(nn.Module):
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
 
 
 class ConvDDQN(nn.Module):
@@ -606,7 +620,7 @@ class ConvDDQN(nn.Module):
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
 
 
 class ConvRSRS(nn.Module):
@@ -639,12 +653,14 @@ class ConvRSRS(nn.Module):
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
         self.n = np.zeros(self.action_space)
-        #GRCパラメータ
+        self.total_step = 0
         self.gamma_G = 0.9
         self.aleph_G = 0.9
         self.E_G = 0
         # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]
+        self.pi_list = []
+        self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -655,8 +671,11 @@ class ConvRSRS(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.n = np.zeros(self.action_space)
+        self.total_step = 0
         self.E_G = 0
         self.q_list = [[] for _ in range(self.state_space)]
+        self.pi_list = []
+        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -678,10 +697,32 @@ class ConvRSRS(nn.Module):
         else:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
+            if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
-            RS = self.n * (q_values - aleph)
-            action = np.random.choice(np.where(RS == max(RS))[0])
+            if max(q_values) >= aleph:
+                fix_aleph = max(q_values) + sys.float_info.epsilon
+                diff = fix_aleph - q_values
+                if min(diff) < 0: diff -= min(diff)
+                Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
+                rho = Z / diff
+            else:
+                Z = 1 / np.sum(np.float64(1.0) / (aleph - q_values))
+                rho = Z / (aleph - q_values)
+            b = self.n / rho - np.float64(1.0) + sys.float_info.epsilon
+            SRS = (np.float64(1.0) + max(b)) * rho - self.n
+            if min(SRS) < 0: SRS -= min(SRS)
+            pi = SRS / np.sum(SRS)
+            self.pi_list.append(pi)
+
+            prob = np.random.rand()
+            top, bottom = self.action_space, -1
+            while (top - bottom > 1):
+                mid = int(bottom + (top - bottom)/2)
+                if prob < np.sum(pi[0:mid]): top = mid
+                else: bottom = mid
+            if mid == bottom: action = mid
+            else: action = mid-1
             self.episodic_memory.add(controllable_state, action)
         return action
 
@@ -691,6 +732,8 @@ class ConvRSRS(nn.Module):
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
+        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
+
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -708,8 +751,9 @@ class ConvRSRS(nn.Module):
         self.optimizer.step()
         self.sync_model()
 
-    def EG_update(self, total_reward):
+    def EG_update(self, total_reward, step):
         self.E_G = total_reward
+        self.total_step += step
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
@@ -737,7 +781,7 @@ class ConvRSRS(nn.Module):
         # self.model_target.load_state_dict(self.model.state_dict())
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
 
     def extract(self, target, inputs):
         self.feature = None
