@@ -84,6 +84,7 @@ def compare_base_make_folder(algo, ex_param):
             'warmup': 10,
             'k': 5,
             'zeta': 0.008,
+            'aleph_G': 2.0,
         }
         folder_name = algo
         for (base_k, base_v), (ex_k, ex_v) in zip(base_param.items(), ex_param.items()):
@@ -112,8 +113,10 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    algo = 'sRSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
-    sim = 1
+    ###環境に応じて報酬設定をsimulator.pyで変更
+    # algo = 'sRSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
+    algos = ['RSRS', 'DQN']
+    sim = 10
     epi = 1000
     alpha = 0.01
     gamma = 0.9
@@ -128,92 +131,95 @@ if __name__ == '__main__':
     warmup = 10
     k = 5
     zeta = 0.01
-    # desc=[
-    #     'SFFFFFFF',
-    #     'FFFFFFFF',
-    #     'FFFFFFFF',
-    #     'FFFFFFFF',
-    #     'FFFFFFFF',
-    #     'FFFFFFFF',
-    #     'FFFFFFFF',
-    #     'FFFFFFFG',
-    # ]
+    aleph_G = 8.0
     desc=[
-        'FFFFFFFF',
-        'FFFFFFFF',
-        'SHHHHHHG',
+        'FFGFFFGFF',
+        'FFFFFFFFF',
+        'GFFFFFFFG',
+        'FFFFFFFFF',
+        'FFFFSFFFF',
+        'FFFFFFFFF',
+        'GFFFFFFFG',
+        'FFFFFFFFF',
+        'FFGFFFGFF',
     ]
-    env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
+    # desc=[
+    #     'FFFFFFFFF',
+    #     'FFFFFFFFF',
+    #     'SHHHHHHHG',
+    # ]
+    for algo in algos:
+        env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
+        env.reset()
+        init_frame = get_screen(env)
 
-    env.reset()
-    init_frame = get_screen(env)
+        if algo == 'sDQN' or algo == 'sDDQN':
+            model = QNet
+        elif algo == 'DQN' or algo == 'DDQN':
+            model = ConvQNet
+        elif algo == 'sRSRS':
+            model = RSNet
+        elif algo == 'RSRS':
+            model = ConvRSNet
+        else:
+            print(f'Not found algorithm {algo}')
+            exit(1)
 
-    if algo == 'sDQN' or algo == 'sDDQN':
-        model = QNet
-    elif algo == 'DQN' or algo == 'DDQN':
-        model = ConvQNet
-    elif algo == 'sRSRS':
-        model = RSNet
-    elif algo == 'RSRS':
-        model = ConvRSNet
-    else:
-        print(f'Not found algorithm {algo}')
-        exit(1)
+        param = {
+            'algo': algo,
+            'sim': sim,
+            'epi': epi,
+            'alpha': alpha,
+            'gamma': gamma,
+            'epsilon': epsilon,
+            'tau': tau,
+            'hidden_size': hidden_size,
+            'memory_capacity': memory_capacity,
+            'batch_size': batch_size,
+            'sync_interval': sync_interval,
+            'neighbor_frames': neighbor_frames,
+            'aleph': aleph,
+            'warmup': warmup,
+            'k': k,
+            'zeta': zeta,
+            'aleph_G': aleph_G,
+            'action_space': space2size(env.action_space),
+            'state_space': space2size(env.observation_space),
+            'frame_shape': init_frame.shape,
+            'env': env,
+            'model': model
+        }
 
-    param = {
-        'algo': algo,
-        'sim': sim,
-        'epi': epi,
-        'alpha': alpha,
-        'gamma': gamma,
-        'epsilon': epsilon,
-        'tau': tau,
-        'hidden_size': hidden_size,
-        'memory_capacity': memory_capacity,
-        'batch_size': batch_size,
-        'sync_interval': sync_interval,
-        'neighbor_frames': neighbor_frames,
-        'aleph': aleph,
-        'warmup': warmup,
-        'k': k,
-        'zeta': zeta,
-        'action_space': space2size(env.action_space),
-        'state_space': space2size(env.observation_space),
-        'frame_shape': init_frame.shape,
-        'env': env,
-        'model': model
-    }
-
-    if algo == 'sDQN':
-        policy = DQN(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        simulation(sim, epi, env, agent, result_dir_path)
-    elif algo == 'sDDQN':
-        policy = DDQN(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        simulation(sim, epi, env, agent, result_dir_path)
-    elif algo == 'sRSRS':
-        policy = RSRS(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        simulation(sim, epi, env, agent, result_dir_path)
-    elif algo == 'DQN':
-        policy = ConvDQN(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
-    elif algo == 'DDQN':
-        policy = ConvDDQN(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
-    elif algo == 'RSRS':
-        policy = ConvRSRS(**param)
-        agent = Agent(policy)
-        result_dir_path = make_param_file(algo, param, model, policy, agent)
-        conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
-    else:
-        print(f'Not found algorithm {algo}')
-        exit(1)
+        if algo == 'sDQN':
+            policy = DQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path)
+        elif algo == 'sDDQN':
+            policy = DDQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path)
+        elif algo == 'sRSRS':
+            policy = RSRS(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path)
+        elif algo == 'DQN':
+            policy = ConvDQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+        elif algo == 'DDQN':
+            policy = ConvDDQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+        elif algo == 'RSRS':
+            policy = ConvRSRS(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+        else:
+            print(f'Not found algorithm {algo}')
+            exit(1)

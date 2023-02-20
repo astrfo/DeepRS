@@ -37,6 +37,7 @@ def sub_plot(sim_dir_path, name, thing):
     plt.plot(thing, label=name)
     plt.title(name)
     plt.xlabel('Episode')
+    plt.xlim(-1, len(thing)+1)
     plt.savefig(sim_dir_path + f'{name}.png')
     plt.close()
 
@@ -77,16 +78,49 @@ def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
     average_fall_hole_list = np.zeros(epis)
+    average_epi100_reward_list = np.zeros(10)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
         total_goal_step_list = []
         total_fall_hole_list = []
+        epi100_reward_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
+            if (epi+1) % 100 == 0:
+                discrete_state = env.reset()[0]
+                state = one_hot(discrete_state, agent.policy.state_space)
+                step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
+                terminated, truncated = False, False
+                while not (terminated or truncated) and (step < 500):
+                    action = agent.greedy_action(state, discrete_state)
+                    discrete_next_state, reward, terminated, truncated, info = env.step(action)
+                    letter = frozenlake_position(env, discrete_next_state)
+                    # if letter == b'G':
+                    #     reward = +1
+                    #     goal_step = step
+                    # if letter == b'H':
+                    #     reward = -1
+                    #     fall_hole += 1
+                    if letter == b'G':
+                        if discrete_next_state == 2: reward = 8
+                        elif discrete_next_state == 6: reward = 1
+                        elif discrete_next_state == 18: reward = 3
+                        elif discrete_next_state == 26: reward = 5
+                        elif discrete_next_state == 54: reward = 6
+                        elif discrete_next_state == 62: reward = 4
+                        elif discrete_next_state == 74: reward = 2
+                        elif discrete_next_state == 78: reward = 7
+                        goal_step = step
+                    next_state = one_hot(discrete_next_state, agent.policy.state_space)
+                    discrete_state = discrete_next_state
+                    state = next_state
+                    total_reward += reward
+                    step += 1
+                epi100_reward_list.append(total_reward)
             discrete_state = env.reset()[0]
             state = one_hot(discrete_state, agent.policy.state_space)
             step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
@@ -95,13 +129,23 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
                 letter = frozenlake_position(env, discrete_next_state)
+                # if letter == b'G':
+                #     reward = +1
+                #     goal_step = step
+                # if letter == b'H':
+                #     reward = -1
+                #     fall_hole += 1
                 if letter == b'G':
+                    if discrete_next_state == 2: reward = 8
+                    elif discrete_next_state == 6: reward = 1
+                    elif discrete_next_state == 18: reward = 3
+                    elif discrete_next_state == 26: reward = 5
+                    elif discrete_next_state == 54: reward = 6
+                    elif discrete_next_state == 62: reward = 4
+                    elif discrete_next_state == 74: reward = 2
+                    elif discrete_next_state == 78: reward = 7
                     goal_step = step
-                elif letter == b'H':
-                    reward = -1
-                    fall_hole += 1
                 next_state = one_hot(discrete_next_state, agent.policy.state_space)
-
                 agent.update(state, action, reward, next_state, terminated)
                 discrete_state = discrete_next_state
                 state = next_state
@@ -114,16 +158,18 @@ def simulation(sims, epis, env, agent, result_dir_path):
         average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
         average_goal_step_list = plus_csv_plot(average_goal_step_list, total_goal_step_list, sim_dir_path, 'goal_step')
         average_fall_hole_list = plus_csv_plot(average_fall_hole_list, total_fall_hole_list, sim_dir_path, 'fall_hole')
-        for i in range(agent.policy.state_space):
-            np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
-            qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
-        np.savetxt(sim_dir_path + 'batchreward.csv', agent.policy.batch_reward_list, delimiter=',')
-        sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
+        average_epi100_reward_list = plus_csv_plot(average_epi100_reward_list, epi100_reward_list, sim_dir_path, 'epi100_reward')
+        # for i in range(agent.policy.state_space):
+        #     np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
+        #     qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
+        # np.savetxt(sim_dir_path + 'batchreward.csv', agent.policy.batch_reward_list, delimiter=',')
+        # sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
         # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
         # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
-    divide_csv_plot(average_reward_list, sim_dir_path, 'reward', sims)
-    divide_csv_plot(average_goal_step_list, sim_dir_path, 'goal_step', sims)
-    divide_csv_plot(average_fall_hole_list, sim_dir_path, 'fall_hole', sims)
+    divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
+    divide_csv_plot(average_goal_step_list, result_dir_path, 'goal_step', sims)
+    divide_csv_plot(average_fall_hole_list, result_dir_path, 'fall_hole', sims)
+    divide_csv_plot(average_epi100_reward_list, result_dir_path, 'epi100_reward', sims)
     env.close()
 
 
@@ -131,38 +177,82 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
     average_fall_hole_list = np.zeros(epis)
+    average_epi100_reward_list = np.zeros(10)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
         total_goal_step_list = []
         total_fall_hole_list = []
+        epi100_reward_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
+            if (epi+1) % 100 == 0:
+                discrete_state = env.reset()[0]
+                frame = get_screen(env)
+                frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
+                state = np.stack(frames, axis=1)[0,:]
+                step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
+                terminated, truncated = False, False
+                while not (terminated or truncated) and (step < 500):
+                    action = agent.greedy_action(state, discrete_state)
+                    discrete_next_state, reward, terminated, truncated, info = env.step(action)
+                    letter = frozenlake_position(env, discrete_next_state)
+                    # if letter == b'G':
+                    #     reward = +1
+                    #     goal_step = step
+                    # if letter == b'H':
+                    #     reward = -1
+                    #     fall_hole += 1
+                    if letter == b'G':
+                        if discrete_next_state == 2: reward = 8
+                        elif discrete_next_state == 6: reward = 1
+                        elif discrete_next_state == 18: reward = 3
+                        elif discrete_next_state == 26: reward = 5
+                        elif discrete_next_state == 54: reward = 6
+                        elif discrete_next_state == 62: reward = 4
+                        elif discrete_next_state == 74: reward = 2
+                        elif discrete_next_state == 78: reward = 7
+                        goal_step = step
+                    frame = get_screen(env)
+                    frames.append(frame)
+                    next_state = np.stack(frames, axis=1)[0,:]
+                    discrete_state = discrete_next_state
+                    state = next_state
+                    total_reward += reward
+                    step += 1
+                epi100_reward_list.append(total_reward)
             discrete_state = env.reset()[0]
             frame = get_screen(env)
             frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
             state = np.stack(frames, axis=1)[0,:]
-
             step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
             terminated, truncated = False, False
             while not (terminated or truncated) and (step < 500):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
-
                 letter = frozenlake_position(env, discrete_next_state)
+                # if letter == b'G':
+                #     reward = +1
+                #     goal_step = step
+                # if letter == b'H':
+                #     reward = -1
+                #     fall_hole += 1
                 if letter == b'G':
+                    if discrete_next_state == 2: reward = 8
+                    elif discrete_next_state == 6: reward = 1
+                    elif discrete_next_state == 18: reward = 3
+                    elif discrete_next_state == 26: reward = 5
+                    elif discrete_next_state == 54: reward = 6
+                    elif discrete_next_state == 62: reward = 4
+                    elif discrete_next_state == 74: reward = 2
+                    elif discrete_next_state == 78: reward = 7
                     goal_step = step
-                elif letter == b'H':
-                    reward = -1
-                    fall_hole += 1
-
                 frame = get_screen(env)
                 frames.append(frame)
                 next_state = np.stack(frames, axis=1)[0,:]
-                
                 agent.update(state, action, reward, next_state, terminated)
                 discrete_state = discrete_next_state
                 state = next_state
@@ -175,16 +265,18 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
         average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
         average_goal_step_list = plus_csv_plot(average_goal_step_list, total_goal_step_list, sim_dir_path, 'goal_step')
         average_fall_hole_list = plus_csv_plot(average_fall_hole_list, total_fall_hole_list, sim_dir_path, 'fall_hole')
-        for i in range(agent.policy.state_space):
-            np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
-            qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
-        np.savetxt(sim_dir_path + 'batchreward.csv', agent.policy.batch_reward_list, delimiter=',')
-        sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
+        average_epi100_reward_list = plus_csv_plot(average_epi100_reward_list, epi100_reward_list, sim_dir_path, 'epi100_reward')
+        # for i in range(agent.policy.state_space):
+        #     np.savetxt(sim_dir_path + f'qvalue{i}.csv', agent.policy.q_list[i], delimiter=',')
+        #     qvalue_plot(sim_dir_path, f'qvalue{i}', agent.policy.q_list[i])
+        # np.savetxt(sim_dir_path + 'batchreward.csv', agent.policy.batch_reward_list, delimiter=',')
+        # sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
         # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
         # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
-    divide_csv_plot(average_reward_list, sim_dir_path, 'reward', sims)
-    divide_csv_plot(average_goal_step_list, sim_dir_path, 'goal_step', sims)
-    divide_csv_plot(average_fall_hole_list, sim_dir_path, 'fall_hole', sims)
+    divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
+    divide_csv_plot(average_goal_step_list, result_dir_path, 'goal_step', sims)
+    divide_csv_plot(average_fall_hole_list, result_dir_path, 'fall_hole', sims)
+    divide_csv_plot(average_epi100_reward_list, result_dir_path, 'epi100_reward', sims)
     env.close()
 
 

@@ -179,6 +179,11 @@ class DQN:
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
+    def greedy_action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
@@ -260,6 +265,11 @@ class DDQN:
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
+    def greedy_action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
@@ -324,12 +334,12 @@ class RSRS:
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.gamma_G = 0.9
-        self.aleph_G = 0.9
+        self.aleph_G = kwargs.get('aleph_G', 1.0)
         self.E_G = 0
         # self.zeta = 1
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.pi_list = []
-        self.batch_reward_list = []
+        # self.q_list = [[] for _ in range(self.state_space)]
+        # self.pi_list = []
+        # self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -342,9 +352,9 @@ class RSRS:
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.E_G = 0
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.pi_list = []
-        self.batch_reward_list = []
+        # self.q_list = [[] for _ in range(self.state_space)]
+        # self.pi_list = []
+        # self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -358,7 +368,7 @@ class RSRS:
 
     def action(self, state, discrete_state):
         q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
+        # self.q_list[discrete_state].append(q_values)
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
@@ -370,7 +380,7 @@ class RSRS:
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
-                fix_aleph = max(q_values) + sys.float_info.epsilon
+                fix_aleph = max(q_values) + np.float64(1e-10)
                 diff = fix_aleph - q_values
                 if min(diff) < 0: diff -= min(diff)
                 Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
@@ -378,11 +388,11 @@ class RSRS:
             else:
                 Z = 1 / np.sum(np.float64(1.0) / (aleph - q_values))
                 rho = Z / (aleph - q_values)
-            b = self.n / rho - np.float64(1.0) + sys.float_info.epsilon
+            b = self.n / rho - np.float64(1.0) + np.float64(1e-10)
             SRS = (np.float64(1.0) + max(b)) * rho - self.n
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
-            self.pi_list.append(pi)
+            # self.pi_list.append(pi)
 
             prob = np.random.rand()
             top, bottom = self.action_space, -1
@@ -395,13 +405,18 @@ class RSRS:
             self.episodic_memory.add(controllable_state, action)
         return action
 
+    def greedy_action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
+        # self.batch_reward_list.append(np.count_nonzero(r == 1.0))
 
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
@@ -504,6 +519,11 @@ class ConvDQN(nn.Module):
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
+    def greedy_action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
@@ -588,6 +608,11 @@ class ConvDDQN(nn.Module):
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
+    def greedy_action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        action = np.random.choice(np.where(q_values == max(q_values))[0])
+        return action
+
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
@@ -655,7 +680,7 @@ class ConvRSRS(nn.Module):
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.gamma_G = 0.9
-        self.aleph_G = 0.9
+        self.aleph_G = kwargs.get('aleph_G', 1.0)
         self.E_G = 0
         # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]
@@ -701,7 +726,7 @@ class ConvRSRS(nn.Module):
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
-                fix_aleph = max(q_values) + sys.float_info.epsilon
+                fix_aleph = max(q_values) + np.float64(1e-10)
                 diff = fix_aleph - q_values
                 if min(diff) < 0: diff -= min(diff)
                 Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
@@ -709,7 +734,7 @@ class ConvRSRS(nn.Module):
             else:
                 Z = 1 / np.sum(np.float64(1.0) / (aleph - q_values))
                 rho = Z / (aleph - q_values)
-            b = self.n / rho - np.float64(1.0) + sys.float_info.epsilon
+            b = self.n / rho - np.float64(1.0) + np.float64(1e-10)
             SRS = (np.float64(1.0) + max(b)) * rho - self.n
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
@@ -724,6 +749,11 @@ class ConvRSRS(nn.Module):
             if mid == bottom: action = mid
             else: action = mid-1
             self.episodic_memory.add(controllable_state, action)
+        return action
+
+    def greedy_action(self, state, discrete_state):
+        q_values = self.q_value(state)
+        action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
     def update(self, state, action, reward, next_state, done):
