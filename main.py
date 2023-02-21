@@ -113,7 +113,7 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    ###環境に応じて報酬設定をsimulator.pyで変更
+    ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
     # algo = 'sRSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
     algos = ['RSRS', 'DQN']
     sim = 10
@@ -131,7 +131,8 @@ if __name__ == '__main__':
     warmup = 10
     k = 5
     zeta = 0.01
-    aleph_G = 8.0
+    aleph_G = 1.0 #7.5 or 1.0?
+    max_step = 50 #500 or 50
     desc=[
         'FFGFFFGFF',
         'FFFFFFFFF',
@@ -194,32 +195,32 @@ if __name__ == '__main__':
             policy = DQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
         elif algo == 'sDDQN':
             policy = DDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
         elif algo == 'sRSRS':
             policy = RSRS(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
         elif algo == 'DQN':
             policy = ConvDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
         elif algo == 'DDQN':
             policy = ConvDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
         elif algo == 'RSRS':
             policy = ConvRSRS(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
         else:
             print(f'Not found algorithm {algo}')
             exit(1)

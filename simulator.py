@@ -74,7 +74,7 @@ def frozenlake_position(env, discrete_state):
     return env.desc[Y, X]
 
 
-def simulation(sims, epis, env, agent, result_dir_path):
+def simulation(sims, epis, env, agent, result_dir_path, max_step):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
     average_fall_hole_list = np.zeros(epis)
@@ -95,7 +95,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = one_hot(discrete_state, agent.policy.state_space)
                 step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
                 terminated, truncated = False, False
-                while not (terminated or truncated) and (step < 500):
+                while not (terminated or truncated) and (step < max_step):
                     action = agent.greedy_action(state, discrete_state)
                     discrete_next_state, reward, terminated, truncated, info = env.step(action)
                     letter = frozenlake_position(env, discrete_next_state)
@@ -125,7 +125,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
             state = one_hot(discrete_state, agent.policy.state_space)
             step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
             terminated, truncated = False, False
-            while not (terminated or truncated) and (step < 500):
+            while not (terminated or truncated) and (step < max_step):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
                 letter = frozenlake_position(env, discrete_next_state)
@@ -173,7 +173,7 @@ def simulation(sims, epis, env, agent, result_dir_path):
     env.close()
 
 
-def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
+def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, max_step):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
     average_fall_hole_list = np.zeros(epis)
@@ -196,7 +196,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 state = np.stack(frames, axis=1)[0,:]
                 step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
                 terminated, truncated = False, False
-                while not (terminated or truncated) and (step < 500):
+                while not (terminated or truncated) and (step < max_step):
                     action = agent.greedy_action(state, discrete_state)
                     discrete_next_state, reward, terminated, truncated, info = env.step(action)
                     letter = frozenlake_position(env, discrete_next_state)
@@ -230,7 +230,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
             state = np.stack(frames, axis=1)[0,:]
             step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
             terminated, truncated = False, False
-            while not (terminated or truncated) and (step < 500):
+            while not (terminated or truncated) and (step < max_step):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
                 letter = frozenlake_position(env, discrete_next_state)

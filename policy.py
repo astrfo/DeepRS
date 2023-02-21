@@ -162,8 +162,6 @@ class DQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -171,11 +169,10 @@ class DQN:
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
+            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -190,8 +187,6 @@ class DQN:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
-
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -240,7 +235,6 @@ class DDQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
-        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -249,7 +243,6 @@ class DDQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -257,11 +250,10 @@ class DDQN:
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
+            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -337,9 +329,6 @@ class RSRS:
         self.aleph_G = kwargs.get('aleph_G', 1.0)
         self.E_G = 0
         # self.zeta = 1
-        # self.q_list = [[] for _ in range(self.state_space)]
-        # self.pi_list = []
-        # self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -352,9 +341,6 @@ class RSRS:
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.E_G = 0
-        # self.q_list = [[] for _ in range(self.state_space)]
-        # self.pi_list = []
-        # self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -367,13 +353,12 @@ class RSRS:
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        # self.q_list[discrete_state].append(q_values)
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
+            q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
             if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
@@ -392,7 +377,6 @@ class RSRS:
             SRS = (np.float64(1.0) + max(b)) * rho - self.n
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
-            # self.pi_list.append(pi)
 
             prob = np.random.rand()
             top, bottom = self.action_space, -1
@@ -416,8 +400,6 @@ class RSRS:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        # self.batch_reward_list.append(np.count_nonzero(r == 1.0))
-
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -492,8 +474,6 @@ class ConvDQN(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -502,8 +482,6 @@ class ConvDQN(nn.Module):
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -511,11 +489,10 @@ class ConvDQN(nn.Module):
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
+            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -530,8 +507,6 @@ class ConvDQN(nn.Module):
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
-
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -583,7 +558,6 @@ class ConvDDQN(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
-        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -592,7 +566,6 @@ class ConvDDQN(nn.Module):
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -600,11 +573,10 @@ class ConvDDQN(nn.Module):
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
+            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
@@ -683,9 +655,6 @@ class ConvRSRS(nn.Module):
         self.aleph_G = kwargs.get('aleph_G', 1.0)
         self.E_G = 0
         # self.zeta = 1
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.pi_list = []
-        self.batch_reward_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -698,9 +667,6 @@ class ConvRSRS(nn.Module):
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.E_G = 0
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.pi_list = []
-        self.batch_reward_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -713,13 +679,12 @@ class ConvRSRS(nn.Module):
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
+            q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
             if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
@@ -738,7 +703,6 @@ class ConvRSRS(nn.Module):
             SRS = (np.float64(1.0) + max(b)) * rho - self.n
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
-            self.pi_list.append(pi)
 
             prob = np.random.rand()
             top, bottom = self.action_space, -1
@@ -762,8 +726,6 @@ class ConvRSRS(nn.Module):
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        self.batch_reward_list.append(np.count_nonzero(r == 1.0))
-
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
@@ -812,14 +774,6 @@ class ConvRSRS(nn.Module):
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
                 target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
-
-    def extract(self, target, inputs):
-        self.feature = None
-        def forward_hook(model, inputs, outputs):
-            self.feature = outputs.detach().clone()
-        handle = target.register_forward_hook(forward_hook)
-        self.model(inputs)
-        handle.remove()
 
 
 if __name__ == '__main__':
