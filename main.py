@@ -115,7 +115,7 @@ def make_param_file(algo, param, model, policy, agent):
 if __name__ == '__main__':
     ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
     # algo = 'sRSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
-    algos = ['RSRS', 'DQN']
+    algos = ['DQN']
     sim = 10
     epi = 1000
     alpha = 0.01
@@ -125,30 +125,31 @@ if __name__ == '__main__':
     hidden_size = 8
     memory_capacity = 10**4
     batch_size = 32
-    sync_interval = 20
-    neighbor_frames = 4
-    aleph = 0.5
+    sync_interval = 20 #使ってない
+    neighbor_frames = 1
+    aleph = 0.5 #使ってない
     warmup = 10
     k = 5
     zeta = 0.01
-    aleph_G = 1.0 #7.5 or 1.0?
+    aleph_G = 0.35 #7.5 or 0.35?
     max_step = 50 #500 or 50
-    desc=[
-        'FFGFFFGFF',
-        'FFFFFFFFF',
-        'GFFFFFFFG',
-        'FFFFFFFFF',
-        'FFFFSFFFF',
-        'FFFFFFFFF',
-        'GFFFFFFFG',
-        'FFFFFFFFF',
-        'FFGFFFGFF',
-    ]
     # desc=[
+    #     'FFGFFFGFF',
     #     'FFFFFFFFF',
+    #     'GFFFFFFFG',
     #     'FFFFFFFFF',
-    #     'SHHHHHHHG',
+    #     'FFFFSFFFF',
+    #     'FFFFFFFFF',
+    #     'GFFFFFFFG',
+    #     'FFFFFFFFF',
+    #     'FFGFFFGFF',
     # ]
+    desc=[
+        'FFFFFFFFF',
+        'FFFFFFFFF',
+        'FFFFFFFFF',
+        'SHHHHHHHG',
+    ]
     for algo in algos:
         env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
         env.reset()

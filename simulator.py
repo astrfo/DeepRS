@@ -99,22 +99,22 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
                     action = agent.greedy_action(state, discrete_state)
                     discrete_next_state, reward, terminated, truncated, info = env.step(action)
                     letter = frozenlake_position(env, discrete_next_state)
-                    # if letter == b'G':
-                    #     reward = +1
-                    #     goal_step = step
-                    # if letter == b'H':
-                    #     reward = -1
-                    #     fall_hole += 1
                     if letter == b'G':
-                        if discrete_next_state == 2: reward = 8
-                        elif discrete_next_state == 6: reward = 1
-                        elif discrete_next_state == 18: reward = 3
-                        elif discrete_next_state == 26: reward = 5
-                        elif discrete_next_state == 54: reward = 6
-                        elif discrete_next_state == 62: reward = 4
-                        elif discrete_next_state == 74: reward = 2
-                        elif discrete_next_state == 78: reward = 7
+                        reward = +1
                         goal_step = step
+                    if letter == b'H':
+                        reward = -1
+                        fall_hole += 1
+                    # if letter == b'G':
+                    #     if discrete_next_state == 2: reward = 8
+                    #     elif discrete_next_state == 6: reward = 1
+                    #     elif discrete_next_state == 18: reward = 3
+                    #     elif discrete_next_state == 26: reward = 5
+                    #     elif discrete_next_state == 54: reward = 6
+                    #     elif discrete_next_state == 62: reward = 4
+                    #     elif discrete_next_state == 74: reward = 2
+                    #     elif discrete_next_state == 78: reward = 7
+                    #     goal_step = step
                     next_state = one_hot(discrete_next_state, agent.policy.state_space)
                     discrete_state = discrete_next_state
                     state = next_state
@@ -129,22 +129,22 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
                 letter = frozenlake_position(env, discrete_next_state)
-                # if letter == b'G':
-                #     reward = +1
-                #     goal_step = step
-                # if letter == b'H':
-                #     reward = -1
-                #     fall_hole += 1
                 if letter == b'G':
-                    if discrete_next_state == 2: reward = 8
-                    elif discrete_next_state == 6: reward = 1
-                    elif discrete_next_state == 18: reward = 3
-                    elif discrete_next_state == 26: reward = 5
-                    elif discrete_next_state == 54: reward = 6
-                    elif discrete_next_state == 62: reward = 4
-                    elif discrete_next_state == 74: reward = 2
-                    elif discrete_next_state == 78: reward = 7
+                    reward = +1
                     goal_step = step
+                if letter == b'H':
+                    reward = -1
+                    fall_hole += 1
+                # if letter == b'G':
+                #     if discrete_next_state == 2: reward = 8
+                #     elif discrete_next_state == 6: reward = 1
+                #     elif discrete_next_state == 18: reward = 3
+                #     elif discrete_next_state == 26: reward = 5
+                #     elif discrete_next_state == 54: reward = 6
+                #     elif discrete_next_state == 62: reward = 4
+                #     elif discrete_next_state == 74: reward = 2
+                #     elif discrete_next_state == 78: reward = 7
+                #     goal_step = step
                 next_state = one_hot(discrete_next_state, agent.policy.state_space)
                 agent.update(state, action, reward, next_state, terminated)
                 discrete_state = discrete_next_state
@@ -200,22 +200,22 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, ma
                     action = agent.greedy_action(state, discrete_state)
                     discrete_next_state, reward, terminated, truncated, info = env.step(action)
                     letter = frozenlake_position(env, discrete_next_state)
-                    # if letter == b'G':
-                    #     reward = +1
-                    #     goal_step = step
-                    # if letter == b'H':
-                    #     reward = -1
-                    #     fall_hole += 1
                     if letter == b'G':
-                        if discrete_next_state == 2: reward = 8
-                        elif discrete_next_state == 6: reward = 1
-                        elif discrete_next_state == 18: reward = 3
-                        elif discrete_next_state == 26: reward = 5
-                        elif discrete_next_state == 54: reward = 6
-                        elif discrete_next_state == 62: reward = 4
-                        elif discrete_next_state == 74: reward = 2
-                        elif discrete_next_state == 78: reward = 7
+                        reward = +1
                         goal_step = step
+                    if letter == b'H':
+                        reward = -1
+                        fall_hole += 1
+                    # if letter == b'G':
+                    #     if discrete_next_state == 2: reward = 8
+                    #     elif discrete_next_state == 6: reward = 1
+                    #     elif discrete_next_state == 18: reward = 3
+                    #     elif discrete_next_state == 26: reward = 5
+                    #     elif discrete_next_state == 54: reward = 6
+                    #     elif discrete_next_state == 62: reward = 4
+                    #     elif discrete_next_state == 74: reward = 2
+                    #     elif discrete_next_state == 78: reward = 7
+                    #     goal_step = step
                     frame = get_screen(env)
                     frames.append(frame)
                     next_state = np.stack(frames, axis=1)[0,:]
@@ -234,22 +234,22 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, ma
                 action = agent.action(state, discrete_state)
                 discrete_next_state, reward, terminated, truncated, info = env.step(action)
                 letter = frozenlake_position(env, discrete_next_state)
-                # if letter == b'G':
-                #     reward = +1
-                #     goal_step = step
-                # if letter == b'H':
-                #     reward = -1
-                #     fall_hole += 1
                 if letter == b'G':
-                    if discrete_next_state == 2: reward = 8
-                    elif discrete_next_state == 6: reward = 1
-                    elif discrete_next_state == 18: reward = 3
-                    elif discrete_next_state == 26: reward = 5
-                    elif discrete_next_state == 54: reward = 6
-                    elif discrete_next_state == 62: reward = 4
-                    elif discrete_next_state == 74: reward = 2
-                    elif discrete_next_state == 78: reward = 7
+                    reward = +1
                     goal_step = step
+                if letter == b'H':
+                    reward = -1
+                    fall_hole += 1
+                # if letter == b'G':
+                #     if discrete_next_state == 2: reward = 8
+                #     elif discrete_next_state == 6: reward = 1
+                #     elif discrete_next_state == 18: reward = 3
+                #     elif discrete_next_state == 26: reward = 5
+                #     elif discrete_next_state == 54: reward = 6
+                #     elif discrete_next_state == 62: reward = 4
+                #     elif discrete_next_state == 74: reward = 2
+                #     elif discrete_next_state == 78: reward = 7
+                #     goal_step = step
                 frame = get_screen(env)
                 frames.append(frame)
                 next_state = np.stack(frames, axis=1)[0,:]
