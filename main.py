@@ -131,7 +131,7 @@ if __name__ == '__main__':
     warmup = 10
     k = 5
     zeta = 0.01
-    aleph_G = 0.35 #7.5 or 0.35?
+    aleph_G = 0.99 #7.5 or 0.99
     max_step = 50 #500 or 50
     # desc=[
     #     'FFGFFFGFF',

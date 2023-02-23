@@ -42,6 +42,18 @@ def sub_plot(sim_dir_path, name, thing):
     plt.close()
 
 
+def eg_alephg_plot(sim_dir_path, eg, alephg):
+    plt.figure(figsize=(12, 8))
+    plt.plot(eg, label='eg')
+    plt.plot(alephg, label='alephg')
+    plt.title('eg and alephg')
+    plt.xlabel('Episode')
+    plt.xlim(-1, len(eg)+1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'eg_alephg.png')
+    plt.close()
+
+
 def qvalue_plot(sim_dir_path, name, thing):
     plt.figure(figsize=(12, 8))
     plt.plot(thing, label=['LEFT', 'DOWN', 'RIGHT', 'UP'])
@@ -78,7 +90,7 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
     average_fall_hole_list = np.zeros(epis)
-    average_epi100_reward_list = np.zeros(10)
+    average_epi100_reward_list = np.zeros(epis//100)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
@@ -166,6 +178,9 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
         # sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
         # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
         # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
+        np.savetxt(sim_dir_path + f'eg.csv', agent.policy.E_G_list, delimiter=',') #DQNのときはコメント
+        np.savetxt(sim_dir_path + f'alephg.csv', agent.policy.aleph_G_list, delimiter=',') #DQNのときはコメント
+        eg_alephg_plot(sim_dir_path, agent.policy.E_G_list, agent.policy.aleph_G_list)
     divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
     divide_csv_plot(average_goal_step_list, result_dir_path, 'goal_step', sims)
     divide_csv_plot(average_fall_hole_list, result_dir_path, 'fall_hole', sims)
@@ -177,7 +192,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, ma
     average_reward_list = np.zeros(epis)
     average_goal_step_list = np.zeros(epis)
     average_fall_hole_list = np.zeros(epis)
-    average_epi100_reward_list = np.zeros(10)
+    average_epi100_reward_list = np.zeros(epis//100)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
@@ -273,6 +288,9 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, ma
         # sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
         # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
         # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
+        np.savetxt(sim_dir_path + f'eg.csv', agent.policy.E_G_list, delimiter=',') #DQNのときはコメント
+        np.savetxt(sim_dir_path + f'alephg.csv', agent.policy.aleph_G_list, delimiter=',') #DQNのときはコメント
+        eg_alephg_plot(sim_dir_path, agent.policy.E_G_list, agent.policy.aleph_G_list)
     divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
     divide_csv_plot(average_goal_step_list, result_dir_path, 'goal_step', sims)
     divide_csv_plot(average_fall_hole_list, result_dir_path, 'fall_hole', sims)
