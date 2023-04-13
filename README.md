@@ -1,12 +1,11 @@
 # DeepRS
 
 ## 使い方
-GitHubからクローンして，frozenlakeブランチに切り替えて仮想環境を生成してください．
+GitHubからクローンして，仮想環境で`requirements.txt`をインストールしてください．
 ```
 git clone https://github.com/takalabo/DeepRS.git
 cd DeepRS
-### frozenlakeブランチに移動
-conda env create -f deeprs.yml
+pip install -r requirements.txt
 ```
 
 ## パラメータ，環境の設定
