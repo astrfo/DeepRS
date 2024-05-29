@@ -5,7 +5,7 @@ from gym.spaces.discrete import Discrete
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, DDQN, RSRS, ConvDQN, ConvDDQN, ConvRSRS, QNet, RSNet, ConvQNet, ConvRSNet
+from policy import DQN, DDQN, RSRS, RSRSDDQN, ConvDQN, ConvDDQN, ConvRSRS, QNet, RSNet, ConvQNet, ConvRSNet
 
 
 def space2size(space):
@@ -66,7 +66,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'sRSRS' or algo == 'RSRS':
+    elif algo == 'sRSRS' or algo == 'sRSRSDDQN' or algo == 'RSRS':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -114,9 +114,9 @@ def make_param_file(algo, param, model, policy, agent):
 
 if __name__ == '__main__':
     ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
-    # algo = 'sRSRS' #sDQN or sDDQN or sRSRS or DQN or DDQN or RSRS
-    algos = ['DQN']
-    sim = 10
+    # algo = sDQN or sDDQN or sRSRS or sRSRSDDQN or DQN or DDQN or RSRS
+    algos = ['sRSRSDDQN']
+    sim = 1
     epi = 1000
     alpha = 0.01
     gamma = 0.9
@@ -159,7 +159,7 @@ if __name__ == '__main__':
             model = QNet
         elif algo == 'DQN' or algo == 'DDQN':
             model = ConvQNet
-        elif algo == 'sRSRS':
+        elif algo == 'sRSRS' or algo == 'sRSRSDDQN':
             model = RSNet
         elif algo == 'RSRS':
             model = ConvRSNet
@@ -204,6 +204,11 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, result_dir_path, max_step)
         elif algo == 'sRSRS':
             policy = RSRS(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
+        elif algo == 'sRSRSDDQN':
+            policy = RSRSDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
