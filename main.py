@@ -66,7 +66,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'sRSRS' or algo == 'sRSRSDDQN' or algo == 'RSRS' or algo == 'sRSDuelingNet':
+    elif algo == 'sRSRS' or algo == 'sRSRSDDQN' or algo == 'RSRS' or algo == 'sRSDuelingDQN' or algo == 'sRSDuelingDDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -114,8 +114,8 @@ def make_param_file(algo, param, model, policy, agent):
 
 if __name__ == '__main__':
     ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
-    # algo = sDQN or sDDQN or sRSRS or sRSRSDDQN or sRSDuelingNet or DQN or DDQN or RSRS
-    algos = ['sRSDuelingNet']
+    # algo = sDQN or sDDQN or sRSRS or sRSRSDDQN or sRSDuelingDQN or sRSDuelingDDQN or DQN or DDQN or RSRS
+    algos = ['sRSDuelingDDQN']
     sim = 1
     epi = 1000
     alpha = 0.01
@@ -161,7 +161,7 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'sRSRS' or algo == 'sRSRSDDQN':
             model = RSNet
-        elif algo == 'sRSDuelingNet':
+        elif algo == 'sRSDuelingDQN' or algo == 'sRSDuelingDDQN':
             model = DuelingRSNet
         elif algo == 'RSRS':
             model = ConvRSNet
@@ -214,8 +214,13 @@ if __name__ == '__main__':
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sRSDuelingNet':
+        elif algo == 'sRSDuelingDQN':
             policy = RSRS(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
+        elif algo == 'sRSDuelingDDQN':
+            policy = RSRSDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
