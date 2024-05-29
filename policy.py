@@ -26,6 +26,22 @@ class QNet(nn.Module):
         return x
 
 
+class DuelingNet(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, hidden_size)
+        self.advantage = nn.Linear(hidden_size, output_size)
+        self.v = nn.Linear(hidden_size, 1)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        advantage = self.advantage(x)
+        v = self.v(x)
+        return advantage + v
+
+
 class RSNet(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super().__init__()
@@ -39,6 +55,27 @@ class RSNet(nn.Module):
         x = self.fc2(x)
         return x
 
+    def embedding(self, x):
+        x = F.relu(self.fc1(x))
+        x = self.embed(x)
+        return x
+
+
+class DuelingRSNet(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.embed = nn.Linear(hidden_size, hidden_size)
+        self.advantage = nn.Linear(hidden_size, output_size)
+        self.v = nn.Linear(hidden_size, 1)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.embed(x))
+        advantage = self.advantage(x)
+        v = self.v(x)
+        return advantage + v
+    
     def embedding(self, x):
         x = F.relu(self.fc1(x))
         x = self.embed(x)
