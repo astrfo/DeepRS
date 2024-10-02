@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
-import gym
-from gym.spaces.discrete import Discrete
+import gymnasium as gym
+from gymnasium.spaces.discrete import Discrete
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, DDQN, RSRS, RSRSDDQN, ConvDQN, ConvDDQN, ConvRSRS, QNet, RSNet, DuelingRSNet, ConvQNet, ConvRSNet
+from policy import DQN, DDQN, RSRS, RSRSDDQN, ConvDQN, ConvDDQN, ConvRSRS, QNet, RSNet, DuelingNet, DuelingRSNet, ConvQNet, ConvRSNet
 
 
 def space2size(space):
@@ -19,7 +19,7 @@ def space2size(space):
 
 
 def compare_base_make_folder(algo, ex_param):
-    if algo == 'sDQN' or algo == 'sDDQN':
+    if algo == 'sDQN' or algo == 'sDDQN' or algo == 'sDuelingDQN' or algo == 'sDuelingDDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -114,9 +114,9 @@ def make_param_file(algo, param, model, policy, agent):
 
 if __name__ == '__main__':
     ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
-    # algo = sDQN or sDDQN or sRSRS or sRSRSDDQN or sRSDuelingDQN or sRSDuelingDDQN or DQN or DDQN or RSRS
-    algos = ['sRSDuelingDDQN']
-    sim = 1
+    # algo = sDQN or sDDQN or sDuelingDQN or sDuelingDDQN or sRSRS or sRSRSDDQN or sRSDuelingDQN or sRSDuelingDDQN or DQN or DDQN or RSRS
+    algos = ['sDuelingDDQN']
+    sim = 100
     epi = 1000
     alpha = 0.01
     gamma = 0.9
@@ -161,6 +161,8 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'sRSRS' or algo == 'sRSRSDDQN':
             model = RSNet
+        elif algo == 'sDuelingDQN' or algo == 'sDuelingDDQN':
+            model = DuelingNet
         elif algo == 'sRSDuelingDQN' or algo == 'sRSDuelingDDQN':
             model = DuelingRSNet
         elif algo == 'RSRS':
@@ -206,6 +208,16 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, result_dir_path, max_step)
         elif algo == 'sRSRS':
             policy = RSRS(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
+        elif algo == 'sDuelingDQN':
+            policy = DQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path, max_step)
+        elif algo == 'sDuelingDDQN':
+            policy = DDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
