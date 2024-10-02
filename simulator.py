@@ -178,9 +178,9 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
         # sub_plot(sim_dir_path, f'batchreward', agent.policy.batch_reward_list)
         # np.savetxt(sim_dir_path + f'pi.csv', agent.policy.pi_list, delimiter=',') #DQNのときはコメント
         # pi_plot(sim_dir_path, f'pi', agent.policy.pi_list) #DQNのときはコメント
-        np.savetxt(sim_dir_path + f'eg.csv', agent.policy.E_G_list, delimiter=',') #DQNのときはコメント
-        np.savetxt(sim_dir_path + f'alephg.csv', agent.policy.aleph_G_list, delimiter=',') #DQNのときはコメント
-        eg_alephg_plot(sim_dir_path, agent.policy.E_G_list, agent.policy.aleph_G_list)
+        # np.savetxt(sim_dir_path + f'eg.csv', agent.policy.E_G_list, delimiter=',') #DQNのときはコメント
+        # np.savetxt(sim_dir_path + f'alephg.csv', agent.policy.aleph_G_list, delimiter=',') #DQNのときはコメント
+        # eg_alephg_plot(sim_dir_path, agent.policy.E_G_list, agent.policy.aleph_G_list)
     divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
     divide_csv_plot(average_goal_step_list, result_dir_path, 'goal_step', sims)
     divide_csv_plot(average_fall_hole_list, result_dir_path, 'fall_hole', sims)
