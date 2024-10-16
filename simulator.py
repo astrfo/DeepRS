@@ -190,14 +190,12 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
 
 def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, max_step):
     average_reward_list = np.zeros(epis)
-    average_goal_step_list = np.zeros(epis)
-    average_fall_hole_list = np.zeros(epis)
+    average_survived_step_list = np.zeros(epis)
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
         total_reward_list = []
-        total_goal_step_list = []
-        total_fall_hole_list = []
+        total_survived_step_list = []
         agent.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
@@ -206,9 +204,9 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, ma
             frame = get_screen(env)
             frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
             state = np.stack(frames, axis=1)[0,:]
-            step, total_reward, goal_step, fall_hole = 0, 0, np.nan, 0
+            total_reward, survived_step = 0, 0
             terminated, truncated = False, False
-            while not (terminated or truncated) and (step < max_step):
+            while not (terminated or truncated):
                 action = agent.action(state)
                 _, reward, terminated, truncated, _ = env.step(action)
                 frame = get_screen(env)
@@ -217,14 +215,10 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, ma
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
-                step += 1
             total_reward_list.append(total_reward)
-            total_goal_step_list.append(goal_step)
-            total_fall_hole_list.append(fall_hole)
+            total_survived_step_list.append(survived_step)
         average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
-        average_goal_step_list = plus_csv_plot(average_goal_step_list, total_goal_step_list, sim_dir_path, 'goal_step')
-        average_fall_hole_list = plus_csv_plot(average_fall_hole_list, total_fall_hole_list, sim_dir_path, 'fall_hole')
+        average_survived_step_list = plus_csv_plot(average_survived_step_list, total_survived_step_list, sim_dir_path, 'survived_step')
     divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
-    divide_csv_plot(average_goal_step_list, result_dir_path, 'goal_step', sims)
-    divide_csv_plot(average_fall_hole_list, result_dir_path, 'fall_hole', sims)
+    divide_csv_plot(average_survived_step_list, result_dir_path, 'survived_step', sims)
     env.close()
