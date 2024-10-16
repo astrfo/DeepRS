@@ -32,7 +32,6 @@ hidden_size = 8
 memory_capacity = 10**4
 batch_size = 32
 neighbor_frames = 4
-aleph = 0.5
 warmup = 10
 k = 5
 zeta = 0.01

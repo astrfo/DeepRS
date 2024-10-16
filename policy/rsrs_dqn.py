@@ -12,7 +12,6 @@ torch.set_default_dtype(torch.float64)
 
 class RSRSDQN:
     def __init__(self, model=RSRSNet, **kwargs):
-        self.aleph = kwargs.get('aleph', 0.7)
         self.warmup = kwargs.get('warmup', 10)
         self.k = kwargs.get('k', 5)
         self.zeta = kwargs.get('zeta', 0.008)

@@ -96,7 +96,6 @@ def compare_base_make_folder(algo, ex_param):
             'memory_capacity': 10**4,
             'batch_size': 32,
             'neighbor_frames': 4,
-            'aleph': 0.7,
             'warmup': 10,
             'k': 5,
             'zeta': 0.008,
@@ -147,7 +146,6 @@ if __name__ == '__main__':
     memory_capacity = 10**4
     batch_size = 32
     neighbor_frames = 4
-    aleph = 0.5 #使ってない
     warmup = 10
     k = 5
     zeta = 0.01
@@ -186,7 +184,6 @@ if __name__ == '__main__':
             'memory_capacity': memory_capacity,
             'batch_size': batch_size,
             'neighbor_frames': neighbor_frames,
-            'aleph': aleph,
             'warmup': warmup,
             'k': k,
             'zeta': zeta,
