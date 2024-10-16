@@ -156,7 +156,7 @@ if __name__ == '__main__':
     k = 5
     zeta = 0.01
     aleph_G = 0.99 #7.5 or 0.99
-    max_step = 100000000
+    max_step = 100000000 # conv_simulationでは廃止 TODO: simulationでも廃止する
     for algo in algos:
         env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
         env.reset()
@@ -247,17 +247,17 @@ if __name__ == '__main__':
             policy = ConvDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvDDQN':
             policy = ConvDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')
             exit(1)

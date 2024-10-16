@@ -188,7 +188,7 @@ def simulation(sims, epis, env, agent, result_dir_path, max_step):
     env.close()
 
 
-def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path, max_step):
+def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_survived_step_list = np.zeros(epis)
     for sim in range(sims):
