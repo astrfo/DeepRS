@@ -128,7 +128,6 @@ def make_param_file(algo, param, model, policy, agent):
 
 
 if __name__ == '__main__':
-    ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or
@@ -150,7 +149,6 @@ if __name__ == '__main__':
     k = 5
     zeta = 0.01
     aleph_G = 0.99 #7.5 or 0.99
-    max_step = 100000000 # conv_simulationでは廃止 TODO: simulationでも廃止する
     for algo in algos:
         env = gym.make('CartPole-v1', render_mode="rgb_array")
         env.reset()
@@ -199,42 +197,42 @@ if __name__ == '__main__':
             policy = DQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'DDQN':
             policy = DDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'RSRSDQN':
             policy = RSRSDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'DuelingDQN':
             policy = DuelingDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'DuelingDDQN':
             policy = DuelingDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'RSRSDDQN':
             policy = RSRSDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'RSRSDuelingDQN':
             policy = RSRSDuelingDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'RSRSDuelingDDQN':
             policy = RSRSDuelingDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, result_dir_path, max_step)
+            simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'ConvDQN':
             policy = ConvDQN(**param)
             agent = Agent(policy)
