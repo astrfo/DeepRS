@@ -74,9 +74,8 @@ class ConvRSRSDQN(nn.Module):
         with torch.no_grad():
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state, discrete_state):
+    def action(self, state):
         q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
@@ -113,7 +112,7 @@ class ConvRSRSDQN(nn.Module):
             self.episodic_memory.add(controllable_state, action)
         return action
 
-    def greedy_action(self, state, discrete_state):
+    def greedy_action(self, state):
         q_values = self.q_value(state)
         action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
