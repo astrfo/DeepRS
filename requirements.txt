@@ -8,3 +8,6 @@ torch==2.2.2
 torchvision==0.17.2
 gymnasium==1.0.0
 gymnasium[toy_text]
+gymnasium[atari]
+gymnasium[accept-rom-license]
+ale-py==0.10.1

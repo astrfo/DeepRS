@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 import gymnasium as gym
 from gymnasium.spaces.discrete import Discrete
+import ale_py
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
@@ -155,26 +156,9 @@ if __name__ == '__main__':
     k = 5
     zeta = 0.01
     aleph_G = 0.99 #7.5 or 0.99
-    max_step = 50 #500 or 50
-    # desc=[
-    #     'FFGFFFGFF',
-    #     'FFFFFFFFF',
-    #     'GFFFFFFFG',
-    #     'FFFFFFFFF',
-    #     'FFFFSFFFF',
-    #     'FFFFFFFFF',
-    #     'GFFFFFFFG',
-    #     'FFFFFFFFF',
-    #     'FFGFFFGFF',
-    # ]
-    desc=[
-        'FFFFFFFFF',
-        'FFFFFFFFF',
-        'FFFFFFFFF',
-        'SHHHHHHHG',
-    ]
+    max_step = 100000000 # conv_simulationでは廃止 TODO: simulationでも廃止する
     for algo in algos:
-        env = gym.make('FrozenLake-v1', desc=desc, is_slippery=False, render_mode='rgb_array').unwrapped
+        env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
         env.reset()
         init_frame = get_screen(env)
 
@@ -263,17 +247,17 @@ if __name__ == '__main__':
             policy = ConvDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvDDQN':
             policy = ConvDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
-            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')
             exit(1)

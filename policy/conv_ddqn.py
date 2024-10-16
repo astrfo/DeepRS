@@ -47,7 +47,7 @@ class ConvDDQN(nn.Module):
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state, discrete_state):
+    def action(self, state):
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
@@ -55,7 +55,7 @@ class ConvDDQN(nn.Module):
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
-    def greedy_action(self, state, discrete_state):
+    def greedy_action(self, state):
         q_values = self.q_value(state)
         action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
