@@ -5,7 +5,25 @@ from gymnasium.spaces.discrete import Discrete
 
 from simulator import simulation, conv_simulation, get_screen
 from agent import Agent
-from policy import DQN, DDQN, RSRS, RSRSDDQN, ConvDQN, ConvDDQN, ConvRSRS, QNet, RSNet, DuelingNet, DuelingRSNet, ConvQNet, ConvRSNet
+
+from policy.dqn import DQN
+from policy.ddqn import DDQN
+from policy.duelingdqn import DuelingDQN
+from policy.duelingddqn import DuelingDDQN
+from policy.rsrs_dqn import RSRSDQN
+from policy.rsrs_ddqn import RSRSDDQN
+from policy.rsrs_duelingdqn import RSRSDuelingDQN
+from policy.rsrs_duelingddqn import RSRSDuelingDDQN
+from policy.conv_dqn import ConvDQN
+from policy.conv_ddqn import ConvDDQN
+from policy.conv_rsrs_dqn import ConvRSRSDQN
+
+from network.qnet import QNet
+from network.duelingnet import DuelingNet
+from network.rsrsnet import RSRSNet
+from network.rsrs_duelingnet import RSRSDuelingNet
+from network.conv_qnet import ConvQNet
+from network.conv_rsrsnet import ConvRSRSNet
 
 
 def space2size(space):
