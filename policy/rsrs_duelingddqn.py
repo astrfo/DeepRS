@@ -25,7 +25,6 @@ class RSRSDuelingDDQN:
         self.state_space = kwargs['state_space']
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
-        self.sync_interval = kwargs.get('sync_interval', 20)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cpu')

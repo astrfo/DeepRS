@@ -50,7 +50,6 @@ def compare_base_make_folder(algo, ex_param):
             'hidden_size': 8,
             'memory_capacity': 10**4,
             'batch_size': 32,
-            'sync_interval': 2,
         }
         folder_name = algo
         for (base_k, base_v), (ex_k, ex_v) in zip(base_param.items(), ex_param.items()):
@@ -73,7 +72,6 @@ def compare_base_make_folder(algo, ex_param):
             'hidden_size': 8,
             'memory_capacity': 10**4,
             'batch_size': 32,
-            'sync_interval': 2,
             'neighbor_frames': 4,
         }
         folder_name = algo
@@ -97,7 +95,6 @@ def compare_base_make_folder(algo, ex_param):
             'hidden_size': 8,
             'memory_capacity': 10**4,
             'batch_size': 32,
-            'sync_interval': 2,
             'neighbor_frames': 4,
             'aleph': 0.7,
             'warmup': 10,
@@ -141,7 +138,7 @@ if __name__ == '__main__':
     """
     algos = ['ConvDQN', 'ConvDDQN', 'ConvRSRSDQN']
     sim = 1
-    epi = 10
+    epi = 1
     alpha = 0.01
     gamma = 0.9
     epsilon = 0.1
@@ -149,8 +146,7 @@ if __name__ == '__main__':
     hidden_size = 8
     memory_capacity = 10**4
     batch_size = 32
-    sync_interval = 20 #使ってない
-    neighbor_frames = 1
+    neighbor_frames = 4
     aleph = 0.5 #使ってない
     warmup = 10
     k = 5
@@ -158,7 +154,7 @@ if __name__ == '__main__':
     aleph_G = 0.99 #7.5 or 0.99
     max_step = 100000000 # conv_simulationでは廃止 TODO: simulationでも廃止する
     for algo in algos:
-        env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
+        env = gym.make('CartPole-v1', render_mode="rgb_array")
         env.reset()
         init_frame = get_screen(env)
 
@@ -189,7 +185,6 @@ if __name__ == '__main__':
             'hidden_size': hidden_size,
             'memory_capacity': memory_capacity,
             'batch_size': batch_size,
-            'sync_interval': sync_interval,
             'neighbor_frames': neighbor_frames,
             'aleph': aleph,
             'warmup': warmup,
