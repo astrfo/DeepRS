@@ -37,7 +37,7 @@ def space2size(space):
 
 
 def compare_base_make_folder(algo, ex_param):
-    if algo == 'sDQN' or algo == 'sDDQN' or algo == 'sDuelingDQN' or algo == 'sDuelingDDQN':
+    if algo == 'DQN' or algo == 'DDQN' or algo == 'DuelingDQN' or algo == 'DuelingDDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -60,7 +60,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'DQN' or algo == 'DDQN':
+    elif algo == 'ConvDQN' or algo == 'ConvDDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -84,7 +84,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'sRSRS' or algo == 'sRSRSDDQN' or algo == 'RSRS' or algo == 'sRSDuelingDQN' or algo == 'sRSDuelingDDQN':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'ConvRSRSDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -132,10 +132,15 @@ def make_param_file(algo, param, model, policy, agent):
 
 if __name__ == '__main__':
     ###環境に応じてaleph_Gとmax_stepの値，報酬設定をsimulator.pyで変更
-    # algo = sDQN or sDDQN or sDuelingDQN or sDuelingDDQN or sRSRS or sRSRSDDQN or sRSDuelingDQN or sRSDuelingDDQN or DQN or DDQN or RSRS
-    algos = ['sDuelingDDQN']
-    sim = 100
-    epi = 1000
+    """
+    algo: 
+    DQN or DDQN or DuelingDQN or DuelingDDQN or
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or
+    ConvDQN or ConvDDQN or ConvRSRSDQN
+    """
+    algos = ['ConvDQN', 'ConvDDQN', 'ConvRSRSDQN']
+    sim = 1
+    epi = 10
     alpha = 0.01
     gamma = 0.9
     epsilon = 0.1
@@ -173,18 +178,18 @@ if __name__ == '__main__':
         env.reset()
         init_frame = get_screen(env)
 
-        if algo == 'sDQN' or algo == 'sDDQN':
+        if algo == 'DQN' or algo == 'DDQN':
             model = QNet
-        elif algo == 'DQN' or algo == 'DDQN':
+        elif algo == 'ConvDQN' or algo == 'ConvDDQN':
             model = ConvQNet
-        elif algo == 'sRSRS' or algo == 'sRSRSDDQN':
-            model = RSNet
-        elif algo == 'sDuelingDQN' or algo == 'sDuelingDDQN':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN':
+            model = RSRSNet
+        elif algo == 'DuelingDQN' or algo == 'DuelingDDQN':
             model = DuelingNet
-        elif algo == 'sRSDuelingDQN' or algo == 'sRSDuelingDDQN':
-            model = DuelingRSNet
-        elif algo == 'RSRS':
-            model = ConvRSNet
+        elif algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN':
+            model = RSRSDuelingNet
+        elif algo == 'ConvRSRSDQN':
+            model = ConvRSRSNet
         else:
             print(f'Not found algorithm {algo}')
             exit(1)
@@ -214,58 +219,58 @@ if __name__ == '__main__':
             'model': model
         }
 
-        if algo == 'sDQN':
+        if algo == 'DQN':
             policy = DQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sDDQN':
+        elif algo == 'DDQN':
             policy = DDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sRSRS':
-            policy = RSRS(**param)
+        elif algo == 'RSRSDQN':
+            policy = RSRSDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sDuelingDQN':
-            policy = DQN(**param)
+        elif algo == 'DuelingDQN':
+            policy = DuelingDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sDuelingDDQN':
-            policy = DDQN(**param)
+        elif algo == 'DuelingDDQN':
+            policy = DuelingDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sRSRSDDQN':
+        elif algo == 'RSRSDDQN':
             policy = RSRSDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sRSDuelingDQN':
-            policy = RSRS(**param)
+        elif algo == 'RSRSDuelingDQN':
+            policy = RSRSDuelingDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'sRSDuelingDDQN':
-            policy = RSRSDDQN(**param)
+        elif algo == 'RSRSDuelingDDQN':
+            policy = RSRSDuelingDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path, max_step)
-        elif algo == 'DQN':
+        elif algo == 'ConvDQN':
             policy = ConvDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
-        elif algo == 'DDQN':
+        elif algo == 'ConvDDQN':
             policy = ConvDDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
-        elif algo == 'RSRS':
-            policy = ConvRSRS(**param)
+        elif algo == 'ConvRSRSDQN':
+            policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path, max_step)
