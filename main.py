@@ -18,6 +18,7 @@ from policy.rsrs_duelingddqn import RSRSDuelingDDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_rsrs_dqn import ConvRSRSDQN
+from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
 
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
@@ -83,7 +84,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'ConvRSRSDQN':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -132,23 +133,23 @@ if __name__ == '__main__':
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or
-    ConvDQN or ConvDDQN or ConvRSRSDQN
+    ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN
     """
-    algos = ['ConvDQN', 'ConvDDQN', 'ConvRSRSDQN']
+    algos = ['ConvRSRSDynDQN']
     sim = 1
-    epi = 1
-    alpha = 0.01
-    gamma = 0.9
-    epsilon = 0.1
+    epi = 500
+    alpha = 0.001
+    gamma = 0.99
+    epsilon = 0.01
     tau = 0.1
-    hidden_size = 8
+    hidden_size = 64
     memory_capacity = 10**4
     batch_size = 32
     neighbor_frames = 4
     warmup = 10
     k = 5
     zeta = 0.01
-    aleph_G = 0.99 #7.5 or 0.99
+    aleph_G = 0
     for algo in algos:
         env = gym.make('CartPole-v1', render_mode="rgb_array")
         env.reset()
@@ -164,7 +165,7 @@ if __name__ == '__main__':
             model = DuelingNet
         elif algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN':
             model = RSRSDuelingNet
-        elif algo == 'ConvRSRSDQN':
+        elif algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN':
             model = ConvRSRSNet
         else:
             print(f'Not found algorithm {algo}')
@@ -245,6 +246,11 @@ if __name__ == '__main__':
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+        elif algo == 'ConvRSRSDynDQN':
+            policy = ConvRSRSDynDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
