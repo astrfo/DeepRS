@@ -1,17 +1,27 @@
 # DeepRS
 
 ## 使い方
-GitHubからクローンして，仮想環境で`requirements.txt`をインストールしてください．
-```
-git clone https://github.com/takalabo/DeepRS.git
+
+GitHubからクローンして，`requirements.txt`でライブラリをインストールしてください．
+
+```zsh
+git clone https://github.com/astrfo/DeepRS.git
 cd DeepRS
 pip install -r requirements.txt
 ```
 
 ## パラメータ，環境の設定
-[ここ](https://github.com/takalabo/DeepRS/blob/3681c0d966ddba3adf1d7baeb753ee0c176ce7ad/main.py#L114)から[ここ](https://github.com/takalabo/DeepRS/blob/3681c0d966ddba3adf1d7baeb753ee0c176ce7ad/main.py#L146)がパラメータと環境になっているため，ここを変更してください．
-```
-algo = 'sRSRS' #頭にsが付いているアルゴリズムはCNNなし
+
+必要に応じて`main.py`にあるパラメータと環境等を変更してください。
+
+```python
+"""
+algo: 
+DQN or DDQN or DuelingDQN or DuelingDDQN or
+RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or
+ConvDQN or ConvDDQN or ConvRSRSDQN
+"""
+algo = ['DQN', 'ConvDQN']
 sim = 1
 epi = 1000
 alpha = 0.01
@@ -30,6 +40,7 @@ zeta = 0.01
 ```
 
 ## 実行方法
-```
+
+```zsh
 python main.py
 ```
