@@ -13,7 +13,6 @@ torch.set_default_dtype(torch.float64)
 class ConvRSRSDQN(nn.Module):
     def __init__(self, model=ConvRSRSNet, **kwargs):
         super().__init__()
-        self.aleph = kwargs.get('aleph', 0.7)
         self.warmup = kwargs.get('warmup', 10)
         self.k = kwargs.get('k', 5)
         self.zeta = kwargs.get('zeta', 0.008)
@@ -28,7 +27,6 @@ class ConvRSRSDQN(nn.Module):
         self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
-        self.sync_interval = kwargs.get('sync_interval', 20)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cpu')
