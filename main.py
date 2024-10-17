@@ -19,6 +19,7 @@ from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_rsrs_dqn import ConvRSRSDQN
 from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
+from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
 
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
@@ -26,6 +27,7 @@ from network.rsrsnet import RSRSNet
 from network.rsrs_duelingnet import RSRSDuelingNet
 from network.conv_qnet import ConvQNet
 from network.conv_rsrsnet import ConvRSRSNet
+from network.conv_rsrsalephnet import ConvRSRSAlephNet
 
 
 def space2size(space):
@@ -84,7 +86,7 @@ def compare_base_make_folder(algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -133,9 +135,9 @@ if __name__ == '__main__':
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or
-    ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN
+    ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
-    algos = ['ConvRSRSDynDQN']
+    algos = ['ConvRSRSAlephDQN']
     sim = 1
     epi = 500
     alpha = 0.001
@@ -167,6 +169,8 @@ if __name__ == '__main__':
             model = RSRSDuelingNet
         elif algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN':
             model = ConvRSRSNet
+        elif algo == 'ConvRSRSAlephDQN':
+            model = ConvRSRSAlephNet
         else:
             print(f'Not found algorithm {algo}')
             exit(1)
@@ -251,6 +255,11 @@ if __name__ == '__main__':
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDynDQN':
             policy = ConvRSRSDynDQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
+        elif algo == 'ConvRSRSAlephDQN':
+            policy = ConvRSRSAlephDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
