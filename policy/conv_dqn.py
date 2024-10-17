@@ -24,7 +24,7 @@ class ConvDQN(nn.Module):
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
-        self.device = torch.device('cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model.to(self.device)
