@@ -257,12 +257,12 @@ if __name__ == '__main__':
         elif algo == 'ConvRSRSDynDQN':
             policy = ConvRSRSDynDQN(**param)
             agent = Agent(policy)
-            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSAlephDQN':
             policy = ConvRSRSAlephDQN(**param)
             agent = Agent(policy)
-            result_dir_path = make_param_file(algo, param, model, policy, agent)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, neighbor_frames, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')

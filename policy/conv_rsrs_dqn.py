@@ -1,8 +1,8 @@
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import faiss
 
 from replay_buffer import ReplayBuffer, EpisodicMemory
 from network.conv_rsrsnet import ConvRSRSNet
@@ -73,16 +73,14 @@ class ConvRSRSDQN(nn.Module):
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
-        q_values = self.q_value(state)
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
-            # q_values = self.q_value(state)
+            q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
@@ -150,13 +148,14 @@ class ConvRSRSDQN(nn.Module):
         controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
         action_vec = controllable_state_and_action[:, len(controllable_state):]
         controllable_state = np.expand_dims(controllable_state, axis=0)
-        K_neighbor = NearestNeighbors(n_neighbors=self.k, algorithm='kd_tree', metric='euclidean').fit(controllable_state_vec)
-        distance, indices = K_neighbor.kneighbors(controllable_state)
-
-        distance = np.squeeze(distance)
-        action_vec = action_vec[indices]
-        action_vec = np.squeeze(action_vec)
         
+        index = faiss.IndexFlatL2(controllable_state_vec.shape[1])
+        index.add(controllable_state_vec.astype(np.float32))
+        D, I = index.search(controllable_state.astype(np.float32), self.k)
+
+        distance = D.flatten()
+        action_vec = action_vec[I.flatten()]
+
         squared_distance = np.asarray(distance) ** 2
         average_squared_distance = np.average(squared_distance)
         regularization_squared_distance = np.divide(squared_distance, average_squared_distance, out=np.zeros_like(squared_distance), where=average_squared_distance!=0)
