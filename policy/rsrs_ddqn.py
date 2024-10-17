@@ -26,7 +26,7 @@ class RSRSDDQN:
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
-        self.device = torch.device('cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
