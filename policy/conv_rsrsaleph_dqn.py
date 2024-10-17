@@ -1,17 +1,17 @@
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import faiss
 
 from replay_buffer import ReplayBuffer, EpisodicMemory
-from network.conv_rsrsnet import ConvRSRSNet
+from network.conv_rsrsalephnet import ConvRSRSAlephNet
 
 torch.set_default_dtype(torch.float64)
 
 
 class ConvRSRSAlephDQN(nn.Module):
-    def __init__(self, model=ConvRSRSNet, **kwargs):
+    def __init__(self, model=ConvRSRSAlephNet, **kwargs):
         super().__init__()
         self.warmup = kwargs.get('warmup', 10)
         self.k = kwargs.get('k', 5)
@@ -154,13 +154,14 @@ class ConvRSRSAlephDQN(nn.Module):
         controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
         action_vec = controllable_state_and_action[:, len(controllable_state):]
         controllable_state = np.expand_dims(controllable_state, axis=0)
-        K_neighbor = NearestNeighbors(n_neighbors=self.k, algorithm='kd_tree', metric='euclidean').fit(controllable_state_vec)
-        distance, indices = K_neighbor.kneighbors(controllable_state)
-
-        distance = np.squeeze(distance)
-        action_vec = action_vec[indices]
-        action_vec = np.squeeze(action_vec)
         
+        index = faiss.IndexFlatL2(controllable_state_vec.shape[1])
+        index.add(controllable_state_vec.astype(np.float32))
+        D, I = index.search(controllable_state.astype(np.float32), self.k)
+
+        distance = D.flatten()
+        action_vec = action_vec[I.flatten()]
+
         squared_distance = np.asarray(distance) ** 2
         average_squared_distance = np.average(squared_distance)
         regularization_squared_distance = np.divide(squared_distance, average_squared_distance, out=np.zeros_like(squared_distance), where=average_squared_distance!=0)
