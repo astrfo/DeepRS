@@ -215,6 +215,7 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
+                survived_step += 1
             total_reward_list.append(total_reward)
             total_survived_step_list.append(survived_step)
         average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
