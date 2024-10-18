@@ -109,11 +109,6 @@ class ConvRSRSDynDQN(nn.Module):
             self.episodic_memory.add(controllable_state, action)
         return action
 
-    def greedy_action(self, state):
-        q_values = self.q_value(state)
-        action = np.random.choice(np.where(q_values == max(q_values))[0])
-        return action
-
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
@@ -138,13 +133,6 @@ class ConvRSRSDynDQN(nn.Module):
         loss.backward()
         self.optimizer.step()
         self.sync_model()
-
-    def EG_update(self, total_reward, step):
-        self.E_G = total_reward
-        # self.E_G = 1/step * total_reward
-        self.total_step += step
-        self.E_G_list.append(self.E_G)
-        self.aleph_G_list.append(self.aleph_G)
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])

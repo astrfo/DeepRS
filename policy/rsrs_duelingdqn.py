@@ -70,18 +70,15 @@ class RSRSDuelingDQN:
         with torch.no_grad():
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
+    def action(self, state):
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
-            # q_values = self.q_value(state)
+            q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
@@ -109,11 +106,6 @@ class RSRSDuelingDQN:
             self.episodic_memory.add(controllable_state, action)
         return action
 
-    def greedy_action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        action = np.random.choice(np.where(q_values == max(q_values))[0])
-        return action
-
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
@@ -136,13 +128,6 @@ class RSRSDuelingDQN:
         loss.backward()
         self.optimizer.step()
         self.sync_model()
-
-    def EG_update(self, total_reward, step):
-        self.E_G = total_reward
-        # self.E_G = 1/step * total_reward
-        self.total_step += step
-        self.E_G_list.append(self.E_G)
-        self.aleph_G_list.append(self.aleph_G)
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
