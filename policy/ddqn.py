@@ -51,11 +51,6 @@ class DDQN:
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
-    def greedy_action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        action = np.random.choice(np.where(q_values == max(q_values))[0])
-        return action
-
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:

@@ -115,11 +115,6 @@ class ConvRSRSAlephDQN(nn.Module):
             self.episodic_memory.add(controllable_state, action)
         return action
 
-    def greedy_action(self, state):
-        q_values, _ = self.q_value(state)
-        action = np.random.choice(np.where(q_values == max(q_values))[0])
-        return action
-
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size:
