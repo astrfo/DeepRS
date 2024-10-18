@@ -80,12 +80,6 @@ def one_hot(discrete_state, state_space):
     return one_hot_array
 
 
-def frozenlake_position(env, discrete_state):
-    X = discrete_state % env.ncol
-    Y = discrete_state // env.ncol
-    return env.desc[Y, X]
-
-
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_survived_step_list = np.zeros(epis)
