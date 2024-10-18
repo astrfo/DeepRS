@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from replay_buffer import ReplayBuffer
+from memory.replay_buffer import ReplayBuffer
 from network.conv_qnet import ConvQNet
 
 torch.set_default_dtype(torch.float64)
