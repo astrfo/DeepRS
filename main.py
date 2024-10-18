@@ -15,6 +15,7 @@ from policy.rsrs_dqn import RSRSDQN
 from policy.rsrs_ddqn import RSRSDDQN
 from policy.rsrs_duelingdqn import RSRSDuelingDQN
 from policy.rsrs_duelingddqn import RSRSDuelingDDQN
+from policy.rsrsaleph_dqn import RSRSAlephDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_rsrs_dqn import ConvRSRSDQN
@@ -24,6 +25,7 @@ from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
 from network.rsrsnet import RSRSNet
+from network.rsrsalephnet import RSRSAlephNet
 from network.rsrs_duelingnet import RSRSDuelingNet
 from network.conv_qnet import ConvQNet
 from network.conv_rsrsnet import ConvRSRSNet
@@ -86,7 +88,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -134,19 +136,19 @@ if __name__ == '__main__':
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or
     ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
-    env_name = 'ALE/Breakout-v5'
-    algos = ['ConvRSRSDQN']
+    env_name = 'CartPole-v1'
+    algos = ['RSRSDQN']
     sim = 1
-    epi = 500
+    epi = 100
     alpha = 0.001
     gamma = 0.99
     epsilon = 0.01
     tau = 0.1
-    hidden_size = 64
-    memory_capacity = 10**4
+    hidden_size = 128
+    memory_capacity = 10**6
     batch_size = 32
     neighbor_frames = 4
     warmup = 10
@@ -164,6 +166,8 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'RSRSDQN' or algo == 'RSRSDDQN':
             model = RSRSNet
+        elif algo == 'RSRSAlephDQN':
+            model = RSRSAlephNet
         elif algo == 'DuelingDQN' or algo == 'DuelingDDQN':
             model = DuelingNet
         elif algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN':
@@ -211,6 +215,11 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, result_dir_path)
         elif algo == 'RSRSDQN':
             policy = RSRSDQN(**param)
+            agent = Agent(policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, result_dir_path)
+        elif algo == 'RSRSAlephDQN':
+            policy = RSRSAlephDQN(**param)
             agent = Agent(policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, result_dir_path)
