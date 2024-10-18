@@ -74,12 +74,6 @@ def pi_plot(sim_dir_path, name, thing):
     plt.close()
 
 
-def one_hot(discrete_state, state_space):
-    one_hot_array = np.zeros(state_space)
-    one_hot_array[discrete_state] = 1
-    return one_hot_array
-
-
 def simulation(sims, epis, env, agent, result_dir_path):
     average_reward_list = np.zeros(epis)
     average_survived_step_list = np.zeros(epis)
