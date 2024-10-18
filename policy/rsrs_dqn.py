@@ -79,7 +79,6 @@ class RSRSDQN:
             q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
             delta_G = min(self.E_G - self.aleph_G, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
@@ -129,13 +128,6 @@ class RSRSDQN:
         loss.backward()
         self.optimizer.step()
         self.sync_model()
-
-    def EG_update(self, total_reward, step):
-        self.E_G = total_reward
-        # self.E_G = 1/step * total_reward
-        self.total_step += step
-        self.E_G_list.append(self.E_G)
-        self.aleph_G_list.append(self.aleph_G)
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
