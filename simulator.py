@@ -74,15 +74,12 @@ def pi_plot(sim_dir_path, name, thing):
     plt.close()
 
 
-def simulation(sims, epis, env, agent, result_dir_path):
-    average_reward_list = np.zeros(epis)
-    average_survived_step_list = np.zeros(epis)
+def simulation(sims, epis, env, agent, collector, result_dir_path):
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
-        total_reward_list = []
-        total_survived_step_list = []
         agent.reset()
+        collector.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
@@ -96,24 +93,19 @@ def simulation(sims, epis, env, agent, result_dir_path):
                 state = next_state
                 total_reward += reward
                 survived_step += 1
-            total_reward_list.append(total_reward)
-            total_survived_step_list.append(survived_step)
-        average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
-        average_survived_step_list = plus_csv_plot(average_survived_step_list, total_survived_step_list, sim_dir_path, 'survived_step')
-    divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
-    divide_csv_plot(average_survived_step_list, result_dir_path, 'survived_step', sims)
+            collector.collect_episodic_data(total_reward, survived_step)
+        collector.sum_episodic_data()
+    collector.collect_simulation_data()
+    collector.save_simulation_data(sim_dir_path)
     env.close()
 
 
-def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
-    average_reward_list = np.zeros(epis)
-    average_survived_step_list = np.zeros(epis)
+def conv_simulation(sims, epis, env, agent, collector, neighbor_frames, result_dir_path):
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
-        total_reward_list = []
-        total_survived_step_list = []
         agent.reset()
+        collector.reset()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
@@ -133,10 +125,8 @@ def conv_simulation(sims, epis, env, agent, neighbor_frames, result_dir_path):
                 state = next_state
                 total_reward += reward
                 survived_step += 1
-            total_reward_list.append(total_reward)
-            total_survived_step_list.append(survived_step)
-        average_reward_list = plus_csv_plot(average_reward_list, total_reward_list, sim_dir_path, 'reward')
-        average_survived_step_list = plus_csv_plot(average_survived_step_list, total_survived_step_list, sim_dir_path, 'survived_step')
-    divide_csv_plot(average_reward_list, result_dir_path, 'reward', sims)
-    divide_csv_plot(average_survived_step_list, result_dir_path, 'survived_step', sims)
+            collector.collect_episodic_data(total_reward, survived_step)
+        collector.sum_episodic_data()
+    collector.collect_simulation_data()
+    collector.save_simulation_data(sim_dir_path)
     env.close()
