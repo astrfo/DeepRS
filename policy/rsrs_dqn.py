@@ -71,14 +71,12 @@ class RSRSDQN:
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state, discrete_state):
-        q_values = self.q_value(state)
-        self.q_list[discrete_state].append(q_values)
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
-            # q_values = self.q_value(state)
+            q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
             if (self.n == np.float64(1.0)).any(): self.n = (1 / self.total_step + self.n) / (self.action_space / self.total_step + np.sum(self.n))
