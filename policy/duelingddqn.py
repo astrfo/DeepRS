@@ -43,7 +43,7 @@ class DuelingDDQN:
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state, discrete_state):
+    def action(self, state):
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:

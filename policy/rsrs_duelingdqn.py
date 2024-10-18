@@ -70,7 +70,7 @@ class RSRSDuelingDQN:
         with torch.no_grad():
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
-    def action(self, state, discrete_state):
+    def action(self, state):
         if len(self.episodic_memory.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
