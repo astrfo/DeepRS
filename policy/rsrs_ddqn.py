@@ -4,7 +4,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from replay_buffer import ReplayBuffer, EpisodicMemory
+from memory.replay_buffer import ReplayBuffer
+from memory.episodic_memory import EpisodicMemory
 from network.rsrsnet import RSRSNet
 
 torch.set_default_dtype(torch.float64)
