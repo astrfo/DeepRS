@@ -156,7 +156,10 @@ if __name__ == '__main__':
     zeta = 0.01
     aleph_G = 0
     for algo in algos:
-        env = gym.make(env_name, render_mode="rgb_array")
+        if 'Conv' in algo:
+            env = gym.make(env_name, render_mode="rgb_array").unwrapped
+        else:
+            env = gym.make(env_name, render_mode="rgb_array")
         env.reset()
         init_frame = get_screen(env)
 
