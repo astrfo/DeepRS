@@ -4,14 +4,20 @@ import numpy as np
 
 
 class Collector:
-    def __init__(self, sim, epi, param):
+    def __init__(self, sim, epi, param, agent, policy):
         self.sim = sim
         self.epi = epi
         self.param = param
+        self.agent = agent
+        self.policy = policy
+        self.is_rsrs_in_algo = 'RSRS' in self.param['algo']
 
         # step data
         self.reward_step_list = []
         self.survived_step_step_list = []
+        if self.is_rsrs_in_algo:
+            self.q_value_step_list = []
+            self.aleph_step_list = []
 
         # episode data
         self.reward_epi_list = []
@@ -26,6 +32,9 @@ class Collector:
         data['param'] = self.param
         data['reward'] = self.reward_epi_list
         data['survived_step'] = self.survived_step_epi_list
+        if self.is_rsrs_in_algo:
+            data['q_value'] = self.q_value_step_list
+            data['aleph'] = self.aleph_step_list
         return data
 
     def initialize(self):
@@ -41,6 +50,12 @@ class Collector:
     def collect_step_data(self, reward, survived_step):
         self.reward_step_list.append(reward)
         self.survived_step_step_list.append(survived_step)
+        if self.is_rsrs_in_algo:
+            self.q_value_step_list.append(self.agent.policy.q_value(self.agent.current_state))
+            self.aleph_step_list.append(self.agent.policy.aleph_s(self.agent.current_state))
+
+    def save_step_data(self, sim_dir_path):
+        pass
 
     def collect_episode_data(self, total_reward, survived_step):
         self.reward_epi_list.append(total_reward)
