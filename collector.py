@@ -1,21 +1,49 @@
+import uuid
+import pickle as pkl
 import numpy as np
 
 
 class Collector:
-    def __init__(self, sim, epi):
+    def __init__(self, sim, epi, param):
         self.sim = sim
         self.epi = epi
+        self.param = param
+
+        # step data
+        self.reward_step_list = []
+        self.survived_step_step_list = []
+
+        # episode data
         self.reward_epi_list = []
         self.survived_step_epi_list = []
+
+        # simulation data
         self.reward_sim_list = np.zeros(self.epi)
         self.survived_step_sim_list = np.zeros(self.epi)
+    
+    def format(self):
+        data = {}
+        data['param'] = self.param
+        data['reward'] = self.reward_epi_list
+        data['survived_step'] = self.survived_step_epi_list
+        return data
 
-    def reset(self):
+    def initialize(self):
+        self.reward_step_list = []
+        self.survived_step_step_list = []
         self.reward_epi_list = []
         self.survived_step_epi_list = []
 
-    def collect_episode_data(self, reward, survived_step):
-        self.reward_epi_list.append(reward)
+    def reset(self):
+        self.reward_step_list = []
+        self.survived_step_step_list = []
+
+    def collect_step_data(self, reward, survived_step):
+        self.reward_step_list.append(reward)
+        self.survived_step_step_list.append(survived_step)
+
+    def collect_episode_data(self, total_reward, survived_step):
+        self.reward_epi_list.append(total_reward)
         self.survived_step_epi_list.append(survived_step)
 
     def save_episode_data(self, sim_dir_path):
@@ -23,6 +51,10 @@ class Collector:
         self.survived_step_sim_list += self.survived_step_epi_list
         np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
+
+        episode_data = self.format()
+        with open(sim_dir_path + f'episode_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
+            pkl.dump(episode_data, f)
 
     def collect_simulation_data(self):
         self.reward_sim_list /= self.sim

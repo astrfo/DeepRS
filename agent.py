@@ -2,7 +2,7 @@ class Agent:
     def __init__(self, policy):
         self.policy = policy
 
-    def reset(self):
+    def initialize(self):
         self.policy.reset()
 
     def action(self, state):

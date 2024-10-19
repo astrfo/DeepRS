@@ -58,9 +58,9 @@ if __name__ == '__main__':
     aleph_G = 0
     for algo in algos:
         if 'Conv' in algo:
-            env = gym.make(env_name, render_mode="rgb_array").unwrapped
+            env = gym.make(env_name, render_mode='rgb_array').unwrapped
         else:
-            env = gym.make(env_name, render_mode="rgb_array")
+            env = gym.make(env_name, render_mode='rgb_array')
         env.reset()
         init_frame = get_screen(env)
 
@@ -103,92 +103,92 @@ if __name__ == '__main__':
             'action_space': space2size(env.action_space),
             'state_space': space2size(env.observation_space),
             'frame_shape': init_frame.shape,
-            'env': env,
+            'env': env_name,
             'model': model
         }
 
         if algo == 'DQN':
             policy = DQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'DDQN':
             policy = DDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDQN':
             policy = RSRSDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephDQN':
             policy = RSRSAlephDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'DuelingDQN':
             policy = DuelingDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'DuelingDDQN':
             policy = DuelingDDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDDQN':
             policy = RSRSDDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDuelingDQN':
             policy = RSRSDuelingDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDuelingDDQN':
             policy = RSRSDuelingDDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvDQN':
             policy = ConvDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvDDQN':
             policy = ConvDDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDynDQN':
             policy = ConvRSRSDynDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSAlephDQN':
             policy = ConvRSRSAlephDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi)
+            collector = Collector(sim, epi, param)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         else:
