@@ -55,7 +55,9 @@ class Collector:
             self.aleph_step_list.append(self.agent.policy.aleph_s(self.agent.current_state))
 
     def save_step_data(self, sim_dir_path):
-        pass
+        if self.is_aleph_s_in_policy:
+            np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
+            np.savetxt(sim_dir_path + 'aleph.csv', self.aleph_step_list, delimiter=',')
 
     def collect_episode_data(self, total_reward, survived_step):
         self.reward_epi_list.append(total_reward)
