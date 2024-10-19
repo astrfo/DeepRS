@@ -14,18 +14,20 @@ class Collector:
         self.reward_epi_list = []
         self.survived_step_epi_list = []
 
-    def collect_episodic_data(self, reward, survived_step):
+    def collect_episode_data(self, reward, survived_step):
         self.reward_epi_list.append(reward)
         self.survived_step_epi_list.append(survived_step)
 
-    def sum_episodic_data(self):
+    def save_episode_data(self, sim_dir_path):
         self.reward_sim_list += self.reward_epi_list
         self.survived_step_sim_list += self.survived_step_epi_list
+        np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
 
     def collect_simulation_data(self):
         self.reward_sim_list /= self.sim
         self.survived_step_sim_list /= self.sim
 
-    def save_simulation_data(self, sim_dir_path):
-        np.savetxt(sim_dir_path + 'reward.csv', self.reward_sim_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_sim_list, delimiter=',')
+    def save_simulation_data(self, average_sim_dir_path):
+        np.savetxt(average_sim_dir_path + 'average_reward.csv', self.reward_sim_list, delimiter=',')
+        np.savetxt(average_sim_dir_path + 'average_survived_step.csv', self.survived_step_sim_list, delimiter=',')
