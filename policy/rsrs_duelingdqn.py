@@ -41,9 +41,6 @@ class RSRSDuelingDQN:
         self.aleph_G = kwargs.get('aleph_G', 1.0)
         self.E_G = 0
         # self.zeta = 1
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.E_G_list = []
-        self.aleph_G_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -55,10 +52,6 @@ class RSRSDuelingDQN:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.n = np.zeros(self.action_space)
         self.total_step = 0
-        self.E_G = 0
-        self.q_list = [[] for _ in range(self.state_space)]
-        self.E_G_list = []
-        self.aleph_G_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)

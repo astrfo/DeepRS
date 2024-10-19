@@ -32,7 +32,6 @@ class ConvDQN(nn.Module):
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.criterion = nn.MSELoss(reduction='sum')
-        self.q_list = [[] for _ in range(self.state_space)]
 
     def reset(self):
         self.replay_buffer.reset()
@@ -41,7 +40,6 @@ class ConvDQN(nn.Module):
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.q_list = [[] for _ in range(self.state_space)]
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)

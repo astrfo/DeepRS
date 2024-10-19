@@ -5,6 +5,7 @@ from tqdm import tqdm
 from collections import deque
 
 from utils.get_screen_utils import get_screen
+from plot.save_step_plot import save_step_plot
 from plot.save_episode_plot import save_episode_plot
 from plot.save_simulation_plot import save_simulation_plot
 
@@ -31,6 +32,8 @@ def simulation(sims, epis, env, agent, collector, result_dir_path):
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
+            collector.save_step_data(sim_dir_path)
+            save_step_plot(collector, sim_dir_path)
         collector.save_episode_data(sim_dir_path)
         save_episode_plot(collector, sim_dir_path)
     average_sim_dir_path = result_dir_path + 'average/'
@@ -69,6 +72,8 @@ def conv_simulation(sims, epis, env, agent, collector, neighbor_frames, result_d
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
+            collector.save_step_data(sim_dir_path)
+            save_step_plot(collector, sim_dir_path)
         collector.save_episode_data(sim_dir_path)
         save_episode_plot(collector, sim_dir_path)
     average_sim_dir_path = result_dir_path + 'average/'
