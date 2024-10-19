@@ -10,12 +10,12 @@ class Collector:
         self.param = param
         self.agent = agent
         self.policy = policy
-        self.is_rsrs_in_algo = 'RSRS' in self.param['algo']
+        self.is_aleph_s_in_policy = hasattr(self.policy, 'aleph_s')
 
         # step data
         self.reward_step_list = []
         self.survived_step_step_list = []
-        if self.is_rsrs_in_algo:
+        if self.is_aleph_s_in_policy:
             self.q_value_step_list = []
             self.aleph_step_list = []
 
@@ -32,7 +32,7 @@ class Collector:
         data['param'] = self.param
         data['reward'] = self.reward_epi_list
         data['survived_step'] = self.survived_step_epi_list
-        if self.is_rsrs_in_algo:
+        if self.is_aleph_s_in_policy:
             data['q_value'] = self.q_value_step_list
             data['aleph'] = self.aleph_step_list
         return data
@@ -50,7 +50,7 @@ class Collector:
     def collect_step_data(self, reward, survived_step):
         self.reward_step_list.append(reward)
         self.survived_step_step_list.append(survived_step)
-        if self.is_rsrs_in_algo:
+        if self.is_aleph_s_in_policy:
             self.q_value_step_list.append(self.agent.policy.q_value(self.agent.current_state))
             self.aleph_step_list.append(self.agent.policy.aleph_s(self.agent.current_state))
 
