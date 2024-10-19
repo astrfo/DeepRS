@@ -15,8 +15,8 @@ class Collector:
         # step data
         self.reward_step_list = []
         self.survived_step_step_list = []
+        self.q_value_step_list = []
         if self.is_aleph_s_in_policy:
-            self.q_value_step_list = []
             self.aleph_step_list = []
 
         # episode data
@@ -32,8 +32,8 @@ class Collector:
         data['param'] = self.param
         data['reward'] = self.reward_epi_list
         data['survived_step'] = self.survived_step_epi_list
+        data['q_value'] = self.q_value_step_list
         if self.is_aleph_s_in_policy:
-            data['q_value'] = self.q_value_step_list
             data['aleph'] = self.aleph_step_list
         return data
 
@@ -50,13 +50,13 @@ class Collector:
     def collect_step_data(self, reward, survived_step):
         self.reward_step_list.append(reward)
         self.survived_step_step_list.append(survived_step)
+        self.q_value_step_list.append(self.agent.policy.q_value(self.agent.current_state))
         if self.is_aleph_s_in_policy:
-            self.q_value_step_list.append(self.agent.policy.q_value(self.agent.current_state))
             self.aleph_step_list.append(self.agent.policy.aleph_s(self.agent.current_state))
 
     def save_step_data(self, sim_dir_path):
+        np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
         if self.is_aleph_s_in_policy:
-            np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
             np.savetxt(sim_dir_path + 'aleph.csv', self.aleph_step_list, delimiter=',')
 
     def collect_episode_data(self, total_reward, survived_step):
