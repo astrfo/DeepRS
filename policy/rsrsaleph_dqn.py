@@ -110,14 +110,21 @@ class RSRSAlephDQN:
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
         d = torch.tensor(d, dtype=torch.float64).to(self.device)
 
-        q, _ = self.model(s)
+        q, aleph_s = self.model(s)
         qa = q[np.arange(self.batch_size), a]
         next_q_target, _ = self.model_target(ns)
         next_qa_target = torch.amax(next_q_target, dim=1)
         target = r + self.gamma * next_qa_target * (1 - d)
 
+        aleph_s_target = torch.max(q, dim=1)[0].unsqueeze(1).detach()
         self.optimizer.zero_grad()
-        loss = self.criterion(qa, target)
+        q_loss = self.criterion(qa, target)
+        aleph_s_loss = self.criterion(aleph_s, aleph_s_target)
+
+        self.optimizer.zero_grad()
+        q_loss = self.criterion(qa, target)
+        aleph_s_loss = self.criterion(aleph_s, aleph_s_target)
+        loss = q_loss + aleph_s_loss
         loss.backward()
         self.optimizer.step()
         self.sync_model()
