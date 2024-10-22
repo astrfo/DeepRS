@@ -48,7 +48,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -76,7 +76,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
     else:
-        print(f'Not found algorithm {algo}')
+        print(f'Cannot make file for algorithm {algo}')
         exit(1)
     return results_dir
 

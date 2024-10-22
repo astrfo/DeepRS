@@ -17,6 +17,7 @@ from policy.rsrs_ddqn import RSRSDDQN
 from policy.rsrs_duelingdqn import RSRSDuelingDQN
 from policy.rsrs_duelingddqn import RSRSDuelingDDQN
 from policy.rsrsaleph_dqn import RSRSAlephDQN
+from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_rsrs_dqn import ConvRSRSDQN
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or
     ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
     env_name = 'CartPole-v1'
@@ -68,7 +69,7 @@ if __name__ == '__main__':
             model = QNet
         elif algo == 'ConvDQN' or algo == 'ConvDDQN':
             model = ConvQNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN':
             model = RSRSNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
@@ -81,7 +82,7 @@ if __name__ == '__main__':
         elif algo == 'ConvRSRSAlephDQN':
             model = ConvRSRSAlephNet
         else:
-            print(f'Not found algorithm {algo}')
+            print(f'Not found network {algo}')
             exit(1)
 
         param = {
@@ -127,6 +128,12 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephDQN':
             policy = RSRSAlephDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, collector, result_dir_path)
+        elif algo == 'RSRSAlephQEpsDQN':
+            policy = RSRSAlephQEpsDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
