@@ -42,15 +42,15 @@ if __name__ == '__main__':
     ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
     env_name = 'CartPole-v1'
-    algos = ['RSRSDQN']
+    algos = ['RSRSAlephQEpsDQN']
     sim = 1
-    epi = 100
+    epi = 500
     alpha = 0.001
     gamma = 0.99
     epsilon = 0.01
-    tau = 0.1
+    tau = 0.01
     hidden_size = 128
-    memory_capacity = 10**6
+    memory_capacity = 10**4
     batch_size = 32
     neighbor_frames = 4
     warmup = 10
