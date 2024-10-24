@@ -68,7 +68,6 @@ class RSRSAlephQEpsRASChoiceDQN:
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
             diff = aleph - q_values
-            if min(diff) < 0: diff -= min(diff)
             Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
             rho = Z / diff
             b = self.n / rho - np.float64(1.0) + np.float64(1e-10)
