@@ -109,4 +109,4 @@ class DQN_RND:
             target_feature = self.rnd_model_target(s)
             predictor_feature = self.rnd_model_pred(s)
             intrinsic_reward = torch.mean((target_feature - predictor_feature) ** 2, dim=-1)
-        return intrinsic_reward
+        return intrinsic_reward.squeeze().to('cpu').detach().numpy().copy()
