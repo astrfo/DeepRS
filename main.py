@@ -12,6 +12,7 @@ from policy.dqn import DQN
 from policy.ddqn import DDQN
 from policy.duelingdqn import DuelingDQN
 from policy.duelingddqn import DuelingDDQN
+from policy.dqn_rnd import DQN_RND
 from policy.rsrs_dqn import RSRSDQN
 from policy.rsrs_ddqn import RSRSDDQN
 from policy.rsrs_duelingdqn import RSRSDuelingDQN
@@ -39,12 +40,12 @@ from network.conv_rsrsalephnet import ConvRSRSAlephNet
 if __name__ == '__main__':
     """
     algo: 
-    DQN or DDQN or DuelingDQN or DuelingDDQN or
+    DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or
     ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
     env_name = 'CartPole-v1'
-    algos = ['RSRSAlephQEpsDQN']
+    algos = ['DQN_RND']
     sim = 1
     epi = 500
     alpha = 0.001
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         env.reset()
         init_frame = get_screen(env)
 
-        if algo == 'DQN' or algo == 'DDQN':
+        if algo == 'DQN' or algo == 'DDQN' or algo == 'DQN_RND':
             model = QNet
         elif algo == 'ConvDQN' or algo == 'ConvDDQN':
             model = ConvQNet
@@ -163,6 +164,12 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'DuelingDDQN':
             policy = DuelingDDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, collector, result_dir_path)
+        elif algo == 'DQN_RND':
+            policy = DQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)

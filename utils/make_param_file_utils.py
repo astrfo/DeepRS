@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 def compare_base_make_folder(env_name, algo, ex_param):
-    if algo == 'DQN' or algo == 'DDQN' or algo == 'DuelingDQN' or algo == 'DuelingDDQN':
+    if algo == 'DQN' or algo == 'DDQN' or algo == 'DuelingDQN' or algo == 'DuelingDDQN' or algo == 'DQN_RND':
         base_param = {
             'algo': algo,
             'sim': 100,
