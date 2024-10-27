@@ -21,6 +21,7 @@ from policy.rsrsaleph_dqn import RSRSAlephDQN
 from policy.rsrsaleph_q_eps_ras_dqn import RSRSAlephQEpsRASDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
 from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
+from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_RND
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_rsrs_dqn import ConvRSRSDQN
@@ -41,11 +42,11 @@ if __name__ == '__main__':
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
     ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
     env_name = 'CartPole-v1'
-    algos = ['DQN_RND']
+    algos = ['RSRSAlephQEpsRASChoiceDQN_RND']
     sim = 1
     epi = 500
     alpha = 0.001
@@ -75,7 +76,7 @@ if __name__ == '__main__':
             model = QNet
         elif algo == 'ConvDQN' or algo == 'ConvDDQN':
             model = ConvQNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             model = RSRSNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
@@ -152,6 +153,12 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceDQN':
             policy = RSRSAlephQEpsRASChoiceDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, collector, result_dir_path)
+        elif algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
+            policy = RSRSAlephQEpsRASChoiceDQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
