@@ -28,6 +28,7 @@ from policy.conv_dqn_rnd import ConvDQN_RND
 from policy.conv_rsrs_dqn import ConvRSRSDQN
 from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
 from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
+from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_rnd import ConvRSRSAlephQEpsRASChoiceDQN_RND
 
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
@@ -44,10 +45,10 @@ if __name__ == '__main__':
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
-    ConvDQN or ConvDDQN or ConvDQN_RND or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
+    ConvDQN or ConvDDQN or ConvDQN_RND or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND
     """
     env_name = 'CartPole-v1'
-    algos = ['ConvDQN_RND']
+    algos = ['ConvRSRSAlephQEpsRASChoiceDQN_RND']
     sim = 1
     epi = 500
     alpha = 0.001
@@ -77,7 +78,7 @@ if __name__ == '__main__':
             model = QNet
         elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
             model = ConvQNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             model = RSRSNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
@@ -85,7 +86,7 @@ if __name__ == '__main__':
             model = DuelingNet
         elif algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN':
             model = RSRSDuelingNet
-        elif algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN':
+        elif algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND':
             model = ConvRSRSNet
         elif algo == 'ConvRSRSAlephDQN':
             model = ConvRSRSAlephNet
@@ -232,6 +233,12 @@ if __name__ == '__main__':
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSAlephDQN':
             policy = ConvRSRSAlephDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+        elif algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND':
+            policy = ConvRSRSAlephQEpsRASChoiceDQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
