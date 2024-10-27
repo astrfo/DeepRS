@@ -59,6 +59,8 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
         self.n = np.zeros(self.action_space)
+        for param in self.rnd_model_target.parameters():
+            param.requires_grad = False
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)

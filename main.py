@@ -24,6 +24,7 @@ from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_RND
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
+from policy.conv_dqn_rnd import ConvDQN_RND
 from policy.conv_rsrs_dqn import ConvRSRSDQN
 from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
 from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
@@ -43,10 +44,10 @@ if __name__ == '__main__':
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
-    ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
+    ConvDQN or ConvDDQN or ConvDQN_RND or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
     env_name = 'CartPole-v1'
-    algos = ['RSRSAlephQEpsRASChoiceDQN_RND']
+    algos = ['ConvDQN_RND']
     sim = 1
     epi = 500
     alpha = 0.001
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 
         if algo == 'DQN' or algo == 'DDQN' or algo == 'DQN_RND':
             model = QNet
-        elif algo == 'ConvDQN' or algo == 'ConvDDQN':
+        elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
             model = ConvQNet
         elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             model = RSRSNet
@@ -207,6 +208,12 @@ if __name__ == '__main__':
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvDDQN':
             policy = ConvDDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+        elif algo == 'ConvDQN_RND':
+            policy = ConvDQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)

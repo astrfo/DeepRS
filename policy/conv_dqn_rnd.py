@@ -4,14 +4,15 @@ import torch.nn as nn
 import torch.optim as optim
 
 from memory.replay_buffer import ReplayBuffer
-from network.qnet import QNet
-from network.rndnet import RNDNet
+from network.conv_qnet import ConvQNet
+from network.conv_rndnet import ConvRNDNet
 
 torch.set_default_dtype(torch.float64)
 
 
-class DQN_RND:
-    def __init__(self, model=QNet, **kwargs):
+class ConvDQN_RND(nn.Module):
+    def __init__(self, model=ConvQNet, **kwargs):
+        super().__init__()
         self.alpha = kwargs.get('alpha', 0.0001)
         self.gamma = kwargs.get('gamma', 0.99)
         self.epsilon = kwargs.get('epsilon', 0.01)
@@ -19,18 +20,20 @@ class DQN_RND:
         self.hidden_size = kwargs.get('hidden_size', 128)
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
+        self.frame_shape = kwargs['frame_shape']
+        self.neighbor_frames = kwargs.get('neighbor_frames', 4)
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
-        self.rnd_model_pred = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
+        self.rnd_model_pred = ConvRNDNet(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.rnd_model_pred.to(self.device)
-        self.rnd_model_target = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
+        self.rnd_model_target = ConvRNDNet(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.rnd_model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
@@ -40,13 +43,13 @@ class DQN_RND:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
-        self.rnd_model_pred = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
+        self.rnd_model_pred = ConvRNDNet(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.rnd_model_pred.to(self.device)
-        self.rnd_model_target = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
+        self.rnd_model_target = ConvRNDNet(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.rnd_model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
         self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
@@ -59,10 +62,10 @@ class DQN_RND:
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
+        q_values = self.q_value(state)
         if np.random.rand() < self.epsilon:
             action = np.random.choice(self.action_space)
         else:
-            q_values = self.q_value(state)
             action = np.random.choice(np.where(q_values == max(q_values))[0])
         return action
 
