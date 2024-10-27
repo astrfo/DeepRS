@@ -63,7 +63,10 @@ if __name__ == '__main__':
         if 'Conv' in algo:
             env = gym.make(env_name, render_mode='rgb_array').unwrapped
         else:
-            env = gym.make(env_name, render_mode='rgb_array')
+            if 'ALE' in env_name:
+                env = gym.make(env_name, render_mode='rgb_array', obs_type='ram')
+            else:
+                env = gym.make(env_name, render_mode='rgb_array')
         env.reset()
         init_frame = get_screen(env)
 
