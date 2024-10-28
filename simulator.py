@@ -99,7 +99,7 @@ def atari_simulation(sims, epis, env, agent, collector, neighbor_frames, result_
             no_op_steps = np.random.randint(1, 30)
             for _ in range(no_op_steps):
                 action = 0
-                _, _, _, _ = env.step(action)
+                _, _, _, _, _ = env.step(action)
                 frame = get_screen(env)
                 frames.append(frame)
 
