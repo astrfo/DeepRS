@@ -1,6 +1,7 @@
 import uuid
 import pickle as pkl
 import numpy as np
+import torch
 
 
 class Collector:
@@ -77,6 +78,8 @@ class Collector:
         episode_data = self.format()
         with open(sim_dir_path + f'episode_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
+
+        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_sim{self.sim}_epi{self.epi}.pth')
 
     def collect_simulation_data(self):
         self.reward_sim_list /= self.sim
