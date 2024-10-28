@@ -77,3 +77,49 @@ def conv_simulation(sims, epis, env, agent, collector, neighbor_frames, result_d
     collector.save_simulation_data(average_sim_dir_path)
     save_simulation_plot(collector, average_sim_dir_path)
     env.close()
+
+
+def atari_simulation(sims, epis, env, agent, collector, neighbor_frames, result_dir_path):
+    for sim in range(sims):
+        sim_dir_path = result_dir_path + f'{sim+1}/'
+        os.makedirs(sim_dir_path, exist_ok=True)
+        agent.initialize()
+        collector.initialize()
+        for epi in tqdm(range(epis), 
+                        bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
+                        desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
+            collector.reset()
+            env.reset()
+            frame = get_screen(env)
+            frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
+            state = np.stack(frames, axis=1)[0,:]
+            total_reward, survived_step = 0, 0
+            terminated, truncated = False, False
+
+            no_op_steps = np.random.randint(1, 30)
+            for _ in range(no_op_steps):
+                action = 0
+                _, _, _, _ = env.step(action)
+                frame = get_screen(env)
+                frames.append(frame)
+
+            while not (terminated or truncated):
+                action = agent.action(state)
+                _, reward, terminated, truncated, _ = env.step(action)
+                frame = get_screen(env)
+                frames.append(frame)
+                next_state = np.stack(frames, axis=1)[0,:]
+                agent.update(state, action, reward, next_state, terminated)
+                state = next_state
+                total_reward += reward
+                survived_step += 1
+                collector.collect_step_data(reward, survived_step)
+            collector.collect_episode_data(total_reward, survived_step)
+        collector.save_episode_data(sim_dir_path)
+        save_episode_plot(collector, sim_dir_path)
+    average_sim_dir_path = result_dir_path + 'average/'
+    os.makedirs(average_sim_dir_path, exist_ok=True)
+    collector.collect_simulation_data()
+    collector.save_simulation_data(average_sim_dir_path)
+    save_simulation_plot(collector, average_sim_dir_path)
+    env.close()
