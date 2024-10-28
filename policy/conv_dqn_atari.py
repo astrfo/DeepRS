@@ -66,10 +66,10 @@ class ConvDQNAtari(nn.Module):
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        s = torch.tensor(s).to(self.device)
-        ns = torch.tensor(ns).to(self.device)
-        r = torch.tensor(r).to(self.device)
-        d = torch.tensor(d).to(self.device)
+        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
+        r = torch.tensor(r, dtype=torch.float32).to(self.device)
+        d = torch.tensor(d, dtype=torch.float32).to(self.device)
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]
