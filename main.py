@@ -1,7 +1,7 @@
 import gymnasium as gym
 import ale_py
 
-from simulator import simulation, conv_simulation
+from simulator import simulation, conv_simulation, atari_simulation
 from agent import Agent
 from collector import Collector
 from utils.get_screen_utils import get_screen
@@ -25,6 +25,7 @@ from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_dqn_rnd import ConvDQN_RND
+from policy.conv_dqn_atari import ConvDQNAtari
 from policy.conv_rsrs_dqn import ConvRSRSDQN
 from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
 from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
@@ -36,6 +37,7 @@ from network.rsrsnet import RSRSNet
 from network.rsrsalephnet import RSRSAlephNet
 from network.rsrs_duelingnet import RSRSDuelingNet
 from network.conv_qnet import ConvQNet
+from network.conv_atari_qnet import ConvQAtariNet
 from network.conv_rsrsnet import ConvRSRSNet
 from network.conv_rsrsalephnet import ConvRSRSAlephNet
 
@@ -45,18 +47,18 @@ if __name__ == '__main__':
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
-    ConvDQN or ConvDDQN or ConvDQN_RND or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND
+    ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND
     """
-    env_name = 'CartPole-v1'
-    algos = ['ConvRSRSAlephQEpsRASChoiceDQN_RND']
+    env_name = 'ALE/Breakout-v5'
+    algos = ['ConvDQNAtari']
     sim = 1
-    epi = 500
+    epi = 10000
     alpha = 0.001
     gamma = 0.99
     epsilon = 0.01
     tau = 0.01
     hidden_size = 128
-    memory_capacity = 10**4
+    memory_capacity = 10**6
     batch_size = 32
     neighbor_frames = 4
     warmup = 10
@@ -65,7 +67,7 @@ if __name__ == '__main__':
     aleph_G = 0
     for algo in algos:
         if 'Conv' in algo:
-            env = gym.make(env_name, render_mode='rgb_array').unwrapped
+            env = gym.make(env_name, render_mode='rgb_array', frameskip=4).unwrapped
         else:
             if 'ALE' in env_name:
                 env = gym.make(env_name, render_mode='rgb_array', obs_type='ram')
@@ -78,6 +80,8 @@ if __name__ == '__main__':
             model = QNet
         elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
             model = ConvQNet
+        elif algo == 'ConvDQNAtari':
+            model = ConvQAtariNet
         elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             model = RSRSNet
         elif algo == 'RSRSAlephDQN':
@@ -219,6 +223,12 @@ if __name__ == '__main__':
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+        elif algo == 'ConvDQNAtari':
+            policy = ConvDQNAtari(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
