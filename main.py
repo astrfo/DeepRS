@@ -30,6 +30,7 @@ from policy.conv_rsrs_dqn import ConvRSRSDQN
 from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
 from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
 from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_rnd import ConvRSRSAlephQEpsRASChoiceDQN_RND
+from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_atari import ConvRSRSAlephQEpsRASChoiceDQNAtari
 
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
@@ -40,6 +41,7 @@ from network.conv_qnet import ConvQNet
 from network.conv_atari_qnet import ConvQAtariNet
 from network.conv_rsrsnet import ConvRSRSNet
 from network.conv_rsrsalephnet import ConvRSRSAlephNet
+from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 
 
 if __name__ == '__main__':
@@ -47,7 +49,7 @@ if __name__ == '__main__':
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
-    ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND
+    ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari
     """
     env_name = 'ALE/Breakout-v5'
     algos = ['ConvDQNAtari']
@@ -94,6 +96,8 @@ if __name__ == '__main__':
             model = ConvRSRSNet
         elif algo == 'ConvRSRSAlephDQN':
             model = ConvRSRSAlephNet
+        elif algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
+            model = ConvRSRSAtariNet
         else:
             print(f'Not found network {algo}')
             exit(1)
@@ -253,6 +257,12 @@ if __name__ == '__main__':
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+        elif algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
+            policy = ConvRSRSAlephQEpsRASChoiceDQNAtari(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')
             exit(1)
