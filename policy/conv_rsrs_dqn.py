@@ -14,20 +14,20 @@ torch.set_default_dtype(torch.float64)
 class ConvRSRSDQN(nn.Module):
     def __init__(self, model=ConvRSRSNet, **kwargs):
         super().__init__()
-        self.warmup = kwargs.get('warmup', 10)
-        self.k = kwargs.get('k', 5)
-        self.zeta = kwargs.get('zeta', 0.008)
-        self.alpha = kwargs.get('alpha', 0.0001)
-        self.gamma = kwargs.get('gamma', 0.99)
-        self.epsilon = kwargs.get('epsilon', 0.01)
-        self.tau = kwargs.get('tau', 0.01)
-        self.hidden_size = kwargs.get('hidden_size', 64)
+        self.warmup = kwargs['warmup']
+        self.k = kwargs['k']
+        self.zeta = kwargs['zeta']
+        self.alpha = kwargs['alpha']
+        self.gamma = kwargs['gamma']
+        self.epsilon = kwargs['epsilon']
+        self.tau = kwargs['tau']
+        self.hidden_size = kwargs['hidden_size']
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
         self.frame_shape = kwargs['frame_shape']
-        self.neighbor_frames = kwargs.get('neighbor_frames', 4)
-        self.memory_capacity = kwargs.get('memory_capacity', 10**4)
-        self.batch_size = kwargs.get('batch_size', 32)
+        self.neighbor_frames = kwargs['neighbor_frames']
+        self.memory_capacity = kwargs['memory_capacity']
+        self.batch_size = kwargs['batch_size']
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -41,7 +41,7 @@ class ConvRSRSDQN(nn.Module):
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.gamma_G = 0.9
-        self.aleph_G = kwargs.get('aleph_G', 1.0)
+        self.aleph_G = kwargs['aleph_G']
         self.E_G = 0
         # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]

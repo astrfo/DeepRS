@@ -13,18 +13,18 @@ torch.set_default_dtype(torch.float64)
 
 class RSRSAlephQEpsDQN:
     def __init__(self, model=RSRSNet, **kwargs):
-        self.warmup = kwargs.get('warmup', 10)
-        self.k = kwargs.get('k', 5)
-        self.zeta = kwargs.get('zeta', 0.008)
-        self.alpha = kwargs.get('alpha', 0.0001)
-        self.gamma = kwargs.get('gamma', 0.99)
-        self.epsilon = kwargs.get('epsilon', 0.01)
-        self.tau = kwargs.get('tau', 0.01)
-        self.hidden_size = kwargs.get('hidden_size', 128)
+        self.warmup = kwargs['warmup']
+        self.k = kwargs['k']
+        self.zeta = kwargs['zeta']
+        self.alpha = kwargs['alpha']
+        self.gamma = kwargs['gamma']
+        self.epsilon = kwargs['epsilon']
+        self.tau = kwargs['tau']
+        self.hidden_size = kwargs['hidden_size']
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
-        self.memory_capacity = kwargs.get('memory_capacity', 10**4)
-        self.batch_size = kwargs.get('batch_size', 32)
+        self.memory_capacity = kwargs['memory_capacity']
+        self.batch_size = kwargs['batch_size']
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
