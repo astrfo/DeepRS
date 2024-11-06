@@ -6,8 +6,6 @@ import torch.optim as optim
 from memory.replay_buffer import ReplayBuffer
 from network.conv_atari_qnet import ConvQAtariNet
 
-torch.set_default_dtype(torch.float64)
-
 
 class ConvDQNAtari(nn.Module):
     def __init__(self, model=ConvQAtariNet, **kwargs):
@@ -31,23 +29,23 @@ class ConvDQNAtari(nn.Module):
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model_target.to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
         self.criterion = nn.SmoothL1Loss()
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model_target.to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
 
     def q_value(self, state):
-        s = torch.tensor(state).to(self.device).unsqueeze(0)
+        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
@@ -68,10 +66,11 @@ class ConvDQNAtari(nn.Module):
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        s = torch.tensor(s, dtype=torch.float64).to(self.device)
-        ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
-        r = torch.tensor(r, dtype=torch.float64).to(self.device)
-        d = torch.tensor(d, dtype=torch.float64).to(self.device)
+        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        a = torch.tensor(a, dtype=torch.long).to(self.device)
+        r = torch.tensor(r, dtype=torch.float32).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
+        d = torch.tensor(d, dtype=torch.float32).to(self.device)
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]
