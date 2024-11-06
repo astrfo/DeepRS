@@ -67,9 +67,6 @@ class ConvRSRSAlephQEpsRASChoiceDQNAtari:
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
-            print("dklfjsld")
-            print("dklfjsld")
-            print("dklfjsld")
             q_values = self.q_value(state)
             aleph = max(q_values) + np.float64(1e-10)
             controllable_state = self.embed(state)

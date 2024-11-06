@@ -66,8 +66,6 @@ class ConvDQNAtari(nn.Module):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size or len(self.replay_buffer.memory) < self.warmup_steps:
             return
-        
-        print("sdjklfslk")
 
         s, a, r, ns, d = self.replay_buffer.encode()
         s = torch.tensor(s, dtype=torch.float64).to(self.device)
