@@ -90,25 +90,19 @@ def atari_simulation(sims, epis, env, agent, collector, neighbor_frames, result_
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
             collector.reset()
             env.reset()
-            frame = get_screen(env)
-            frames = deque([frame]*neighbor_frames, maxlen=neighbor_frames)
-            state = np.stack(frames, axis=1)[0,:]
             total_reward, survived_step = 0, 0
             terminated, truncated = False, False
 
             no_op_steps = np.random.randint(1, 30)
             for _ in range(no_op_steps):
                 action = 0
-                _, _, _, _, _ = env.step(action)
-                frame = get_screen(env)
-                frames.append(frame)
+                state, _, terminated, truncated, _ = env.step(action)
+                if terminated or truncated:
+                    state, _ = env.reset()
 
             while not (terminated or truncated):
                 action = agent.action(state)
-                _, reward, terminated, truncated, _ = env.step(action)
-                frame = get_screen(env)
-                frames.append(frame)
-                next_state = np.stack(frames, axis=1)[0,:]
+                next_state, reward, terminated, truncated, _ = env.step(action)
                 agent.update(state, action, reward, next_state, terminated)
                 state = next_state
                 total_reward += reward
