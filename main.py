@@ -61,7 +61,7 @@ if __name__ == '__main__':
     epsilon = 0.01
     epsilon_start = 1.0
     epsilon_end = 0.01
-    epsilon_decay = 1000000
+    epsilon_decay = 1000
     learning_rate = 0.00025
     target_update_freq = 10000
     tau = 0.01
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     for algo in algos:
         if 'Conv' in algo:
             if 'Atari' in algo:
-                env = gym.make(env_name, render_mode='rgb_array').unwrapped
+                env = gym.make(env_name, render_mode='rgb_array')
                 env = AtariPreprocessing(env, frame_skip=4, grayscale_newaxis=False, scale_obs=True)
                 env = FrameStackObservation(env, stack_size=4)
             else:
