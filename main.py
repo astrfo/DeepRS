@@ -1,4 +1,5 @@
 import gymnasium as gym
+from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation
 import ale_py
 
 from simulator import simulation, conv_simulation, atari_simulation
@@ -51,25 +52,35 @@ if __name__ == '__main__':
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari
     """
-    env_name = 'ALE/Breakout-v5'
+    env_name = 'BreakoutNoFrameskip-v4'
     algos = ['ConvDQNAtari']
     sim = 1
     epi = 10000
     alpha = 0.001
     gamma = 0.99
     epsilon = 0.01
+    epsilon_start = 1.0
+    epsilon_end = 0.01
+    epsilon_decay = 1000000
+    learning_rate = 0.00025
+    target_update_freq = 10000
     tau = 0.01
     hidden_size = 128
-    memory_capacity = 10**6
+    memory_capacity = 1000000
+    warmup = 50000
     batch_size = 32
     neighbor_frames = 4
-    warmup = 10
     k = 5
     zeta = 0.01
     aleph_G = 0
     for algo in algos:
         if 'Conv' in algo:
-            env = gym.make(env_name, render_mode='rgb_array', frameskip=4).unwrapped
+            if 'Atari' in algo:
+                env = gym.make(env_name, render_mode='rgb_array')
+                env = AtariPreprocessing(env, frame_skip=4, grayscale_newaxis=False, scale_obs=True)
+                env = FrameStackObservation(env, stack_size=4)
+            else:
+                env = gym.make(env_name, render_mode='rgb_array', frameskip=4).unwrapped
         else:
             if 'ALE' in env_name:
                 env = gym.make(env_name, render_mode='rgb_array', obs_type='ram')
@@ -109,6 +120,11 @@ if __name__ == '__main__':
             'alpha': alpha,
             'gamma': gamma,
             'epsilon': epsilon,
+            'epsilon_start': epsilon_start,
+            'epsilon_end': epsilon_end,
+            'epsilon_decay': epsilon_decay,
+            'learning_rate': learning_rate,
+            'target_update_freq': target_update_freq,
             'tau': tau,
             'hidden_size': hidden_size,
             'memory_capacity': memory_capacity,

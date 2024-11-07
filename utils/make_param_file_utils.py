@@ -25,7 +25,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND' or algo == 'ConvDQNAtari':
+    elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -92,8 +92,18 @@ def ex_param_make_folder(env_name, algo, ex_param):
                 folder_name += f'_{k}{v}'
         results_dir = f'{ex_folder_path}{folder_name}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND' or algo == 'ConvDQNAtari':
+    elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
         use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'memory_capacity', 'batch_size', 'neighbor_frames']
+        ex_folder_path = f'log/{env_name}/{algo}/'
+        os.makedirs(ex_folder_path, exist_ok=True)
+        folder_name = algo
+        for k, v in ex_param.items():
+            if k in use_param:
+                folder_name += f'_{k}{v}'
+        results_dir = f'{ex_folder_path}{folder_name}/'
+        os.makedirs(results_dir, exist_ok=True)
+    elif algo == 'ConvDQNAtari':
+        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'epsilon_start', 'epsilon_end', 'epsilon_decay', 'learning_rate', 'target_update_freq', 'tau', 'hidden_size', 'memory_capacity', 'batch_size', 'warmup']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         folder_name = algo
