@@ -86,7 +86,7 @@ class ConvDQNAtari(nn.Module):
 
         self.optimizer.zero_grad()
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=40.0)
         self.optimizer.step()
         if self.total_steps % self.target_update_freq == 0:
             self.sync_model()
