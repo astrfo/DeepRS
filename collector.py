@@ -65,9 +65,19 @@ class Collector:
         self.reward_epi_list.append(total_reward)
         self.survived_step_epi_list.append(survived_step)
 
+    def save_epi1000_data(self, sim_dir_path, epi):
+        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_episode{epi}.pth')
+        np.savetxt(sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
+        
+        episode_data = self.format()
+        with open(sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
+            pkl.dump(episode_data, f)
+
     def save_episode_data(self, sim_dir_path):
         self.reward_sim_list += self.reward_epi_list
         self.survived_step_sim_list += self.survived_step_epi_list
+        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_sim{self.sim}_epi{self.epi}.pth')
         np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
@@ -78,8 +88,6 @@ class Collector:
         episode_data = self.format()
         with open(sim_dir_path + f'episode_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
-
-        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_sim{self.sim}_epi{self.epi}.pth')
 
     def collect_simulation_data(self):
         self.reward_sim_list /= self.sim
