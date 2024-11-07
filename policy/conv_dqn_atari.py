@@ -52,7 +52,8 @@ class ConvDQNAtari(nn.Module):
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
-        self.epsilon = self.epsilon_end + (self.epsilon_start - self.epsilon_end) * np.exp(-1. * self.total_steps / self.epsilon_decay)
+        if self.total_steps < self.epsilon_decay:
+            self.epsilon = self.epsilon_start - (self.epsilon_start - self.epsilon_end) * (self.total_steps / self.epsilon_decay)
         self.total_steps += 1
         q_values = self.q_value(state)
         if np.random.rand() < self.epsilon:
