@@ -61,7 +61,7 @@ if __name__ == '__main__':
     epsilon = 0.01
     epsilon_start = 1.0
     epsilon_end = 0.01
-    epsilon_decay = 1000
+    epsilon_decay = 1000000
     learning_rate = 0.00025
     target_update_freq = 10000
     tau = 0.01
