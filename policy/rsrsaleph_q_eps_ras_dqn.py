@@ -18,7 +18,7 @@ class RSRSAlephQEpsRASDQN:
         self.zeta = kwargs['zeta']
         self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
-        self.epsilon = kwargs['epsilon']
+        self.epsilon_dash = kwargs['epsilon_dash']
         self.tau = kwargs['tau']
         self.hidden_size = kwargs['hidden_size']
         self.action_space = kwargs['action_space']
@@ -126,7 +126,7 @@ class RSRSAlephQEpsRASDQN:
         regularization_squared_distance = squared_distance / average_squared_distance
         regularization_squared_distance = np.maximum(regularization_squared_distance, 0)
 
-        inverse_kernel_function = self.epsilon / (regularization_squared_distance + self.epsilon)
+        inverse_kernel_function = self.epsilon_dash / (regularization_squared_distance + self.epsilon_dash)
         sum_kernel = np.sum(inverse_kernel_function)
         weight = inverse_kernel_function / sum_kernel
         self.n = np.average(action_vec[I.flatten()], weights=weight, axis=0)

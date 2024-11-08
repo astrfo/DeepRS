@@ -55,7 +55,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
             'epi': 1000,
             'alpha': 0.001,
             'gamma': 0.99,
-            'epsilon': 0.01,
+            'epsilon_dash': 0.01,
             'tau': 0.01,
             'hidden_size': 128,
             'replay_buffer_capacity': 10**4,
@@ -114,7 +114,7 @@ def ex_param_make_folder(env_name, algo, ex_param):
         results_dir = f'{ex_folder_path}{folder_name}/'
         os.makedirs(results_dir, exist_ok=True)
     elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
-        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'replay_buffer_capacity', 'episodic_memory_capacity', 'batch_size', 'neighbor_frames', 'warmup', 'k', 'zeta', 'aleph_G']
+        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon_dash', 'tau', 'hidden_size', 'replay_buffer_capacity', 'episodic_memory_capacity', 'batch_size', 'neighbor_frames', 'warmup', 'k', 'zeta', 'aleph_G']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         folder_name = algo

@@ -72,6 +72,7 @@ if __name__ == '__main__':
     batch_size = 32
     neighbor_frames = 4
     k = 5
+    epsilon_dash = 0.001
     zeta = 0.01
     aleph_G = 0
     for algo in algos:
@@ -133,6 +134,7 @@ if __name__ == '__main__':
             'batch_size': batch_size,
             'neighbor_frames': neighbor_frames,
             'warmup': warmup,
+            'epsilon_dash': epsilon_dash,
             'k': k,
             'zeta': zeta,
             'aleph_G': aleph_G,
