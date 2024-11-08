@@ -37,6 +37,7 @@ class ConvDQNAtari(nn.Module):
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
         self.criterion = nn.SmoothL1Loss()
         self.total_steps = 0
+        self.loss = None
 
     def reset(self):
         self.replay_buffer.reset()
@@ -82,10 +83,10 @@ class ConvDQNAtari(nn.Module):
             next_qa_target = torch.amax(next_q_target, dim=1)
         
         target = r + self.gamma * next_qa_target * (1 - d)
-        loss = self.criterion(qa, target)
+        self.loss = self.criterion(qa, target)
 
         self.optimizer.zero_grad()
-        loss.backward()
+        self.loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=40.0)
         self.optimizer.step()
         if self.total_steps % self.target_update_freq == 0:

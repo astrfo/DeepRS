@@ -17,6 +17,7 @@ class Collector:
         self.reward_step_list = []
         self.survived_step_step_list = []
         self.q_value_step_list = []
+        self.loss_step_list = []
         if self.is_aleph_s_in_policy:
             self.aleph_step_list = []
             self.satisfy_unsatisfy_count_list = np.zeros(2)
@@ -35,6 +36,7 @@ class Collector:
         data['reward'] = self.reward_epi_list
         data['survived_step'] = self.survived_step_epi_list
         data['q_value'] = self.q_value_step_list
+        data['loss'] = self.loss_step_list
         if self.is_aleph_s_in_policy:
             data['aleph'] = self.aleph_step_list
             data['satisfy_unsatisfy_count'] = self.satisfy_unsatisfy_count_list
@@ -43,6 +45,8 @@ class Collector:
     def initialize(self):
         self.reward_step_list = []
         self.survived_step_step_list = []
+        self.q_value_step_list = []
+        self.loss_step_list = []
         self.reward_epi_list = []
         self.survived_step_epi_list = []
 
@@ -55,6 +59,8 @@ class Collector:
         self.survived_step_step_list.append(survived_step)
         q_value = self.agent.policy.q_value(self.agent.current_state)
         self.q_value_step_list.append(q_value)
+        if self.policy.loss is not None:
+            self.loss_step_list.append(self.policy.loss.item())
         if self.is_aleph_s_in_policy:
             aleph = self.agent.policy.aleph_s(self.agent.current_state)
             self.aleph_step_list.append(aleph)
@@ -69,6 +75,7 @@ class Collector:
         torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_episode{epi}.pth')
         np.savetxt(sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         
         episode_data = self.format()
         with open(sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
@@ -81,6 +88,7 @@ class Collector:
         np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
+        np.savetxt(sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         if self.is_aleph_s_in_policy:
             np.savetxt(sim_dir_path + 'aleph.csv', self.aleph_step_list, delimiter=',')
             np.savetxt(sim_dir_path + 'satisfy_unsatisfy_count.csv', self.satisfy_unsatisfy_count_list, delimiter=',')
