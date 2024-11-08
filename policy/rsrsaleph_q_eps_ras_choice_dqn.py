@@ -23,10 +23,11 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.hidden_size = kwargs['hidden_size']
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
-        self.memory_capacity = kwargs['memory_capacity']
+        self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
+        self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
         self.batch_size = kwargs['batch_size']
-        self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
-        self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
+        self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
+        self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
