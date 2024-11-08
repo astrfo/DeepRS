@@ -1,0 +1,29 @@
+import matplotlib.pyplot as plt
+
+def save_epi1000_plot(collector, sim_dir_path, epi):
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.reward_epi_list, label='Reward')
+    plt.title('Reward per Episode')
+    plt.xlabel('Episode')
+    plt.xlim(-1, epi+1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'reward_epi{epi}.png')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.survived_step_epi_list, label='Survived Step')
+    plt.title('Survived Step per Episode')
+    plt.xlabel('Episode')
+    plt.xlim(-1, epi+1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'survived_step_epi{epi}.png')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.loss_step_list, label='loss')
+    plt.title('Loss per Step')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.loss_step_list) + 1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'loss_epi{epi}.png')
+    plt.close()
