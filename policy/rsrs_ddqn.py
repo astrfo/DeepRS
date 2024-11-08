@@ -18,7 +18,7 @@ class RSRSDDQN:
         self.zeta = kwargs['zeta']
         self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
-        self.epsilon = kwargs['epsilon']
+        self.epsilon_dash = kwargs['epsilon_dash']
         self.tau = kwargs['tau']
         self.hidden_size = kwargs['hidden_size']
         self.action_space = kwargs['action_space']
@@ -156,7 +156,7 @@ class RSRSDDQN:
         regularization_squared_distance = np.divide(squared_distance, average_squared_distance, out=np.zeros_like(squared_distance), where=average_squared_distance!=0)
         regularization_squared_distance -= self.zeta
         np.putmask(regularization_squared_distance, regularization_squared_distance < 0, 0)
-        inverse_kernel_function = [self.epsilon / (i + self.epsilon) for i in regularization_squared_distance]
+        inverse_kernel_function = [self.epsilon_dash / (i + self.epsilon_dash) for i in regularization_squared_distance]
         sum_kernel = np.sum(inverse_kernel_function)
         weight = [k_i/sum_kernel for k_i in inverse_kernel_function]
         self.n = np.average(action_vec, weights=weight, axis=0)
