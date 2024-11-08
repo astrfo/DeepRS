@@ -25,7 +25,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
+    elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND' or algo == 'ConvDQNAtari':
         base_param = {
             'algo': algo,
             'sim': 100,
