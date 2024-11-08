@@ -13,7 +13,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
             'epsilon': 0.01,
             'tau': 0.01,
             'hidden_size': 128,
-            'memory_capacity': 10**4,
+            'replay_buffer_capacity': 10**4,
             'batch_size': 32,
         }
         folder_name = algo
@@ -35,7 +35,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
             'epsilon': 0.01,
             'tau': 0.01,
             'hidden_size': 128,
-            'memory_capacity': 10**4,
+            'replay_buffer_capacity': 10**4,
             'batch_size': 32,
             'neighbor_frames': 4,
         }
@@ -58,7 +58,8 @@ def compare_base_make_folder(env_name, algo, ex_param):
             'epsilon': 0.01,
             'tau': 0.01,
             'hidden_size': 128,
-            'memory_capacity': 10**4,
+            'replay_buffer_capacity': 10**4,
+            'episodic_memory_capacity': 10**4,
             'batch_size': 32,
             'neighbor_frames': 4,
             'warmup': 10,
@@ -83,7 +84,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
 
 def ex_param_make_folder(env_name, algo, ex_param):
     if algo == 'DQN' or algo == 'DDQN' or algo == 'DuelingDQN' or algo == 'DuelingDDQN' or algo == 'DQN_RND':
-        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'memory_capacity', 'batch_size']
+        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'replay_buffer_capacity', 'batch_size']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         folder_name = algo
@@ -93,7 +94,7 @@ def ex_param_make_folder(env_name, algo, ex_param):
         results_dir = f'{ex_folder_path}{folder_name}/'
         os.makedirs(results_dir, exist_ok=True)
     elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
-        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'memory_capacity', 'batch_size', 'neighbor_frames']
+        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'replay_buffer_capacity', 'batch_size', 'neighbor_frames']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         folder_name = algo
@@ -103,7 +104,7 @@ def ex_param_make_folder(env_name, algo, ex_param):
         results_dir = f'{ex_folder_path}{folder_name}/'
         os.makedirs(results_dir, exist_ok=True)
     elif algo == 'ConvDQNAtari':
-        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'epsilon_start', 'epsilon_end', 'epsilon_decay', 'learning_rate', 'target_update_freq', 'tau', 'hidden_size', 'memory_capacity', 'batch_size', 'warmup']
+        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'epsilon_start', 'epsilon_end', 'epsilon_decay', 'learning_rate', 'target_update_freq', 'tau', 'hidden_size', 'replay_buffer_capacity', 'batch_size', 'warmup']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         folder_name = algo
@@ -113,7 +114,7 @@ def ex_param_make_folder(env_name, algo, ex_param):
         results_dir = f'{ex_folder_path}{folder_name}/'
         os.makedirs(results_dir, exist_ok=True)
     elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
-        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'memory_capacity', 'batch_size', 'neighbor_frames', 'warmup', 'k', 'zeta', 'aleph_G']
+        use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon', 'tau', 'hidden_size', 'replay_buffer_capacity', 'episodic_memory_capacity', 'batch_size', 'neighbor_frames', 'warmup', 'k', 'zeta', 'aleph_G']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         folder_name = algo
