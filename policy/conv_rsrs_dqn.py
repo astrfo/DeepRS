@@ -17,7 +17,7 @@ class ConvRSRSDQN(nn.Module):
         self.warmup = kwargs['warmup']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
-        self.alpha = kwargs['alpha']
+        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon = kwargs['epsilon']
         self.tau = kwargs['tau']
@@ -37,7 +37,7 @@ class ConvRSRSDQN(nn.Module):
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         self.criterion = nn.MSELoss(reduction='sum')
         self.n = np.zeros(self.action_space)
         self.total_step = 0
@@ -56,7 +56,7 @@ class ConvRSRSDQN(nn.Module):
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.E_G = 0

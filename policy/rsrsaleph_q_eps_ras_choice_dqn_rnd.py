@@ -17,7 +17,7 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
         self.warmup = kwargs['warmup']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
-        self.alpha = kwargs['alpha']
+        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon = kwargs['epsilon']
         self.tau = kwargs['tau']
@@ -39,8 +39,8 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
         self.rnd_model_pred.to(self.device)
         self.rnd_model_target = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
         self.rnd_model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.learning_rate)
         self.criterion = nn.MSELoss(reduction='sum')
         self.n = np.zeros(self.action_space)
         for param in self.rnd_model_target.parameters():
@@ -57,8 +57,8 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
         self.rnd_model_pred.to(self.device)
         self.rnd_model_target = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
         self.rnd_model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.learning_rate)
         self.n = np.zeros(self.action_space)
         for param in self.rnd_model_target.parameters():
             param.requires_grad = False

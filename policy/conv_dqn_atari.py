@@ -10,7 +10,7 @@ from network.conv_atari_qnet import ConvQAtariNet
 class ConvDQNAtari(nn.Module):
     def __init__(self, model=ConvQAtariNet, **kwargs):
         super().__init__()
-        self.alpha = kwargs['alpha']
+        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon = kwargs['epsilon']
         self.epsilon_start = kwargs['epsilon_start']

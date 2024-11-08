@@ -18,7 +18,7 @@ class ConvRSRSAlephQEpsRASChoiceDQNAtari:
         self.warmup_steps = 1e3
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
-        self.alpha = kwargs['alpha']
+        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon = kwargs['epsilon']
         self.tau = kwargs['tau']

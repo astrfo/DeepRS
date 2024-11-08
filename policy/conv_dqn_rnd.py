@@ -13,7 +13,7 @@ torch.set_default_dtype(torch.float64)
 class ConvDQN_RND(nn.Module):
     def __init__(self, model=ConvQNet, **kwargs):
         super().__init__()
-        self.alpha = kwargs['alpha']
+        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon = kwargs['epsilon']
         self.tau = kwargs['tau']
@@ -35,8 +35,8 @@ class ConvDQN_RND(nn.Module):
         self.rnd_model_pred.to(self.device)
         self.rnd_model_target = ConvRNDNet(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.rnd_model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.learning_rate)
         self.criterion = nn.MSELoss(reduction='sum')
         for param in self.rnd_model_target.parameters():
             param.requires_grad = False
@@ -51,8 +51,8 @@ class ConvDQN_RND(nn.Module):
         self.rnd_model_pred.to(self.device)
         self.rnd_model_target = ConvRNDNet(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames)
         self.rnd_model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.rnd_optimizer = optim.Adam(self.rnd_model_pred.parameters(), lr=self.learning_rate)
         for param in self.rnd_model_target.parameters():
             param.requires_grad = False
 

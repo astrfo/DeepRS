@@ -11,7 +11,7 @@ torch.set_default_dtype(torch.float64)
 
 class DQN:
     def __init__(self, model=QNet, **kwargs):
-        self.alpha = kwargs['alpha']
+        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon = kwargs['epsilon']
         self.tau = kwargs['tau']
@@ -27,7 +27,7 @@ class DQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         self.criterion = nn.MSELoss(reduction='sum')
 
     def reset(self):
@@ -36,7 +36,7 @@ class DQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
