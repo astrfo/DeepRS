@@ -66,7 +66,8 @@ if __name__ == '__main__':
     target_update_freq = 10000
     tau = 0.01
     hidden_size = 128
-    memory_capacity = 1000000
+    replay_buffer_capacity = 1000000
+    episodic_memory_capacity = 1000
     warmup = 50000
     batch_size = 32
     neighbor_frames = 4
@@ -127,7 +128,8 @@ if __name__ == '__main__':
             'target_update_freq': target_update_freq,
             'tau': tau,
             'hidden_size': hidden_size,
-            'memory_capacity': memory_capacity,
+            'replay_buffer_capacity': replay_buffer_capacity,
+            'episodic_memory_capacity': episodic_memory_capacity,
             'batch_size': batch_size,
             'neighbor_frames': neighbor_frames,
             'warmup': warmup,
