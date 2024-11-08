@@ -7,30 +7,24 @@ from network.conv_atari_qnet import ConvQAtariNet
 
 
 if __name__ == '__main__':
-    # モデルのパス
     model_path = 'xxx.pth'
 
-    # 環境の設定
     env = gym.make('ALE/Breakout-v5', render_mode='rgb_array')
     env = gym.wrappers.AtariPreprocessing(env, frame_skip=1)
     env = gym.wrappers.FrameStackObservation(env, stack_size=4)
 
-    # モデルの設定
     action_space = env.action_space.n
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     target_net = ConvQAtariNet(input_size=None, hidden_size=None, output_size=action_space, neighbor_frames=None).to(device)
     target_net.load_state_dict(torch.load(model_path, map_location=device))
 
-    # 動画の保存先
     video_filename = 'breakout_simulation.mp4'
     frames = []
 
-    # 環境のリセット
     state, info = env.reset()
     state_frames = torch.zeros((1, 4, 84, 84), dtype=torch.float32, device=device)
     next_state, reward, terminated, truncated, info = env.step(1)
 
-    # 観測フレームを処理
     next_state_frame = next_state / 255.0
     next_state_frame = torch.tensor(next_state_frame, dtype=torch.float32, device=device).unsqueeze(0)
     state_frames = next_state_frame
@@ -42,12 +36,10 @@ if __name__ == '__main__':
         next_state, reward, terminated, truncated, info = env.step(action)
         frames.append(env.render())
 
-        # 次の観測フレームの処理
         next_state_frame = next_state / 255.0
         next_state_frame = torch.tensor(next_state_frame, dtype=torch.float32, device=device).unsqueeze(0)
         state_frames = next_state_frame
 
-    # 動画として保存
     with imageio.get_writer(video_filename, fps=30) as video:
         for frame in frames:
             video.append_data(frame)
