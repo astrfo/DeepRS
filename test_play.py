@@ -9,7 +9,6 @@ from network.conv_atari_qnet import ConvQAtariNet
 if __name__ == '__main__':
     # モデルのパス
     model_path = 'xxx.pth'
-    copy_model_path = 'test_play_model.pth'
 
     # 環境の設定
     env = gym.make('ALE/Breakout-v5', render_mode='rgb_array')
@@ -20,8 +19,7 @@ if __name__ == '__main__':
     action_space = env.action_space.n
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     target_net = ConvQAtariNet(input_size=None, hidden_size=None, output_size=action_space, neighbor_frames=None).to(device)
-    torch.save(target_net.state_dict(), copy_model_path)
-    target_net.load_state_dict(torch.load(copy_model_path, map_location=device))
+    target_net.load_state_dict(torch.load(model_path, map_location=device))
 
     # 動画の保存先
     video_filename = 'breakout_simulation.mp4'
