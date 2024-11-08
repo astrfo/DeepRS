@@ -22,7 +22,6 @@ if __name__ == '__main__':
     target_net = ConvQAtariNet(input_size=None, hidden_size=None, output_size=action_space, neighbor_frames=None).to(device)
     torch.save(target_net.state_dict(), copy_model_path)
     target_net.load_state_dict(torch.load(copy_model_path, map_location=device))
-    target_net.eval()
 
     # 動画の保存先
     video_filename = 'breakout_simulation.mp4'
