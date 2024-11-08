@@ -6,6 +6,7 @@ from collections import deque
 
 from utils.get_screen_utils import get_screen
 from plot.save_episode_plot import save_episode_plot
+from plot.save_epi1000_plot import save_epi1000_plot
 from plot.save_simulation_plot import save_simulation_plot
 
 
@@ -109,8 +110,9 @@ def atari_simulation(sims, epis, env, agent, collector, neighbor_frames, result_
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
-            if epi % 1000 == 0:
+            if (epi+1) % 1000 == 0:
                 collector.save_epi1000_data(sim_dir_path, epi)
+                save_epi1000_plot(collector, sim_dir_path, epi)
         collector.save_episode_data(sim_dir_path)
         save_episode_plot(collector, sim_dir_path)
     average_sim_dir_path = result_dir_path + 'average/'
