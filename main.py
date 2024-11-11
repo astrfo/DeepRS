@@ -53,7 +53,7 @@ if __name__ == '__main__':
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari
     """
     env_name = 'BreakoutNoFrameskip-v4'
-    algos = ['ConvDQNAtari']
+    algos = ['ConvRSRSAlephQEpsRASChoiceDQNAtari']
     sim = 1
     epi = 10000
     alpha = 0.001
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     learning_rate = 0.00025
     target_update_freq = 10000
     tau = 0.01
-    hidden_size = 128
+    hidden_size = 8
     replay_buffer_capacity = 1000000
     episodic_memory_capacity = 1000
     warmup = 50000
