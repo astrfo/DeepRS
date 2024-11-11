@@ -48,7 +48,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         time_now = datetime.now()
         results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari' or algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
         base_param = {
             'algo': algo,
             'sim': 100,
@@ -113,7 +113,7 @@ def ex_param_make_folder(env_name, algo, ex_param):
                 folder_name += f'_{k}{v}'
         results_dir = f'{ex_folder_path}{folder_name}/'
         os.makedirs(results_dir, exist_ok=True)
-    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
+    elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari' or algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
         use_param = ['sim', 'epi', 'alpha', 'gamma', 'epsilon_dash', 'tau', 'hidden_size', 'replay_buffer_capacity', 'episodic_memory_capacity', 'batch_size', 'neighbor_frames', 'warmup', 'k', 'zeta', 'aleph_G']
         ex_folder_path = f'log/{env_name}/{algo}/'
         os.makedirs(ex_folder_path, exist_ok=True)
