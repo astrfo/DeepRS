@@ -13,19 +13,16 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         super().__init__()
         self.warmup = kwargs['warmup']
         self.k = kwargs['k']
-        self.zeta = kwargs['zeta']
         self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']
         self.target_update_freq = kwargs['target_update_freq']
-        self.tau = kwargs['tau']
         self.hidden_size = kwargs['hidden_size']
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
         self.frame_shape = kwargs['frame_shape']
         self.neighbor_frames = kwargs['neighbor_frames']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
-        self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
         self.batch_size = kwargs['batch_size']
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
