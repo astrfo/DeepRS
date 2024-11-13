@@ -28,7 +28,6 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
         self.batch_size = kwargs['batch_size']
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
-        self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
@@ -45,10 +44,8 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
 
-
     def reset(self):
         self.replay_buffer.reset()
-        self.episodic_memory.reset()
         self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
@@ -67,16 +64,16 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
-        if self.warmup < self.total_steps:
+        self.total_steps += 1
+        if self.warmup > self.total_steps:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
             aleph = max(q_values) + self.epsilon_dash
             diff = aleph - q_values
-            Z = 1.0 / np.sum(self.epsilon_dash / diff)
+            Z = 1.0 / np.sum(1.0 / diff)
             rho = Z / diff
-            b = self.n / rho - 1.0 + self.epsilon_dash
-            SRS = (1.0 + max(b)) * rho - self.n
+            SRS = ((self.n / rho).max() + self.epsilon_dash) * rho - self.n
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
 
@@ -119,15 +116,13 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         self.pseudo_counts *= self.gamma
         self.weights *= self.gamma
 
-        controllable_state_norm = controllable_state / np.linalg.norm(controllable_state) + self.epsilon_dash
+        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + self.epsilon_dash)
 
         distances = np.linalg.norm(self.centroids - controllable_state_norm, axis=1)
         weight = 1 / (distances + self.epsilon_dash)
 
-        self.centroids = (
-            (self.weights[:, None] * self.centroids + weight[:, None] * controllable_state_norm) /
-            (self.weights[:, None] + weight[:, None] + self.epsilon_dash)
-        )
+        denom = (self.weights[:, None] + weight[:, None] + self.epsilon_dash)
+        self.centroids = (self.weights[:, None] * self.centroids + weight[:, None] * controllable_state_norm) / denom
 
         self.weights += weight
         self.pseudo_counts[action] += 1
