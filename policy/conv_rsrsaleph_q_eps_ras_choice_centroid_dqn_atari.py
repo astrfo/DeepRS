@@ -124,12 +124,14 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         self.weights += weight
         self.pseudo_counts[action] += 1
 
-        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True) + self.epsilon_dash
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
 
         reliability_scores = self.weights / (self.pseudo_counts + self.epsilon_dash)
-        exp_scores = np.exp(reliability_scores - np.max(reliability_scores))
-        reliability_softmax_scores = exp_scores / np.sum(exp_scores)
-        self.n = np.sum(reliability_softmax_scores.reshape(4, -1), axis=1, dtype=np.float32)
+        action_reliability_scores = reliability_scores.reshape(self.action_space, self.k).mean(axis=1)
+        action_reliability_scores_norm = action_reliability_scores / np.linalg.norm(action_reliability_scores)
+        exp_scores = np.exp(action_reliability_scores_norm - np.max(action_reliability_scores_norm))
+        action_reliability_softmax_scores = exp_scores / np.sum(exp_scores)
+        self.n = action_reliability_softmax_scores
 
     def sync_model(self):
         self.model_target.load_state_dict(self.model.state_dict())
