@@ -53,29 +53,52 @@ if __name__ == '__main__':
     RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
+    # environment parameters
     env_name = 'BreakoutNoFrameskip-v4'
     algos = ['ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari']
     sim = 1
     epi = 10000
-    alpha = 0.001
+
+    # q-learning parameters
     gamma = 0.99
-    epsilon = 0.01
+    epsilon_fixed = 0.01
     epsilon_start = 1.0
     epsilon_end = 0.01
     epsilon_decay = 1000000
-    learning_rate = 0.00025
-    target_update_freq = 10000
-    tau = 0.01
-    hidden_size = 8
-    replay_buffer_capacity = 1000000
-    episodic_memory_capacity = 1000
-    warmup = 50000
-    batch_size = 32
-    neighbor_frames = 4
-    k = 5
+    
+    # rsrs parameters
     epsilon_dash = 0.001
+    k = 5
     zeta = 0.01
     aleph_G = 0
+
+    # optimizer parameters
+    adam_learning_rate = 0.001
+    rmsprop_learning_rate = 0.00025
+    rmsprop_alpha = 0.95
+    rmsprop_eps = 0.01
+    max_grad_norm = 40
+
+    # loss function parameters
+    mseloss_reduction = 'sum'
+
+    # memory parameters
+    replay_buffer_capacity = 1000000
+    episodic_memory_capacity = 1000
+
+    # network parameters
+    hidden_size = 128
+    embedding_size = 8
+    neighbor_frames = 4
+
+    # etc parameters
+    sync_model_update = 'soft'
+    warmup = 0
+    tau = 0.01
+    batch_size = 32
+    target_update_freq = 500
+    
+
     for algo in algos:
         if 'Conv' in algo:
             if 'Atari' in algo:
