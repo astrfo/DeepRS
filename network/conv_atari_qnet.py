@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ConvQAtariNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, neighbor_frames):
+    def __init__(self, input_size, hidden_size, output_size):
         super(ConvQAtariNet, self).__init__()
         self.conv1 = nn.Conv2d(4, 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
