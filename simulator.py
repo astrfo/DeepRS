@@ -83,7 +83,7 @@ def conv_simulation(sims, epis, env, agent, collector, neighbor_frames, result_d
     env.close()
 
 
-def atari_simulation(sims, epis, env, agent, collector, neighbor_frames, result_dir_path):
+def atari_simulation(sims, epis, env, agent, collector, result_dir_path):
     for sim in range(sims):
         sim_dir_path = result_dir_path + f'{sim+1}/'
         os.makedirs(sim_dir_path, exist_ok=True)
