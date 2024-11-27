@@ -32,6 +32,9 @@ def simulation(sims, epis, env, agent, collector, result_dir_path):
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
+            if epi % 1000 == 0:
+                collector.save_epi1000_data(sim_dir_path, epi)
+                save_epi1000_plot(collector, sim_dir_path, epi)
         collector.save_episode_data(sim_dir_path)
         save_episode_plot(collector, sim_dir_path)
     average_sim_dir_path = result_dir_path + 'average/'
