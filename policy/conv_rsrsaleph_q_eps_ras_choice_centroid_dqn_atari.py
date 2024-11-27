@@ -4,51 +4,54 @@ import torch.nn as nn
 import torch.optim as optim
 
 from memory.replay_buffer import ReplayBuffer
-from memory.episodic_memory import EpisodicMemory
 from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 
 
 class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
     def __init__(self, model=ConvRSRSAtariNet, **kwargs):
         super().__init__()
-        self.warmup = kwargs['warmup']
-        self.k = kwargs['k']
-        self.learning_rate = kwargs['learning_rate']
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']
-        self.target_update_freq = kwargs['target_update_freq']
-        self.hidden_size = kwargs['hidden_size']
-        self.action_space = kwargs['action_space']
-        self.state_space = kwargs['state_space']
-        self.frame_shape = kwargs['frame_shape']
-        self.neighbor_frames = kwargs['neighbor_frames']
+        self.k = kwargs['k']
+        self.rmsprop_learning_rate = kwargs['rmsprop_learning_rate']
+        self.rmsprop_alpha = kwargs['rmsprop_alpha']
+        self.rmsprop_eps = kwargs['rmsprop_eps']
+        self.max_grad_norm = kwargs['max_grad_norm']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
+        self.hidden_size = kwargs['hidden_size']
+        self.embedding_size = kwargs['embedding_size']
+        self.sync_model_update = kwargs['sync_model_update']
+        self.warmup = kwargs['warmup']
+        self.tau = kwargs['tau']
         self.batch_size = kwargs['batch_size']
+        self.target_update_freq = kwargs['target_update_freq']
+        self.frame_shape = kwargs['frame_shape']
+        self.action_space = kwargs['action_space']
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
         self.criterion = nn.SmoothL1Loss()
-        self.n = np.zeros(self.action_space)
-        self.total_steps = 0
-        self.loss = None
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
+        self.ras = np.zeros(self.action_space)
+        self.total_steps = 0
+        self.loss = None
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
-        self.n = np.zeros(self.action_space)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        self.ras = np.zeros(self.action_space)
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
@@ -62,7 +65,7 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
 
     def action(self, state):
         self.total_steps += 1
-        if self.warmup > self.total_steps:
+        if self.total_steps < self.warmup:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
@@ -70,7 +73,7 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
             diff = aleph - q_values
             Z = 1.0 / np.sum(1.0 / diff)
             rho = Z / diff
-            SRS = ((self.n / rho).max() + self.epsilon_dash) * rho - self.n
+            SRS = ((self.ras / rho).max() + self.epsilon_dash) * rho - self.ras
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
 
@@ -80,7 +83,7 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
     def update(self, state, action, reward, next_state, done):
         reward = max(min(reward, 1), -1)
         self.replay_buffer.add(state, action, reward, next_state, done)
-        if len(self.replay_buffer.memory) < self.batch_size:
+        if len(self.replay_buffer.memory) < self.batch_size or len(self.replay_buffer.memory) < self.warmup:
             return
         
         controllable_state = self.embed(state)
@@ -104,10 +107,14 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
 
         self.optimizer.zero_grad()
         self.loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=40.0)
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=self.max_grad_norm)
         self.optimizer.step()
-        if self.total_steps % self.target_update_freq == 0:
-            self.sync_model()
+
+        if self.sync_model_update == 'hard':
+            if self.total_steps % self.target_update_freq == 0:
+                self.sync_model_hard()
+        elif self.sync_model_update == 'soft':
+            self.sync_model_soft()
 
     def calculate_reliability(self, controllable_state, action):
         self.pseudo_counts *= self.gamma
@@ -131,7 +138,12 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         action_reliability_scores_norm = action_reliability_scores / np.linalg.norm(action_reliability_scores)
         exp_scores = np.exp(action_reliability_scores_norm - np.max(action_reliability_scores_norm))
         action_reliability_softmax_scores = exp_scores / np.sum(exp_scores)
-        self.n = action_reliability_softmax_scores
+        self.ras = action_reliability_softmax_scores
 
-    def sync_model(self):
+    def sync_model_hard(self):
         self.model_target.load_state_dict(self.model.state_dict())
+
+    def sync_model_soft(self):
+        with torch.no_grad():
+            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
+                target_param.data.copy_(self.tau*local_param.data + (np.float32(1.0)-self.tau)*target_param.data)
