@@ -3,12 +3,12 @@ import torch.nn.functional as F
 
 
 class RSRSAlephNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, embedding_size, output_size):
         super().__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
-        self.embed = nn.Linear(hidden_size, hidden_size)
-        self.head_q = nn.Linear(hidden_size, output_size)
-        self.head_aleph = nn.Linear(hidden_size, 1)
+        self.embed = nn.Linear(hidden_size, embedding_size)
+        self.head_q = nn.Linear(embedding_size, output_size)
+        self.head_aleph = nn.Linear(embedding_size, 1)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
