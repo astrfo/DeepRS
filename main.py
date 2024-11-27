@@ -282,7 +282,7 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
@@ -312,13 +312,13 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
             policy = ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')
             exit(1)
