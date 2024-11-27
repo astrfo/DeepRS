@@ -3,12 +3,12 @@ import torch.nn.functional as F
 
 
 class RSRSDuelingNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, embedding_size, output_size):
         super().__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
-        self.embed = nn.Linear(hidden_size, hidden_size)
-        self.advantage = nn.Linear(hidden_size, output_size)
-        self.v = nn.Linear(hidden_size, 1)
+        self.embed = nn.Linear(hidden_size, embedding_size)
+        self.advantage = nn.Linear(embedding_size, output_size)
+        self.v = nn.Linear(embedding_size, 1)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))

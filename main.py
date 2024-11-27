@@ -23,6 +23,7 @@ from policy.rsrsaleph_q_eps_ras_dqn import RSRSAlephQEpsRASDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
 from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_RND
+from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_dqn_rnd import ConvDQN_RND
@@ -50,32 +51,55 @@ if __name__ == '__main__':
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND or RSRSAlephQEpsRASChoiceCentroidDQN
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
+    # environment parameters
     env_name = 'BreakoutNoFrameskip-v4'
     algos = ['ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari']
     sim = 1
     epi = 10000
-    alpha = 0.001
+
+    # q-learning parameters
     gamma = 0.99
-    epsilon = 0.01
+    epsilon_fixed = 0.01
     epsilon_start = 1.0
     epsilon_end = 0.01
     epsilon_decay = 1000000
-    learning_rate = 0.00025
-    target_update_freq = 10000
-    tau = 0.01
-    hidden_size = 8
-    replay_buffer_capacity = 1000000
-    episodic_memory_capacity = 1000
-    warmup = 50000
-    batch_size = 32
-    neighbor_frames = 4
-    k = 5
+    
+    # rsrs parameters
     epsilon_dash = 0.001
+    k = 5
     zeta = 0.01
     aleph_G = 0
+
+    # optimizer parameters
+    adam_learning_rate = 0.001
+    rmsprop_learning_rate = 0.00025
+    rmsprop_alpha = 0.95
+    rmsprop_eps = 0.01
+    max_grad_norm = 40
+
+    # loss function parameters
+    mseloss_reduction = 'sum'
+
+    # memory parameters
+    replay_buffer_capacity = 1000000
+    episodic_memory_capacity = 1000
+
+    # network parameters
+    hidden_size = 128
+    embedding_size = 8
+    neighbor_frames = 4
+
+    # etc parameters
+    sync_model_update = 'soft'
+    warmup = 0
+    tau = 0.01
+    batch_size = 32
+    target_update_freq = 500
+    
+
     for algo in algos:
         if 'Conv' in algo:
             if 'Atari' in algo:
@@ -98,7 +122,7 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'ConvDQNAtari':
             model = ConvQAtariNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             model = RSRSNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
@@ -117,32 +141,38 @@ if __name__ == '__main__':
             exit(1)
 
         param = {
+            'env': env_name,
             'algo': algo,
             'sim': sim,
             'epi': epi,
-            'alpha': alpha,
             'gamma': gamma,
-            'epsilon': epsilon,
+            'epsilon_fixed': epsilon_fixed,
             'epsilon_start': epsilon_start,
             'epsilon_end': epsilon_end,
             'epsilon_decay': epsilon_decay,
-            'learning_rate': learning_rate,
-            'target_update_freq': target_update_freq,
-            'tau': tau,
-            'hidden_size': hidden_size,
-            'replay_buffer_capacity': replay_buffer_capacity,
-            'episodic_memory_capacity': episodic_memory_capacity,
-            'batch_size': batch_size,
-            'neighbor_frames': neighbor_frames,
-            'warmup': warmup,
             'epsilon_dash': epsilon_dash,
             'k': k,
             'zeta': zeta,
             'aleph_G': aleph_G,
+            'adam_learning_rate': adam_learning_rate,
+            'rmsprop_learning_rate': rmsprop_learning_rate,
+            'rmsprop_alpha': rmsprop_alpha,
+            'rmsprop_eps': rmsprop_eps,
+            'max_grad_norm': max_grad_norm,
+            'mseloss_reduction': mseloss_reduction,
+            'replay_buffer_capacity': replay_buffer_capacity,
+            'episodic_memory_capacity': episodic_memory_capacity,
+            'hidden_size': hidden_size,
+            'embedding_size': embedding_size,
+            'neighbor_frames': neighbor_frames,
+            'sync_model_update': sync_model_update,
+            'warmup': warmup,
+            'tau': tau,
+            'batch_size': batch_size,
+            'target_update_freq': target_update_freq,
             'action_space': space2size(env.action_space),
             'state_space': space2size(env.observation_space),
             'frame_shape': init_frame.shape,
-            'env': env_name,
             'model': model
         }
 
@@ -190,6 +220,12 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             policy = RSRSAlephQEpsRASChoiceDQN_RND(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, collector, result_dir_path)
+        elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
+            policy = RSRSAlephQEpsRASChoiceCentroidDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
@@ -253,7 +289,7 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
@@ -283,13 +319,13 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
             policy = ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            atari_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
+            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')
             exit(1)

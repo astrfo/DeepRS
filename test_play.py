@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     action_space = env.action_space.n
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    target_net = ConvQAtariNet(input_size=None, hidden_size=None, output_size=action_space, neighbor_frames=None).to(device)
+    target_net = ConvQAtariNet(input_size=None, hidden_size=None, output_size=action_space).to(device)
     target_net.load_state_dict(torch.load(model_path, map_location=device))
 
     video_filename = 'breakout_simulation.mp4'
