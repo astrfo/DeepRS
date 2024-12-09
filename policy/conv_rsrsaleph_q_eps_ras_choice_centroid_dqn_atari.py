@@ -51,6 +51,10 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+        self.pseudo_counts = np.zeros(self.action_space * self.k)
+        self.weights = np.zeros(self.action_space * self.k)
         self.ras = np.zeros(self.action_space)
 
     def q_value(self, state):
