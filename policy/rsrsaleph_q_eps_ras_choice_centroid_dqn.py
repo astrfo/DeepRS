@@ -18,6 +18,7 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
         self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
         self.hidden_size = kwargs['hidden_size']
+        self.embedding_size = kwargs['embedding_size']
         self.sync_model_update = kwargs['sync_model_update']
         self.warmup = kwargs['warmup']
         self.tau = kwargs['tau']
@@ -28,13 +29,13 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
-        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
+        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -44,9 +45,9 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
 
