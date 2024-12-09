@@ -22,6 +22,7 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
         self.epsilon_dash = kwargs['epsilon_dash']
         self.tau = kwargs['tau']
         self.hidden_size = kwargs['hidden_size']
+        self.embedding_size = kwargs['embedding_size']
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
@@ -31,9 +32,9 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
         self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.rnd_model_pred = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
         self.rnd_model_pred.to(self.device)
@@ -49,9 +50,9 @@ class RSRSAlephQEpsRASChoiceDQN_RND:
     def reset(self):
         self.replay_buffer.reset()
         self.episodic_memory.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.rnd_model_pred = RNDNet(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.hidden_size)
         self.rnd_model_pred.to(self.device)
