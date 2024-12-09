@@ -36,7 +36,7 @@ class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
         self.model_target.to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
         self.criterion = nn.SmoothL1Loss()
-        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
+        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
