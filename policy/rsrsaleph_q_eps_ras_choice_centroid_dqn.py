@@ -50,6 +50,11 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
+        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+        self.pseudo_counts = np.zeros(self.action_space * self.k)
+        self.weights = np.zeros(self.action_space * self.k)
+        self.ras = np.zeros(self.action_space)
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
