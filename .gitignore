@@ -161,3 +161,4 @@ cython_debug/
 
 # astrfo
 *log/
+.py311/
