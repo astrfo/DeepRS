@@ -12,7 +12,7 @@ class Collector:
         self.agent = agent
         self.policy = policy
         self.sma_window = sma_window
-        self.is_aleph_s_in_policy = hasattr(self.policy, 'aleph_s')
+        self.is_aleph_state_in_policy = hasattr(self.policy, 'aleph_state')
 
         # step data
         self.reward_step_list = []
@@ -20,8 +20,9 @@ class Collector:
         self.q_value_step_list = []
         self.loss_step_list = []
         self.loss_sma_step_list = []
-        if self.is_aleph_s_in_policy:
-            self.aleph_step_list = []
+        if self.is_aleph_state_in_policy:
+            self.aleph_state_step_list = []
+            self.aleph_beta_step_list = []
             self.satisfy_unsatisfy_count_list = np.zeros(2)
 
         # episode data
@@ -44,8 +45,9 @@ class Collector:
         data['q_value'] = self.q_value_step_list
         data['loss'] = self.loss_step_list
         data['loss_sma'] = self.loss_sma_step_list
-        if self.is_aleph_s_in_policy:
-            data['aleph'] = self.aleph_step_list
+        if self.is_aleph_state_in_policy:
+            data['aleph'] = self.aleph_state_step_list
+            data['aleph_beta'] = self.aleph_beta_step_list
             data['satisfy_unsatisfy_count'] = self.satisfy_unsatisfy_count_list
         return data
 
@@ -72,9 +74,10 @@ class Collector:
         if self.policy.loss is not None:
             self.loss_step_list.append(self.policy.loss.item())
             self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
-        if self.is_aleph_s_in_policy:
-            aleph = self.agent.policy.aleph_s(self.agent.current_state)
-            self.aleph_step_list.append(aleph)
+        if self.is_aleph_state_in_policy:
+            aleph = self.agent.policy.aleph_state
+            self.aleph_state_step_list.append(aleph)
+            self.aleph_beta_step_list.append(self.agent.policy.aleph_beta)
             if max(q_value) >= aleph: self.satisfy_unsatisfy_count_list[0] += 1
             else: self.satisfy_unsatisfy_count_list[1] += 1
 
@@ -114,8 +117,9 @@ class Collector:
         np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
-        if self.is_aleph_s_in_policy:
-            np.savetxt(sim_dir_path + 'aleph.csv', self.aleph_step_list, delimiter=',')
+        if self.is_aleph_state_in_policy:
+            np.savetxt(sim_dir_path + 'aleph_state.csv', self.aleph_state_step_list, delimiter=',')
+            np.savetxt(sim_dir_path + 'aleph_beta.csv', self.aleph_beta_step_list, delimiter=',')
             np.savetxt(sim_dir_path + 'satisfy_unsatisfy_count.csv', self.satisfy_unsatisfy_count_list, delimiter=',')
 
         episode_data = self.format()

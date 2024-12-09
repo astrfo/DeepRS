@@ -2,19 +2,20 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import faiss
 
 from memory.replay_buffer import ReplayBuffer
-from memory.episodic_memory import EpisodicMemory
 from network.rsrsnet import RSRSNet
 
 
-class RSRSAlephQEpsRASChoiceDQN:
+class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
     def __init__(self, model=RSRSNet, **kwargs):
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
+        self.aleph_G = kwargs['aleph_G']
+        self.aleph_beta = 1
+        self.aleph_state = self.aleph_G
         self.adam_learning_rate = kwargs['adam_learning_rate']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
@@ -29,7 +30,6 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.state_space = kwargs['state_space']
         self.action_space = kwargs['action_space']
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
-        self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
@@ -38,12 +38,17 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
+        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+        self.pseudo_counts = np.zeros(self.action_space * self.k)
+        self.weights = np.zeros(self.action_space * self.k)
+        self.ras = np.zeros(self.action_space)
         self.total_steps = 0
+        self.total_episodic_reward = 0
         self.loss = None
 
     def reset(self):
         self.replay_buffer.reset()
-        self.episodic_memory.reset()
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
@@ -63,29 +68,31 @@ class RSRSAlephQEpsRASChoiceDQN:
     def action(self, state):
         self.total_steps += 1
         if self.total_steps < self.warmup:
-            controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
-            self.episodic_memory.add(controllable_state, action)
         else:
             q_values = self.q_value(state)
-            aleph = max(q_values) + self.epsilon_dash
-            controllable_state = self.embed(state)
-            ras = self.calculate_reliability(controllable_state)
-            diff = aleph - q_values
+            diff = self.aleph_state - q_values
             Z = 1.0 / np.sum(1.0 / diff)
             rho = Z / diff
-            SRS = ((ras / rho).max() + self.epsilon_dash) * rho - ras
+            SRS = ((self.ras / rho).max() + self.epsilon_dash) * rho - self.ras
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
 
             action = np.random.choice(self.action_space, p=pi)
-            self.episodic_memory.add(controllable_state, action)
         return action
 
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size or len(self.replay_buffer.memory) < self.warmup:
             return
+        
+        controllable_state = self.embed(state)
+        self.calculate_reliability(controllable_state, action)
+
+        self.total_episodic_reward += reward
+        self.calculate_aleph_state_beta(state)
+        if done:
+            self.total_episodic_reward = 0
 
         s, a, r, ns, d = self.replay_buffer.encode()
         s = torch.tensor(s, dtype=torch.float32).to(self.device)
@@ -106,33 +113,42 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.optimizer.zero_grad()
         self.loss.backward()
         self.optimizer.step()
-
+        
         if self.sync_model_update == 'hard':
             if self.total_steps % self.target_update_freq == 0:
                 self.sync_model_hard()
         elif self.sync_model_update == 'soft':
             self.sync_model_soft()
 
-    def calculate_reliability(self, controllable_state):
-        controllable_state_and_action = np.array(self.episodic_memory.memory, dtype=np.float32)
-        controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
-        action_vec = controllable_state_and_action[:, len(controllable_state):]
-        controllable_state = np.expand_dims(controllable_state, axis=0)
-        
-        index = faiss.IndexFlatL2(controllable_state_vec.shape[1])
-        index.add(controllable_state_vec)
-        D, I = index.search(controllable_state, self.k)
+    def calculate_aleph_state_beta(self, state):
+        q_values = self.q_value(state)
+        self.aleph_beta = (self.aleph_G - self.total_episodic_reward) / self.aleph_G
+        self.aleph_beta = np.clip(self.aleph_beta, 0, 1)
+        self.aleph_state = self.aleph_beta * self.aleph_G + (1-self.aleph_beta) * max(q_values)
 
-        squared_distance = D.flatten() ** 2
-        average_squared_distance = np.average(squared_distance)
-        regularization_squared_distance = squared_distance / average_squared_distance
-        regularization_squared_distance = np.maximum(regularization_squared_distance, 0)
+    def calculate_reliability(self, controllable_state, action):
+        self.pseudo_counts *= self.gamma
+        self.weights *= self.gamma
 
-        inverse_kernel_function = self.epsilon_dash / (regularization_squared_distance + self.epsilon_dash)
-        sum_kernel = np.sum(inverse_kernel_function)
-        weight = inverse_kernel_function / sum_kernel
-        ras = np.average(action_vec[I.flatten()], weights=weight, axis=0)
-        return ras
+        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + self.epsilon_dash)
+
+        distances = np.linalg.norm(self.centroids - controllable_state_norm, axis=1)
+        weight = 1 / (distances + self.epsilon_dash)
+
+        denom = (self.weights[:, None] + weight[:, None] + self.epsilon_dash)
+        self.centroids = (self.weights[:, None] * self.centroids + weight[:, None] * controllable_state_norm) / denom
+
+        self.weights += weight
+        self.pseudo_counts[action] += 1
+
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+
+        reliability_scores = self.weights / (self.pseudo_counts + self.epsilon_dash)
+        action_reliability_scores = reliability_scores.reshape(self.action_space, self.k).mean(axis=1)
+        action_reliability_scores_norm = action_reliability_scores / np.linalg.norm(action_reliability_scores)
+        exp_scores = np.exp(action_reliability_scores_norm - np.max(action_reliability_scores_norm))
+        action_reliability_softmax_scores = exp_scores / np.sum(exp_scores)
+        self.ras = action_reliability_softmax_scores
 
     def sync_model_hard(self):
         self.model_target.load_state_dict(self.model.state_dict())

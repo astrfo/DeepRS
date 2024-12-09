@@ -24,6 +24,7 @@ from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
 from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_RND
 from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
+from policy.rsrsaleph_q_eps_ras_choice_centroid_alephg_dqn import RSRSAlephQEpsRASChoiceCentroidAlephGDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_dqn_rnd import ConvDQN_RND
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND or RSRSAlephQEpsRASChoiceCentroidDQN
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND or RSRSAlephQEpsRASChoiceCentroidDQN or RSRSAlephQEpsRASChoiceCentroidAlephGDQN
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
     # environment parameters
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     epsilon_dash = 0.001
     k = 5
     zeta = 0.01
-    aleph_G = 0
+    aleph_G = 500
 
     # optimizer parameters
     adam_learning_rate = 0.001
@@ -122,7 +123,7 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'ConvDQNAtari':
             model = ConvQAtariNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN' or algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
             model = RSRSNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
@@ -226,6 +227,12 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             policy = RSRSAlephQEpsRASChoiceCentroidDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, collector, result_dir_path)
+        elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
+            policy = RSRSAlephQEpsRASChoiceCentroidAlephGDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
