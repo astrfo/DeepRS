@@ -21,6 +21,7 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.aleph_beta = 1
         self.aleph_state = self.global_aleph
         self.global_value = 0
+        self.centroids_decay = kwargs['centroids_decay']
         self.adam_learning_rate = kwargs['adam_learning_rate']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
@@ -155,8 +156,8 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.aleph_state = self.aleph_beta * self.global_aleph + (1-self.aleph_beta) * max(q_values)
 
     def calculate_reliability(self, controllable_state, action):
-        self.pseudo_counts *= self.gamma
-        self.weights *= self.gamma
+        self.pseudo_counts *= self.centroids_decay
+        self.weights *= self.centroids_decay
 
         controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + self.epsilon_dash)
 
