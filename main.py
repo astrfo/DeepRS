@@ -39,6 +39,7 @@ from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAl
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
 from network.rsrsnet import RSRSNet
+from network.rsrsdqnnet import RSRSDQNNet
 from network.rsrsalephnet import RSRSAlephNet
 from network.rsrs_duelingnet import RSRSDuelingNet
 from network.conv_qnet import ConvQNet
@@ -72,7 +73,8 @@ if __name__ == '__main__':
     epsilon_dash = 0.001
     k = 5
     zeta = 0.01
-    aleph_G = 500
+    global_aleph = 500
+    global_value_size = 500
 
     # optimizer parameters
     adam_learning_rate = 0.001
@@ -123,8 +125,10 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'ConvDQNAtari':
             model = ConvQAtariNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN' or algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             model = RSRSNet
+        elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
+            model = RSRSDQNNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
         elif algo == 'DuelingDQN' or algo == 'DuelingDDQN':
@@ -154,7 +158,8 @@ if __name__ == '__main__':
             'epsilon_dash': epsilon_dash,
             'k': k,
             'zeta': zeta,
-            'aleph_G': aleph_G,
+            'global_aleph': global_aleph,
+            'global_value_size': global_value_size,
             'adam_learning_rate': adam_learning_rate,
             'rmsprop_learning_rate': rmsprop_learning_rate,
             'rmsprop_alpha': rmsprop_alpha,

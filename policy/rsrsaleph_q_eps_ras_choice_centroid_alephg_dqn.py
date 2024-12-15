@@ -1,21 +1,26 @@
+import sys
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from collections import deque
 
 from memory.replay_buffer import ReplayBuffer
-from network.rsrsnet import RSRSNet
+from network.rsrsdqnnet import RSRSDQNNet
 
 
 class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
-    def __init__(self, model=RSRSNet, **kwargs):
+    def __init__(self, model=RSRSDQNNet, **kwargs):
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
-        self.aleph_G = kwargs['aleph_G']
+        self.global_aleph = kwargs['global_aleph']
+        self.global_value_size = kwargs['global_value_size']
+        self.global_value_buffer = deque(maxlen=self.global_value_size)
         self.aleph_beta = 1
-        self.aleph_state = self.aleph_G
+        self.aleph_state = self.global_aleph
+        self.global_value = 0
         self.adam_learning_rate = kwargs['adam_learning_rate']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
@@ -32,13 +37,13 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
-        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -49,12 +54,12 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -76,15 +81,35 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
-            diff = self.aleph_state - q_values
-            Z = 1.0 / np.sum(1.0 / diff)
-            rho = Z / diff
-            SRS = ((self.ras / rho).max() + self.epsilon_dash) * rho - self.ras
-            if min(SRS) < 0: SRS -= min(SRS)
-            pi = SRS / np.sum(SRS)
+            if q_values.max() >= self.aleph_state or np.isclose(q_values.max(), self.aleph_state):
+                is_satisfied = (q_values >= self.aleph_state)
+                rs = self.ras * (q_values - self.aleph_state)
+
+                rsrs = np.zeros_like(q_values)
+                satisfied_sum = np.sum(rs[is_satisfied])
+
+                if satisfied_sum > 0:
+                    rsrs[is_satisfied] = rs[is_satisfied] / satisfied_sum
+            else:
+                diff = self.aleph_state - q_values
+                z = 1.0 / np.sum(1.0 / diff)
+                rho = z / diff
+                rsrs = ((self.ras / rho).max() + sys.float_info.epsilon) * rho - self.ras
+
+            if np.any(rsrs <= 0):
+                rsrs -= np.min(rsrs)
+                rsrs += sys.float_info.epsilon
+
+            log_rsrs = np.log(rsrs)
+            exp_rsrs = np.exp(log_rsrs - log_rsrs.max())
+            pi = exp_rsrs / np.sum(exp_rsrs)
 
             action = np.random.choice(self.action_space, p=pi)
         return action
+
+    def update_global_value(self, reward):
+        self.global_value_buffer.append(reward)
+        self.global_value = np.mean(self.global_value_buffer)
 
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
@@ -96,8 +121,6 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
         self.total_episodic_reward += reward
         self.calculate_aleph_state_beta(state)
-        if done:
-            self.total_episodic_reward = 0
 
         s, a, r, ns, d = self.replay_buffer.encode()
         s = torch.tensor(s, dtype=torch.float32).to(self.device)
@@ -127,9 +150,9 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
     def calculate_aleph_state_beta(self, state):
         q_values = self.q_value(state)
-        self.aleph_beta = (self.aleph_G - self.total_episodic_reward) / self.aleph_G
+        self.aleph_beta = (self.global_aleph - self.total_episodic_reward) / self.global_aleph
         self.aleph_beta = np.clip(self.aleph_beta, 0, 1)
-        self.aleph_state = self.aleph_beta * self.aleph_G + (1-self.aleph_beta) * max(q_values)
+        self.aleph_state = self.aleph_beta * self.global_aleph + (1-self.aleph_beta) * max(q_values)
 
     def calculate_reliability(self, controllable_state, action):
         self.pseudo_counts *= self.gamma

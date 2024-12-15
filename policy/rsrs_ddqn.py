@@ -40,12 +40,12 @@ class RSRSDDQN:
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.gamma_G = 0.9
-        self.aleph_G = kwargs['aleph_G']
+        self.global_aleph = kwargs['global_aleph']
         self.E_G = 0
         # self.zeta = 1
         self.q_list = [[] for _ in range(self.state_space)]
         self.E_G_list = []
-        self.aleph_G_list = []
+        self.global_aleph_list = []
 
     def reset(self):
         self.replay_buffer.reset()
@@ -60,7 +60,7 @@ class RSRSDDQN:
         self.E_G = 0
         self.q_list = [[] for _ in range(self.state_space)]
         self.E_G_list = []
-        self.aleph_G_list = []
+        self.global_aleph_list = []
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -81,7 +81,7 @@ class RSRSDDQN:
             q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            delta_G = min(self.E_G - self.aleph_G, 0)
+            delta_G = min(self.E_G - self.global_aleph, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
                 fix_aleph = max(q_values) + np.float64(1e-10)
@@ -138,7 +138,7 @@ class RSRSDDQN:
         # self.E_G = 1/step * total_reward
         self.total_step += step
         self.E_G_list.append(self.E_G)
-        self.aleph_G_list.append(self.aleph_G)
+        self.global_aleph_list.append(self.global_aleph)
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array([m for m in self.episodic_memory.memory])
