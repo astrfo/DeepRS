@@ -33,12 +33,12 @@ def save_episode_plot(collector, sim_dir_path):
 
     plt.figure(figsize=(12, 8))
     plt.plot(collector.q_value_step_list, label='Q_value')
-    plt.plot(collector.aleph_state_step_list, label='Aleph')
-    plt.title('Q_value and Aleph per Step')
+    plt.plot(collector.aleph_state_step_list, label='Aleph State')
+    plt.title('Q_value and Aleph State per Step')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.aleph_state_step_list) + 1)
     plt.legend()
-    plt.savefig(sim_dir_path + 'q_value_and_aleph.png')
+    plt.savefig(sim_dir_path + 'q_value_and_aleph_state.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
