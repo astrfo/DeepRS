@@ -55,3 +55,43 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.legend()
     plt.savefig(sim_dir_path + f'loss_sma_epi{epi}.png')
     plt.close()
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.q_value_step_list, label='Q_value')
+    plt.title('Q_value per Step')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.q_value_step_list) + 1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'q_value_epi{epi}.png')
+    plt.close()
+
+    if not collector.is_aleph_state_in_policy:
+        return
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.q_value_step_list, label='Q_value')
+    plt.plot(collector.aleph_state_step_list, label='Aleph State')
+    plt.title('Q_value and Aleph State per Step')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.aleph_state_step_list) + 1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'q_value_and_aleph_state_epi{epi}.png')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.aleph_state_step_list, label='Aleph State')
+    plt.title('Aleph State per Step')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.aleph_state_step_list) + 1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'aleph_state_epi{epi}.png')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.aleph_beta_step_list, label='Beta')
+    plt.title('Aleph Beta per Step')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.aleph_beta_step_list) + 1)
+    plt.legend()
+    plt.savefig(sim_dir_path + f'aleph_beta_epi{epi}.png')
+    plt.close()
