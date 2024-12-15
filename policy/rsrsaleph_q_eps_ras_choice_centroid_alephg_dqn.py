@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import torch
 import torch.nn as nn
@@ -42,7 +43,7 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
-        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -58,7 +59,7 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -80,12 +81,28 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
-            diff = self.aleph_state - q_values
-            Z = 1.0 / np.sum(1.0 / diff)
-            rho = Z / diff
-            SRS = ((self.ras / rho).max() + self.epsilon_dash) * rho - self.ras
-            if min(SRS) < 0: SRS -= min(SRS)
-            pi = SRS / np.sum(SRS)
+            if q_values.max() >= self.aleph_state or np.isclose(q_values.max(), self.aleph_state):
+                is_satisfied = (q_values >= self.aleph_state)
+                rs = self.ras * (q_values - self.aleph_state)
+
+                rsrs = np.zeros_like(q_values)
+                satisfied_sum = np.sum(rs[is_satisfied])
+
+                if satisfied_sum > 0:
+                    rsrs[is_satisfied] = rs[is_satisfied] / satisfied_sum
+            else:
+                diff = self.aleph_state - q_values
+                z = 1.0 / np.sum(1.0 / diff)
+                rho = z / diff
+                rsrs = ((self.ras / rho).max() + sys.float_info.epsilon) * rho - self.ras
+
+            if np.any(rsrs <= 0):
+                rsrs -= np.min(rsrs)
+                rsrs += sys.float_info.epsilon
+
+            log_rsrs = np.log(rsrs)
+            exp_rsrs = np.exp(log_rsrs - log_rsrs.max())
+            pi = exp_rsrs / np.sum(exp_rsrs)
 
             action = np.random.choice(self.action_space, p=pi)
         return action
