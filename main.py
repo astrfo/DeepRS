@@ -75,6 +75,7 @@ if __name__ == '__main__':
     zeta = 0.01
     global_aleph = 500
     global_value_size = 500
+    centroids_decay = 0.9
 
     # optimizer parameters
     adam_learning_rate = 0.001
@@ -160,6 +161,7 @@ if __name__ == '__main__':
             'zeta': zeta,
             'global_aleph': global_aleph,
             'global_value_size': global_value_size,
+            'centroids_decay': centroids_decay,
             'adam_learning_rate': adam_learning_rate,
             'rmsprop_learning_rate': rmsprop_learning_rate,
             'rmsprop_alpha': rmsprop_alpha,

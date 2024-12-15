@@ -79,6 +79,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
             'k': 5,
             'global_aleph': 500,
             'global_value_size': 500,
+            'centroids_decay': 0.9,
             'adam_learning_rate': 0.001,
             'rmsprop_learning_rate': 0.00025,
             'rmsprop_alpha': 0.95,
