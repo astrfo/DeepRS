@@ -39,7 +39,7 @@ class RSRSDuelingDQN:
         self.n = np.zeros(self.action_space)
         self.total_step = 0
         self.gamma_G = 0.9
-        self.aleph_G = kwargs['aleph_G']
+        self.global_aleph = kwargs['global_aleph']
         self.E_G = 0
         # self.zeta = 1
 
@@ -73,7 +73,7 @@ class RSRSDuelingDQN:
             q_values = self.q_value(state)
             controllable_state = self.embed(state)
             self.calculate_reliability(controllable_state)
-            delta_G = min(self.E_G - self.aleph_G, 0)
+            delta_G = min(self.E_G - self.global_aleph, 0)
             aleph = max(q_values) - delta_G
             if max(q_values) >= aleph:
                 fix_aleph = max(q_values) + np.float64(1e-10)

@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from collections import deque
 
 from memory.replay_buffer import ReplayBuffer
 from network.rsrsnet import RSRSNet
@@ -13,9 +14,12 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
-        self.aleph_G = kwargs['aleph_G']
+        self.global_aleph = kwargs['global_aleph']
+        self.global_value_size = kwargs['global_value_size']
+        self.global_value_buffer = deque(maxlen=self.global_value_size)
         self.aleph_beta = 1
-        self.aleph_state = self.aleph_G
+        self.aleph_state = self.global_aleph
+        self.global_value = 0
         self.adam_learning_rate = kwargs['adam_learning_rate']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
@@ -86,6 +90,10 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
             action = np.random.choice(self.action_space, p=pi)
         return action
 
+    def update_global_value(self, reward):
+        self.global_value_buffer.append(reward)
+        self.global_value = np.mean(self.global_value_buffer)
+
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
         if len(self.replay_buffer.memory) < self.batch_size or len(self.replay_buffer.memory) < self.warmup:
@@ -96,8 +104,6 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
         self.total_episodic_reward += reward
         self.calculate_aleph_state_beta(state)
-        if done:
-            self.total_episodic_reward = 0
 
         s, a, r, ns, d = self.replay_buffer.encode()
         s = torch.tensor(s, dtype=torch.float32).to(self.device)
@@ -127,9 +133,9 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
     def calculate_aleph_state_beta(self, state):
         q_values = self.q_value(state)
-        self.aleph_beta = (self.aleph_G - self.total_episodic_reward) / self.aleph_G
+        self.aleph_beta = (self.global_aleph - self.total_episodic_reward) / self.global_aleph
         self.aleph_beta = np.clip(self.aleph_beta, 0, 1)
-        self.aleph_state = self.aleph_beta * self.aleph_G + (1-self.aleph_beta) * max(q_values)
+        self.aleph_state = self.aleph_beta * self.global_aleph + (1-self.aleph_beta) * max(q_values)
 
     def calculate_reliability(self, controllable_state, action):
         self.pseudo_counts *= self.gamma
