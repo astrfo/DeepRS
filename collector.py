@@ -12,7 +12,7 @@ class Collector:
         self.agent = agent
         self.policy = policy
         self.sma_window = sma_window
-        self.is_aleph_state_in_policy = hasattr(self.policy, 'aleph_state')
+        self.is_aleph_state_in_policy = hasattr(self.policy, 'update_global_value')
 
         # step data
         self.reward_step_list = []
@@ -101,6 +101,10 @@ class Collector:
         np.savetxt(sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
+        if self.is_aleph_state_in_policy:
+            np.savetxt(sim_dir_path + f'aleph_state_epi{epi}.csv', self.aleph_state_step_list, delimiter=',')
+            np.savetxt(sim_dir_path + f'aleph_beta_epi{epi}.csv', self.aleph_beta_step_list, delimiter=',')
+            np.savetxt(sim_dir_path + f'satisfy_unsatisfy_count_epi{epi}.csv', self.satisfy_unsatisfy_count_list, delimiter=',')
         
         episode_data = self.format()
         with open(sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
