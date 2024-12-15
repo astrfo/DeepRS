@@ -6,11 +6,11 @@ import torch.optim as optim
 from collections import deque
 
 from memory.replay_buffer import ReplayBuffer
-from network.rsrsnet import RSRSNet
+from network.rsrsdqnnet import RSRSDQNNet
 
 
 class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
-    def __init__(self, model=RSRSNet, **kwargs):
+    def __init__(self, model=RSRSDQNNet, **kwargs):
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
@@ -37,9 +37,9 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
@@ -54,9 +54,9 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
