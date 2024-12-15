@@ -85,7 +85,7 @@ if __name__ == '__main__':
     max_grad_norm = 40
 
     # loss function parameters
-    mseloss_reduction = 'sum'
+    mseloss_reduction = 'mean'
 
     # memory parameters
     replay_buffer_capacity = 1000000
