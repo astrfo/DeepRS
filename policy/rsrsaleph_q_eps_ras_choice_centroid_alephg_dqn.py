@@ -18,8 +18,8 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.global_aleph = kwargs['global_aleph']
         self.global_value_size = kwargs['global_value_size']
         self.global_value_buffer = deque(maxlen=self.global_value_size)
-        self.aleph_beta = 1
-        self.aleph_state = self.global_aleph
+        self.aleph_beta = None
+        self.aleph_state = None
         self.global_value = 0
         self.centroids_decay = kwargs['centroids_decay']
         self.adam_learning_rate = kwargs['adam_learning_rate']
@@ -50,7 +50,6 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         self.weights = np.zeros(self.action_space * self.k)
         self.ras = np.zeros(self.action_space)
         self.total_steps = 0
-        self.total_episodic_reward = 0
         self.loss = None
 
     def reset(self):
@@ -82,6 +81,9 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
+            self.aleph_beta = (self.global_aleph - self.global_value) / self.global_aleph
+            self.aleph_beta = np.clip(self.aleph_beta, 0, 1)
+            self.aleph_state = self.aleph_beta * self.global_aleph + (1-self.aleph_beta) * q_values.max()
             if q_values.max() >= self.aleph_state or np.isclose(q_values.max(), self.aleph_state):
                 is_satisfied = (q_values >= self.aleph_state)
                 rs = self.ras * (q_values - self.aleph_state)
@@ -120,9 +122,6 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         controllable_state = self.embed(state)
         self.calculate_reliability(controllable_state, action)
 
-        self.total_episodic_reward += reward
-        self.calculate_aleph_state_beta(state)
-
         s, a, r, ns, d = self.replay_buffer.encode()
         s = torch.tensor(s, dtype=torch.float32).to(self.device)
         a = torch.tensor(a, dtype=torch.long).to(self.device)
@@ -149,22 +148,16 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
         elif self.sync_model_update == 'soft':
             self.sync_model_soft()
 
-    def calculate_aleph_state_beta(self, state):
-        q_values = self.q_value(state)
-        self.aleph_beta = (self.global_aleph - self.total_episodic_reward) / self.global_aleph
-        self.aleph_beta = np.clip(self.aleph_beta, 0, 1)
-        self.aleph_state = self.aleph_beta * self.global_aleph + (1-self.aleph_beta) * max(q_values)
-
     def calculate_reliability(self, controllable_state, action):
         self.pseudo_counts *= self.centroids_decay
         self.weights *= self.centroids_decay
 
-        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + self.epsilon_dash)
+        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + sys.float_info.epsilon)
 
         distances = np.linalg.norm(self.centroids - controllable_state_norm, axis=1)
-        weight = 1 / (distances + self.epsilon_dash)
+        weight = 1 / (distances + sys.float_info.epsilon)
 
-        denom = (self.weights[:, None] + weight[:, None] + self.epsilon_dash)
+        denom = (self.weights[:, None] + weight[:, None] + sys.float_info.epsilon)
         self.centroids = (self.weights[:, None] * self.centroids + weight[:, None] * controllable_state_norm) / denom
 
         self.weights += weight
@@ -172,7 +165,7 @@ class RSRSAlephQEpsRASChoiceCentroidAlephGDQN:
 
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
 
-        reliability_scores = self.weights / (self.pseudo_counts + self.epsilon_dash)
+        reliability_scores = self.weights / (self.pseudo_counts + sys.float_info.epsilon)
         action_reliability_scores = reliability_scores.reshape(self.action_space, self.k).mean(axis=1)
         action_reliability_scores_norm = action_reliability_scores / np.linalg.norm(action_reliability_scores)
         exp_scores = np.exp(action_reliability_scores_norm - np.max(action_reliability_scores_norm))
