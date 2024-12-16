@@ -30,7 +30,7 @@ class DQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
+        self.criterion = nn.SmoothL1Loss()
         self.total_steps = 0
         self.loss = None
 
