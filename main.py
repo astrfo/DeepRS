@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # etc parameters
     sync_model_update = 'soft'
     warmup = 0
-    tau = 0.01
+    tau = 0.005
     batch_size = 32
     target_update_freq = 500
     
