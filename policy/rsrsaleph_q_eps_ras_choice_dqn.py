@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import torch
 import torch.nn as nn
@@ -68,15 +69,21 @@ class RSRSAlephQEpsRASChoiceDQN:
             self.episodic_memory.add(controllable_state, action)
         else:
             q_values = self.q_value(state)
-            aleph = max(q_values) + self.epsilon_dash
+            aleph = q_values.max() + self.epsilon_dash
             controllable_state = self.embed(state)
             ras = self.calculate_reliability(controllable_state)
             diff = aleph - q_values
-            Z = 1.0 / np.sum(1.0 / diff)
-            rho = Z / diff
-            SRS = ((ras / rho).max() + self.epsilon_dash) * rho - ras
-            if min(SRS) < 0: SRS -= min(SRS)
-            pi = SRS / np.sum(SRS)
+            z = 1.0 / np.sum(1.0 / diff)
+            rho = z / diff
+            rsrs = ((ras / rho).max() + sys.float_info.epsilon) * rho - ras
+
+            if np.any(rsrs <= 0):
+                rsrs -= np.min(rsrs)
+                rsrs += sys.float_info.epsilon
+
+            log_rsrs = np.log(rsrs)
+            exp_rsrs = np.exp(log_rsrs - log_rsrs.max())
+            pi = exp_rsrs / np.sum(exp_rsrs)
 
             action = np.random.choice(self.action_space, p=pi)
             self.episodic_memory.add(controllable_state, action)
