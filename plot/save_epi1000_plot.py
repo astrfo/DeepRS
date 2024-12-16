@@ -57,7 +57,7 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.close()
 
     plt.figure(figsize=(12, 8))
-    plt.plot(collector.q_value_step_list, label='Q_value')
+    plt.plot(collector.q_value_step_list, label='Q_value', alpha=0.4)
     plt.title('Q_value per Step')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.q_value_step_list) + 1)
