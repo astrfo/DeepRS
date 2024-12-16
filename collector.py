@@ -74,7 +74,7 @@ class Collector:
         if self.policy.loss is not None:
             self.loss_step_list.append(self.policy.loss.item())
             self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
-        if self.is_aleph_state_in_policy:
+        if self.is_aleph_state_in_policy and self.agent.policy.aleph_state is not None:
             aleph = self.agent.policy.aleph_state
             self.aleph_state_step_list.append(aleph)
             self.aleph_beta_step_list.append(self.agent.policy.aleph_beta)
