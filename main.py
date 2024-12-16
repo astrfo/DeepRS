@@ -21,6 +21,7 @@ from policy.rsrs_duelingddqn import RSRSDuelingDDQN
 from policy.rsrsaleph_dqn import RSRSAlephDQN
 from policy.rsrsaleph_q_eps_ras_dqn import RSRSAlephQEpsRASDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
+from policy.rsrsaleph_q_eps_ce_choice_dqn import RSRSAlephQEpsCEChoiceDQN
 from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_RND
 from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
@@ -39,6 +40,7 @@ from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAl
 from network.qnet import QNet
 from network.duelingnet import DuelingNet
 from network.rsrsnet import RSRSNet
+from network.rsrscenet import RSRSCENet
 from network.rsrsdqnnet import RSRSDQNNet
 from network.rsrsalephnet import RSRSAlephNet
 from network.rsrs_duelingnet import RSRSDuelingNet
@@ -53,7 +55,7 @@ if __name__ == '__main__':
     """
     algo: 
     DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND or RSRSAlephQEpsRASChoiceCentroidDQN or RSRSAlephQEpsRASChoiceCentroidAlephGDQN
+    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsCEChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND or RSRSAlephQEpsRASChoiceCentroidDQN or RSRSAlephQEpsRASChoiceCentroidAlephGDQN
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
     # environment parameters
@@ -126,9 +128,11 @@ if __name__ == '__main__':
             model = ConvQNet
         elif algo == 'ConvDQNAtari':
             model = ConvQAtariNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
+        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             model = RSRSNet
-        elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
+        elif algo == 'RSRSAlephQEpsCEChoiceDQN':
+            model = RSRSCENet
+        elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             model = RSRSDQNNet
         elif algo == 'RSRSAlephDQN':
             model = RSRSAlephNet
@@ -222,6 +226,12 @@ if __name__ == '__main__':
             simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceDQN':
             policy = RSRSAlephQEpsRASChoiceDQN(**param)
+            agent = Agent(policy)
+            collector = Collector(sim, epi, param, agent, policy)
+            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            simulation(sim, epi, env, agent, collector, result_dir_path)
+        elif algo == 'RSRSAlephQEpsCEChoiceDQN':
+            policy = RSRSAlephQEpsCEChoiceDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
             result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
