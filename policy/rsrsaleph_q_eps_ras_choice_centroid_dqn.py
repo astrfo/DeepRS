@@ -1,19 +1,23 @@
+import sys
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
 from memory.replay_buffer import ReplayBuffer
-from network.rsrsnet import RSRSNet
+from network.rsrsdqnnet import RSRSDQNNet
 
 
 class RSRSAlephQEpsRASChoiceCentroidDQN:
-    def __init__(self, model=RSRSNet, **kwargs):
+    def __init__(self, model=RSRSDQNNet, **kwargs):
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
         self.adam_learning_rate = kwargs['adam_learning_rate']
+        self.rmsprop_learning_rate = kwargs['rmsprop_learning_rate']
+        self.rmsprop_alpha = kwargs['rmsprop_alpha']
+        self.rmsprop_eps = kwargs['rmsprop_eps']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
         self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
@@ -29,13 +33,13 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
-        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        self.criterion = nn.SmoothL1Loss()
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -45,12 +49,12 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.centroids = np.random.randn(self.action_space * self.k, self.embedding_size)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
@@ -72,13 +76,19 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
-            aleph = max(q_values) + self.epsilon_dash
+            aleph = q_values.max() + self.epsilon_dash
             diff = aleph - q_values
-            Z = 1.0 / np.sum(1.0 / diff)
-            rho = Z / diff
-            SRS = ((self.ras / rho).max() + self.epsilon_dash) * rho - self.ras
-            if min(SRS) < 0: SRS -= min(SRS)
-            pi = SRS / np.sum(SRS)
+            z = 1.0 / np.sum(1.0 / diff)
+            rho = z / diff
+            rsrs = ((self.ras / rho).max() + sys.float_info.epsilon) * rho - self.ras
+            
+            if np.any(rsrs <= 0):
+                rsrs -= np.min(rsrs)
+                rsrs += sys.float_info.epsilon
+            
+            log_rsrs = np.log(rsrs)
+            exp_rsrs = np.exp(log_rsrs - log_rsrs.max())
+            pi = exp_rsrs / np.sum(exp_rsrs)
 
             action = np.random.choice(self.action_space, p=pi)
         return action
