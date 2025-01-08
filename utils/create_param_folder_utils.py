@@ -28,11 +28,6 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
         for base_param_key, base_param_value in base_param.items():
             if ex_param[base_param_key] != base_param_value:
                 folder_name += f'_{base_param_key}{ex_param[base_param_key]}'
-        ex_folder_path = f'log/{env_name}/{folder_name}/'
-        os.makedirs(ex_folder_path, exist_ok=True)
-        time_now = datetime.now()
-        results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
-        os.makedirs(results_dir, exist_ok=True)
     elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND' or algo == 'ConvDQNAtari':
         base_param = {
             'algo': algo,
@@ -60,11 +55,6 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
         for base_param_key, base_param_value in base_param.items():
             if ex_param[base_param_key] != base_param_value:
                 folder_name += f'_{base_param_key}{ex_param[base_param_key]}'
-        ex_folder_path = f'log/{env_name}/{folder_name}/'
-        os.makedirs(ex_folder_path, exist_ok=True)
-        time_now = datetime.now()
-        results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
-        os.makedirs(results_dir, exist_ok=True)
     elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsCEChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN' or algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari' or algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
         base_param = {
             'algo': algo,
@@ -95,14 +85,15 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
         for base_param_key, base_param_value in base_param.items():
             if ex_param[base_param_key] != base_param_value:
                 folder_name += f'_{base_param_key}{ex_param[base_param_key]}'
-        ex_folder_path = f'log/{env_name}/{folder_name}/'
-        os.makedirs(ex_folder_path, exist_ok=True)
-        time_now = datetime.now()
-        results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
-        os.makedirs(results_dir, exist_ok=True)
     else:
         print(f'Cannot make file for algorithm {algo}')
         exit(1)
+    
+    ex_folder_path = f'log/{env_name}/{folder_name}/'
+    os.makedirs(ex_folder_path, exist_ok=True)
+    time_now = datetime.now()
+    results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
+    os.makedirs(results_dir, exist_ok=True)
     return results_dir
 
 def create_hyperparameter_list(result_dir_path, param, model, policy, agent):
