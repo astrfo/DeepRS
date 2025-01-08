@@ -1,4 +1,5 @@
 import os
+from utils.create_hyperparameter_list_utils import create_hyperparameter_list
 
 
 def create_compare_base_param_folder(env_name, algo, ex_param):
@@ -95,15 +96,7 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
     os.makedirs(result_dir_path, exist_ok=True)
     return result_dir_path
 
-def create_hyperparameter_list(result_dir_path, param, model, policy, agent):
-    f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
-    f.write(f'param: {param}\n')
-    f.write(f'model: {model}\n')
-    f.write(f'policy: {policy}\n')
-    f.write(f'agent: {agent}\n')
-    f.close()
-
-def create_param_folder(env_name, algo, param, model, policy, agent):
+def create_param_folder(env_name, algo, param):
     result_dir_path = create_compare_base_param_folder(env_name, algo, param)
-    create_hyperparameter_list(result_dir_path, param, model, policy, agent)
+    create_hyperparameter_list(result_dir_path, param)
     return result_dir_path
