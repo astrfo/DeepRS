@@ -98,9 +98,9 @@ def compare_base_make_folder(env_name, algo, ex_param):
             'target_update_freq': 10000,
         }
         folder_name = algo
-        for (base_k, base_v), (ex_k, ex_v) in zip(base_param.items(), ex_param.items()):
-            if (base_k == ex_k) and (base_v != ex_v):
-                folder_name += f'_{ex_k}{ex_v}'
+        for base_param_key, base_param_value in base_param.items():
+            if ex_param[base_param_key] != base_param_value:
+                folder_name += f'_{base_param_key}{ex_param[base_param_key]}'
         ex_folder_path = f'log/{env_name}/{folder_name}/'
         os.makedirs(ex_folder_path, exist_ok=True)
         time_now = datetime.now()
