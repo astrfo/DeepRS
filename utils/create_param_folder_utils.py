@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 
 def create_compare_base_param_folder(env_name, algo, ex_param):
@@ -89,12 +88,9 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
         print(f'Cannot make file for algorithm {algo}')
         exit(1)
     
-    ex_folder_path = f'log/{env_name}/{folder_name}/'
-    os.makedirs(ex_folder_path, exist_ok=True)
-    time_now = datetime.now()
-    results_dir = f'{ex_folder_path}{time_now:%Y%m%d%H%M}/'
-    os.makedirs(results_dir, exist_ok=True)
-    return results_dir
+    result_dir_path = f'log/{env_name}/{folder_name}/'
+    os.makedirs(result_dir_path, exist_ok=True)
+    return result_dir_path
 
 def create_hyperparameter_list(result_dir_path, param, model, policy, agent):
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
