@@ -5,20 +5,20 @@ from tqdm import tqdm
 from collections import deque
 
 from utils.get_screen_utils import get_screen
+from utils.create_sim_folder_utils import create_sim_folder_utils
 from plot.save_episode_plot import save_episode_plot
 from plot.save_epi1000_plot import save_epi1000_plot
 from plot.save_simulation_plot import save_simulation_plot
 
 
-def simulation(sims, epis, env, agent, collector, result_dir_path):
-    for sim in range(sims):
-        sim_dir_path = result_dir_path + f'{sim+1}/'
-        os.makedirs(sim_dir_path, exist_ok=True)
+def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path):
+    for sim in range(executed_sims+1, sims+1):
+        sim_dir_path = create_sim_folder_utils(result_dir_path, sim)
         agent.initialize()
         collector.initialize()
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
-                        desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
+                        desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim}/{sims} agent]'):
             collector.reset()
             state, _ = env.reset()
             total_reward, survived_step = 0, 0

@@ -7,7 +7,8 @@ from agent import Agent
 from collector import Collector
 from utils.get_screen_utils import get_screen
 from utils.space2size_utils import space2size
-from utils.make_param_file_utils import make_param_file
+from utils.create_param_folder_utils import create_param_folder
+from utils.calculate_executed_sim_utils import calculate_executed_sim
 
 from policy.dqn import DQN
 from policy.ddqn import DDQN
@@ -59,8 +60,8 @@ if __name__ == '__main__':
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
     # environment parameters
-    env_name = 'BreakoutNoFrameskip-v4'
-    algos = ['ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari']
+    env_name = 'CartPole-v1'
+    algos = ['RSRSAlephQEpsRASChoiceCentroidDQN']
     sim = 1
     epi = 10000
 
@@ -90,8 +91,8 @@ if __name__ == '__main__':
     mseloss_reduction = 'mean'
 
     # memory parameters
-    replay_buffer_capacity = 1000000
-    episodic_memory_capacity = 1000
+    replay_buffer_capacity = 10000
+    episodic_memory_capacity = 10000
 
     # network parameters
     hidden_size = 128
@@ -100,10 +101,10 @@ if __name__ == '__main__':
 
     # etc parameters
     sync_model_update = 'soft'
-    warmup = 0
-    tau = 0.005
+    warmup = 50
+    tau = 0.01
     batch_size = 32
-    target_update_freq = 500
+    target_update_freq = 1000
     
 
     for algo in algos:
@@ -192,163 +193,180 @@ if __name__ == '__main__':
             policy = DQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'DDQN':
             policy = DDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDQN':
             policy = RSRSDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephDQN':
             policy = RSRSAlephDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsDQN':
             policy = RSRSAlephQEpsDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASDQN':
             policy = RSRSAlephQEpsRASDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceDQN':
             policy = RSRSAlephQEpsRASChoiceDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsCEChoiceDQN':
             policy = RSRSAlephQEpsCEChoiceDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
             policy = RSRSAlephQEpsRASChoiceDQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             policy = RSRSAlephQEpsRASChoiceCentroidDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
             policy = RSRSAlephQEpsRASChoiceCentroidAlephGDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'DuelingDQN':
             policy = DuelingDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'DuelingDDQN':
             policy = DuelingDDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'DQN_RND':
             policy = DQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDDQN':
             policy = RSRSDDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDuelingDQN':
             policy = RSRSDuelingDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSDuelingDDQN':
             policy = RSRSDuelingDDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
-            simulation(sim, epi, env, agent, collector, result_dir_path)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
+            executed_sims = calculate_executed_sim(result_dir_path)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvDQN':
             policy = ConvDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvDDQN':
             policy = ConvDDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvDQN_RND':
             policy = ConvDQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvDQNAtari':
             policy = ConvDQNAtari(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvRSRSDQN':
             policy = ConvRSRSDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSDynDQN':
             policy = ConvRSRSDynDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSAlephDQN':
             policy = ConvRSRSAlephDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND':
             policy = ConvRSRSAlephQEpsRASChoiceDQN_RND(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         elif algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
             policy = ConvRSRSAlephQEpsRASChoiceDQNAtari(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         elif algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
             policy = ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy)
-            result_dir_path = make_param_file(env_name, algo, param, model, policy, agent)
+            result_dir_path = create_param_folder(env_name, algo, param, model, policy, agent)
             atari_simulation(sim, epi, env, agent, collector, result_dir_path)
         else:
             print(f'Not found algorithm {algo}')
