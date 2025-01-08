@@ -111,7 +111,7 @@ def compare_base_make_folder(env_name, algo, ex_param):
         exit(1)
     return results_dir
 
-def make_param_file(env_name, algo, param, model, policy, agent):
+def create_param_folder(env_name, algo, param, model, policy, agent):
     result_dir_path = compare_base_make_folder(env_name, algo, param)
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
     f.write(f'param: {param}\n')
