@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 
-def compare_base_make_folder(env_name, algo, ex_param):
+def create_compare_base_param_folder(env_name, algo, ex_param):
     if algo == 'DQN' or algo == 'DDQN' or algo == 'DuelingDQN' or algo == 'DuelingDDQN' or algo == 'DQN_RND':
         base_param = {
             'algo': algo,
@@ -105,12 +105,15 @@ def compare_base_make_folder(env_name, algo, ex_param):
         exit(1)
     return results_dir
 
-def create_param_folder(env_name, algo, param, model, policy, agent):
-    result_dir_path = compare_base_make_folder(env_name, algo, param)
+def create_hyperparameter_list(result_dir_path, param, model, policy, agent):
     f = open(result_dir_path + 'hyperparameter_list.txt', mode='w', encoding='utf-8')
     f.write(f'param: {param}\n')
     f.write(f'model: {model}\n')
     f.write(f'policy: {policy}\n')
     f.write(f'agent: {agent}\n')
     f.close()
+
+def create_param_folder(env_name, algo, param, model, policy, agent):
+    result_dir_path = create_compare_base_param_folder(env_name, algo, param)
+    create_hyperparameter_list(result_dir_path, param, model, policy, agent)
     return result_dir_path
