@@ -6,8 +6,6 @@ def compare_base_make_folder(env_name, algo, ex_param):
     if algo == 'DQN' or algo == 'DDQN' or algo == 'DuelingDQN' or algo == 'DuelingDDQN' or algo == 'DQN_RND':
         base_param = {
             'algo': algo,
-            'sim': 100,
-            'epi': 1000,
             'gamma': 0.99,
             'epsilon_fixed': 0.01,
             'epsilon_start': 1.0,
@@ -38,8 +36,6 @@ def compare_base_make_folder(env_name, algo, ex_param):
     elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND' or algo == 'ConvDQNAtari':
         base_param = {
             'algo': algo,
-            'sim': 1,
-            'epi': 1000,
             'gamma': 0.99,
             'epsilon_fixed': 0.01,
             'epsilon_start': 1.0,
@@ -72,8 +68,6 @@ def compare_base_make_folder(env_name, algo, ex_param):
     elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN' or algo == 'RSRSAlephDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsCEChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN' or algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN' or algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND' or algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari' or algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
         base_param = {
             'algo': algo,
-            'sim': 100,
-            'epi': 1000,
             'gamma': 0.99,
             'epsilon_dash': 0.01,
             'k': 5,
