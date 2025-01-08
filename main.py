@@ -60,8 +60,8 @@ if __name__ == '__main__':
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
     # environment parameters
-    env_name = 'BreakoutNoFrameskip-v4'
-    algos = ['ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari']
+    env_name = 'CartPole-v1'
+    algos = ['RSRSAlephQEpsRASChoiceCentroidDQN']
     sim = 1
     epi = 10000
 
@@ -91,8 +91,8 @@ if __name__ == '__main__':
     mseloss_reduction = 'mean'
 
     # memory parameters
-    replay_buffer_capacity = 1000000
-    episodic_memory_capacity = 1000
+    replay_buffer_capacity = 10000
+    episodic_memory_capacity = 10000
 
     # network parameters
     hidden_size = 128
@@ -101,10 +101,10 @@ if __name__ == '__main__':
 
     # etc parameters
     sync_model_update = 'soft'
-    warmup = 0
-    tau = 0.005
+    warmup = 50
+    tau = 0.01
     batch_size = 32
-    target_update_freq = 500
+    target_update_freq = 1000
     
 
     for algo in algos:
