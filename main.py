@@ -45,8 +45,8 @@ if __name__ == '__main__':
     # environment parameters
     env_name = 'CartPole-v1'
     algos = ['DQN', 'DDQN', 'RSRSAlephQEpsRASChoiceDQN', 'RSRSAlephQEpsRASChoiceCentroidDQN']
-    sim = 1
-    epi = 10
+    sim = 10
+    epi = 1000
 
     # q-learning parameters
     gamma = 0.99
