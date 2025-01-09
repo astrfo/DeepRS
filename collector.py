@@ -93,7 +93,7 @@ class Collector:
             return np.mean(data_list[-self.sma_window:])
 
     def save_epi1000_data(self, sim_dir_path, epi):
-        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_episode{epi}.pth')
+        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'model_episode{epi}.pth')
         np.savetxt(sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + f'reward_sma_epi{epi}.csv', self.reward_sma_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
