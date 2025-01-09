@@ -5,7 +5,6 @@ from tqdm import tqdm
 from collections import deque
 
 from utils.get_screen_utils import get_screen
-from utils.create_sim_folder_utils import create_sim_folder_utils
 from plot.save_episode_plot import save_episode_plot
 from plot.save_epi1000_plot import save_epi1000_plot
 from plot.save_simulation_plot import save_simulation_plot
@@ -13,9 +12,8 @@ from plot.save_simulation_plot import save_simulation_plot
 
 def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path):
     for sim in range(executed_sims+1, sims+1):
-        sim_dir_path = create_sim_folder_utils(result_dir_path, sim)
         agent.initialize()
-        collector.initialize()
+        collector.initialize(sim)
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim}/{sims} agent]'):
@@ -32,18 +30,12 @@ def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
-            if (epi+1) % 1000 == 0:
-                collector.save_epi1000_data(sim_dir_path, epi)
-                save_epi1000_plot(collector, sim_dir_path, epi)
+            if epi % 1000 == 0 and epi != 0:
+                collector.save_epi1000_data(epi)
             if hasattr(agent.policy, 'update_global_value'):
                 agent.policy.update_global_value(total_reward)
-        collector.save_episode_data(sim_dir_path)
-        save_episode_plot(collector, sim_dir_path)
-    average_sim_dir_path = result_dir_path + 'average/'
-    os.makedirs(average_sim_dir_path, exist_ok=True)
-    collector.collect_simulation_data()
-    collector.save_simulation_data(average_sim_dir_path)
-    save_simulation_plot(collector, average_sim_dir_path)
+        collector.save_episode_data()
+    collector.save_simulation_data()
     env.close()
 
 

@@ -1,20 +1,11 @@
 import matplotlib.pyplot as plt
 
-def save_simulation_plot(collector, average_sim_dir_path):
+def save_simulation_plot(average_sim_dir_path, metrics, df_average):
     plt.figure(figsize=(12, 8))
-    plt.plot(collector.reward_sim_list, label='Average Reward')
-    plt.title('Average Reward per Episode')
-    plt.xlabel('Episode')
-    plt.xlim(-1, len(collector.reward_sim_list) + 1)
-    plt.legend()
-    plt.savefig(average_sim_dir_path + 'average_reward.png')
+    plt.plot(df_average)
+    plt.title(f'average {metrics}')
+    plt.xlabel('episode or step')
+    plt.xlim(-1, len(df_average) + 1)
+    plt.savefig(average_sim_dir_path + f'average_{metrics}.png')
     plt.close()
 
-    plt.figure(figsize=(12, 8))
-    plt.plot(collector.survived_step_sim_list, label='Average Survived Step')
-    plt.title('Average Survived Step per Episode')
-    plt.xlabel('Episode')
-    plt.xlim(-1, len(collector.survived_step_sim_list) + 1)
-    plt.legend()
-    plt.savefig(average_sim_dir_path + 'average_survived_step.png')
-    plt.close()
