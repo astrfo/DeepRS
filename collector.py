@@ -128,12 +128,14 @@ class Collector:
             pkl.dump(episode_data, f)
 
     def save_simulation_data(self, result_dir_path):
-        reward_search_pattern = os.path.join(result_dir_path, '**', 'reward.csv')
-        reward_csv_files = glob.glob(reward_search_pattern, recursive=True)
-        df_reward = [pd.read_csv(reward_csv_file, header=None) for reward_csv_file in reward_csv_files]
-        df_concat_reward = pd.concat(df_reward, axis=1)
-        df_average_reward = df_concat_reward.mean(axis=1)
-
         average_sim_dir_path = result_dir_path + 'average/'
         os.makedirs(average_sim_dir_path, exist_ok=True)
-        np.savetxt(average_sim_dir_path + 'average_reward.csv', df_average_reward, delimiter=',')
+
+        metrics_list = ['reward', 'reward_sma', 'survived_step', 'survived_step_sma', 'q_value', 'loss', 'loss_sma']
+        for metrics in metrics_list:
+            search_pattern = os.path.join(result_dir_path, '**', f'{metrics}.csv')
+            csv_files = glob.glob(search_pattern, recursive=True)
+            df = [pd.read_csv(csv_file, header=None) for csv_file in csv_files]
+            df_concat = pd.concat(df, axis=1)
+            df_average = df_concat.mean(axis=1)
+            np.savetxt(average_sim_dir_path + f'average_{metrics}.csv', df_average, delimiter=',')
