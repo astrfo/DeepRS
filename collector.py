@@ -83,6 +83,7 @@ class Collector:
         np.savetxt(sim_dir_path + f'reward_sma_epi{epi}.csv', self.reward_sma_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
+        np.savetxt(sim_dir_path + f'q_value{epi}.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
         
