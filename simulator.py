@@ -34,15 +34,10 @@ def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path
             collector.collect_episode_data(total_reward, survived_step)
             if (epi+1) % 1000 == 0:
                 collector.save_epi1000_data(sim_dir_path, epi)
-                save_epi1000_plot(collector, sim_dir_path, epi)
             if hasattr(agent.policy, 'update_global_value'):
                 agent.policy.update_global_value(total_reward)
         collector.save_episode_data(sim_dir_path)
-        save_episode_plot(collector, sim_dir_path)
-    average_sim_dir_path = result_dir_path + 'average/'
-    os.makedirs(average_sim_dir_path, exist_ok=True)
     collector.save_simulation_data(result_dir_path)
-    # save_simulation_plot(collector, average_sim_dir_path)
     env.close()
 
 
