@@ -91,7 +91,7 @@ class Collector:
             pkl.dump(episode_data, f)
 
     def save_episode_data(self, sim_dir_path):
-        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_sim{self.sim}_epi{self.epi}.pth')
+        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'model_epi{self.epi}.pth')
         np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'reward_sma.csv', self.reward_sma_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
