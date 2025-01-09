@@ -194,7 +194,7 @@ if __name__ == '__main__':
             executed_sims = calculate_executed_sim(result_dir_path)
             policy = DQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path, result_dir_path)
+            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
             simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'DDQN':
             result_dir_path = create_param_folder(env_name, algo, param)
@@ -208,14 +208,14 @@ if __name__ == '__main__':
             executed_sims = calculate_executed_sim(result_dir_path)
             policy = RSRSDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path, result_dir_path)
+            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
             simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephDQN':
             result_dir_path = create_param_folder(env_name, algo, param)
             executed_sims = calculate_executed_sim(result_dir_path)
             policy = RSRSAlephDQN(**param)
             agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path, result_dir_path)
+            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
             simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsDQN':
             result_dir_path = create_param_folder(env_name, algo, param)
