@@ -30,7 +30,7 @@ def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
-            if (epi+1) % 1000 == 0:
+            if epi % 1000 == 0 and epi != 0:
                 collector.save_epi1000_data(epi)
             if hasattr(agent.policy, 'update_global_value'):
                 agent.policy.update_global_value(total_reward)
