@@ -6,6 +6,10 @@ import glob
 import os
 import pandas as pd
 
+from plot.save_episode_plot import save_episode_plot
+from plot.save_epi1000_plot import save_epi1000_plot
+from plot.save_simulation_plot import save_simulation_plot
+
 
 class Collector:
     def __init__(self, sim, epi, param, agent, policy, sma_window=50):
@@ -86,6 +90,7 @@ class Collector:
         np.savetxt(sim_dir_path + f'q_value{epi}.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
+        save_epi1000_plot(self, sim_dir_path, epi)
         
         episode_data = self.format()
         with open(sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
@@ -100,6 +105,7 @@ class Collector:
         np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
+        save_episode_plot(self, sim_dir_path)
 
         episode_data = self.format()
         with open(sim_dir_path + f'episode{self.epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
@@ -117,3 +123,5 @@ class Collector:
             df_concat = pd.concat(df, axis=1)
             df_average = df_concat.mean(axis=1)
             np.savetxt(average_sim_dir_path + f'average_{metrics}.csv', df_average, delimiter=',')
+        
+        save_simulation_plot(self, average_sim_dir_path)
