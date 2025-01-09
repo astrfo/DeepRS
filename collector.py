@@ -6,7 +6,7 @@ import glob
 import os
 import pandas as pd
 
-from utils.create_sim_folder_utils import create_sim_folder_utils
+from utils.create_folder_utils import create_sim_folder, create_average_folder
 from plot.save_episode_plot import save_episode_plot
 from plot.save_epi1000_plot import save_epi1000_plot
 from plot.save_simulation_plot import save_simulation_plot
@@ -48,7 +48,7 @@ class Collector:
         return data
 
     def initialize(self, sim):
-        self.sim_dir_path = create_sim_folder_utils(self.result_dir_path, sim)
+        self.sim_dir_path = create_sim_folder(self.result_dir_path, sim)
         self.reward_step_list = []
         self.survived_step_step_list = []
         self.q_value_step_list = []
@@ -115,8 +115,7 @@ class Collector:
             pkl.dump(episode_data, f)
 
     def save_simulation_data(self):
-        average_sim_dir_path = self.result_dir_path + 'average/'
-        os.makedirs(average_sim_dir_path, exist_ok=True)
+        average_sim_dir_path = create_average_folder(self.result_dir_path)
 
         metrics_list = ['reward', 'reward_sma', 'survived_step', 'survived_step_sma', 'q_value', 'loss', 'loss_sma']
         for metrics in metrics_list:
