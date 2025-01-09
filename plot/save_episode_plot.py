@@ -50,7 +50,7 @@ def save_episode_plot(collector, sim_dir_path):
     plt.close()
 
     plt.figure(figsize=(12, 8))
-    plt.plot(collector.q_value_step_list)
+    plt.plot(collector.q_value_step_list, alpha=0.4)
     plt.title('Q value')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.q_value_step_list) + 1)
