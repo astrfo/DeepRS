@@ -41,9 +41,8 @@ def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path
         save_episode_plot(collector, sim_dir_path)
     average_sim_dir_path = result_dir_path + 'average/'
     os.makedirs(average_sim_dir_path, exist_ok=True)
-    collector.collect_simulation_data()
-    collector.save_simulation_data(average_sim_dir_path)
-    save_simulation_plot(collector, average_sim_dir_path)
+    collector.save_simulation_data(result_dir_path)
+    # save_simulation_plot(collector, average_sim_dir_path)
     env.close()
 
 
