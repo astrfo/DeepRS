@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 
-def save_episode_plot(collector, sim_dir_path):
+def save_episode_plot(collector):
     plt.figure(figsize=(12, 8))
     plt.plot(collector.reward_epi_list)
     plt.title('Reward')
     plt.xlabel('Episode')
     plt.xlim(-1, len(collector.reward_epi_list) + 1)
-    plt.savefig(sim_dir_path + 'reward.png')
+    plt.savefig(collector.sim_dir_path + 'reward.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -14,7 +14,7 @@ def save_episode_plot(collector, sim_dir_path):
     plt.title(f'Reward SMA({collector.sma_window})')
     plt.xlabel('Episode')
     plt.xlim(-1, len(collector.reward_sma_epi_list) + 1)
-    plt.savefig(sim_dir_path + 'reward_sma.png')
+    plt.savefig(collector.sim_dir_path + 'reward_sma.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -22,7 +22,7 @@ def save_episode_plot(collector, sim_dir_path):
     plt.title('Survived Step')
     plt.xlabel('Episode')
     plt.xlim(-1, len(collector.survived_step_epi_list) + 1)
-    plt.savefig(sim_dir_path + 'survived_step.png')
+    plt.savefig(collector.sim_dir_path + 'survived_step.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -30,7 +30,7 @@ def save_episode_plot(collector, sim_dir_path):
     plt.title(f'Survived Step SMA({collector.sma_window})')
     plt.xlabel('Episode')
     plt.xlim(-1, len(collector.survived_step_sma_epi_list) + 1)
-    plt.savefig(sim_dir_path + 'survived_step_sma.png')
+    plt.savefig(collector.sim_dir_path + 'survived_step_sma.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -38,7 +38,7 @@ def save_episode_plot(collector, sim_dir_path):
     plt.title('Loss')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.loss_step_list) + 1)
-    plt.savefig(sim_dir_path + 'loss.png')
+    plt.savefig(collector.sim_dir_path + 'loss.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -46,7 +46,7 @@ def save_episode_plot(collector, sim_dir_path):
     plt.title(f'Loss SMA({collector.sma_window})')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.loss_sma_step_list) + 1)
-    plt.savefig(sim_dir_path + 'loss_sma.png')
+    plt.savefig(collector.sim_dir_path + 'loss_sma.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -54,5 +54,5 @@ def save_episode_plot(collector, sim_dir_path):
     plt.title('Q value')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.q_value_step_list) + 1)
-    plt.savefig(sim_dir_path + 'q_value.png')
+    plt.savefig(collector.sim_dir_path + 'q_value.png')
     plt.close()

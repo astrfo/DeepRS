@@ -93,7 +93,7 @@ class Collector:
         np.savetxt(self.sim_dir_path + f'q_value{epi}.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
-        save_epi1000_plot(self, self.sim_dir_path, epi)
+        save_epi1000_plot(self, epi)
         
         episode_data = self.format()
         with open(self.sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
@@ -108,7 +108,7 @@ class Collector:
         np.savetxt(self.sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
-        save_episode_plot(self, self.sim_dir_path)
+        save_episode_plot(self)
 
         episode_data = self.format()
         with open(self.sim_dir_path + f'episode{self.epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:

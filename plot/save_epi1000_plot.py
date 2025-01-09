@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 
-def save_epi1000_plot(collector, sim_dir_path, epi):
+def save_epi1000_plot(collector, epi):
     plt.figure(figsize=(12, 8))
     plt.plot(collector.reward_epi_list)
     plt.title(f'Reward epi{epi}')
     plt.xlabel('Episode')
     plt.xlim(-1, epi+1)
-    plt.savefig(sim_dir_path + f'reward_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'reward_epi{epi}.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -14,7 +14,7 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.title(f'Reward SMA({collector.sma_window}) epi{epi}')
     plt.xlabel('Episode')
     plt.xlim(-1, epi+1)
-    plt.savefig(sim_dir_path + f'reward_sma_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'reward_sma_epi{epi}.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -22,7 +22,7 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.title(f'Survived Step epi{epi}')
     plt.xlabel('Episode')
     plt.xlim(-1, epi+1)
-    plt.savefig(sim_dir_path + f'survived_step_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'survived_step_epi{epi}.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -30,7 +30,7 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.title(f'Survived Step SMA({collector.sma_window})')
     plt.xlabel('Episode')
     plt.xlim(-1, epi+1)
-    plt.savefig(sim_dir_path + f'survived_step_sma_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'survived_step_sma_epi{epi}.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -38,7 +38,7 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.title(f'Loss epi{epi}')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.loss_step_list) + 1)
-    plt.savefig(sim_dir_path + f'loss_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'loss_epi{epi}.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -46,7 +46,7 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.title(f'Loss SMA({collector.sma_window}) epi{epi}')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.loss_sma_step_list) + 1)
-    plt.savefig(sim_dir_path + f'loss_sma_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'loss_sma_epi{epi}.png')
     plt.close()
 
     plt.figure(figsize=(12, 8))
@@ -54,5 +54,5 @@ def save_epi1000_plot(collector, sim_dir_path, epi):
     plt.title(f'Q value epi{epi}')
     plt.xlabel('Step')
     plt.xlim(-1, len(collector.q_value_step_list) + 1)
-    plt.savefig(sim_dir_path + f'q_value_epi{epi}.png')
+    plt.savefig(collector.sim_dir_path + f'q_value_epi{epi}.png')
     plt.close()
