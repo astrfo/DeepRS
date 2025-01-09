@@ -12,21 +12,8 @@ from utils.calculate_executed_sim_utils import calculate_executed_sim
 
 from policy.dqn import DQN
 from policy.ddqn import DDQN
-from policy.duelingdqn import DuelingDQN
-from policy.duelingddqn import DuelingDDQN
-from policy.dqn_rnd import DQN_RND
-from policy.rsrs_dqn import RSRSDQN
-from policy.rsrs_ddqn import RSRSDDQN
-from policy.rsrs_duelingdqn import RSRSDuelingDQN
-from policy.rsrs_duelingddqn import RSRSDuelingDDQN
-from policy.rsrsaleph_dqn import RSRSAlephDQN
-from policy.rsrsaleph_q_eps_ras_dqn import RSRSAlephQEpsRASDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
-from policy.rsrsaleph_q_eps_ce_choice_dqn import RSRSAlephQEpsCEChoiceDQN
-from policy.rsrsaleph_q_eps_dqn import RSRSAlephQEpsDQN
-from policy.rsrsaleph_q_eps_ras_choice_dqn_rnd import RSRSAlephQEpsRASChoiceDQN_RND
 from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
-from policy.rsrsaleph_q_eps_ras_choice_centroid_alephg_dqn import RSRSAlephQEpsRASChoiceCentroidAlephGDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_dqn_rnd import ConvDQN_RND
@@ -39,12 +26,8 @@ from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_atari import ConvRSRSAlephQEpsRA
 from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
 
 from network.qnet import QNet
-from network.duelingnet import DuelingNet
 from network.rsrsnet import RSRSNet
-from network.rsrscenet import RSRSCENet
 from network.rsrsdqnnet import RSRSDQNNet
-from network.rsrsalephnet import RSRSAlephNet
-from network.rsrs_duelingnet import RSRSDuelingNet
 from network.conv_qnet import ConvQNet
 from network.conv_atari_qnet import ConvQAtariNet
 from network.conv_rsrsnet import ConvRSRSNet
@@ -55,15 +38,15 @@ from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 if __name__ == '__main__':
     """
     algo: 
-    DQN or DDQN or DuelingDQN or DuelingDDQN or DQN_RND
-    RSRSDQN or RSRSDDQN or RSRSDuelingDQN or RSRSDuelingDDQN or RSRSAlephDQN or RSRSAlephQEpsDQN or RSRSAlephQEpsRASDQN or RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsCEChoiceDQN or RSRSAlephQEpsRASChoiceDQN_RND or RSRSAlephQEpsRASChoiceCentroidDQN or RSRSAlephQEpsRASChoiceCentroidAlephGDQN
+    DQN or DDQN
+    RSRSAlephQEpsRASChoiceDQN or RSRSAlephQEpsRASChoiceCentroidDQN
     ConvDQN or ConvDDQN or ConvDQN_RND or ConvDQNAtari or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN or ConvRSRSAlephQEpsRASChoiceDQN_RND or ConvRSRSAlephQEpsRASChoiceDQNAtari or ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
     """
     # environment parameters
     env_name = 'CartPole-v1'
-    algos = ['RSRSAlephQEpsRASChoiceCentroidDQN']
+    algos = ['DQN', 'DDQN', 'RSRSAlephQEpsRASChoiceDQN', 'RSRSAlephQEpsRASChoiceCentroidDQN']
     sim = 1
-    epi = 10000
+    epi = 10
 
     # q-learning parameters
     gamma = 0.99
@@ -123,24 +106,16 @@ if __name__ == '__main__':
         env.reset()
         init_frame = get_screen(env)
 
-        if algo == 'DQN' or algo == 'DDQN' or algo == 'DQN_RND':
+        if algo == 'DQN' or algo == 'DDQN':
             model = QNet
         elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
             model = ConvQNet
         elif algo == 'ConvDQNAtari':
             model = ConvQAtariNet
-        elif algo == 'RSRSDQN' or algo == 'RSRSDDQN' or algo == 'RSRSAlephQEpsDQN' or algo == 'RSRSAlephQEpsRASDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN' or algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
+        elif algo == 'RSRSAlephQEpsRASChoiceDQN':
             model = RSRSNet
-        elif algo == 'RSRSAlephQEpsCEChoiceDQN':
-            model = RSRSCENet
-        elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN' or algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
+        elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             model = RSRSDQNNet
-        elif algo == 'RSRSAlephDQN':
-            model = RSRSAlephNet
-        elif algo == 'DuelingDQN' or algo == 'DuelingDDQN':
-            model = DuelingNet
-        elif algo == 'RSRSDuelingDQN' or algo == 'RSRSDuelingDDQN':
-            model = RSRSDuelingNet
         elif algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND':
             model = ConvRSRSNet
         elif algo == 'ConvRSRSAlephDQN':
@@ -203,34 +178,6 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy, result_dir_path)
             simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsRASDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsRASDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceDQN':
             result_dir_path = create_param_folder(env_name, algo, param)
             executed_sims = calculate_executed_sim(result_dir_path)
@@ -238,73 +185,10 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy, result_dir_path)
             simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsCEChoiceDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsCEChoiceDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsRASChoiceDQN_RND':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsRASChoiceDQN_RND(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
         elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
             result_dir_path = create_param_folder(env_name, algo, param)
             executed_sims = calculate_executed_sim(result_dir_path)
             policy = RSRSAlephQEpsRASChoiceCentroidDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsRASChoiceCentroidAlephGDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsRASChoiceCentroidAlephGDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'DuelingDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = DuelingDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'DuelingDDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = DuelingDDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'DQN_RND':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = DQN_RND(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSDDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSDDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSDuelingDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSDuelingDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSDuelingDDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSDuelingDDQN(**param)
             agent = Agent(policy)
             collector = Collector(sim, epi, param, agent, policy, result_dir_path)
             simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
