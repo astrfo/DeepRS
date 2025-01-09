@@ -17,8 +17,8 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
             'rmsprop_learning_rate': 0.00025,
             'rmsprop_alpha': 0.95,
             'rmsprop_eps': 0.01,
-            'mseloss_reduction': 'sum',
-            'replay_buffer_capacity': 1000000,
+            'mseloss_reduction': 'mean',
+            'replay_buffer_capacity': 10000,
             'hidden_size': 128,
             'sync_model_update': 'soft',
             'warmup': 0,
@@ -44,7 +44,7 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
             'rmsprop_alpha': 0.95,
             'rmsprop_eps': 0.01,
             'max_grad_norm': 40,
-            'mseloss_reduction': 'sum',
+            'mseloss_reduction': 'mean',
             'replay_buffer_capacity': 1000000,
             'hidden_size': 128,
             'neighbor_frames': 4,
@@ -80,10 +80,10 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
             'embedding_size': 8,
             'neighbor_frames': 4,
             'sync_model_update': 'soft',
-            'warmup': 50,
+            'warmup': 0,
             'tau': 0.01,
             'batch_size': 32,
-            'target_update_freq': 1000,
+            'target_update_freq': 500,
         }
         folder_name = algo
         for base_param_key, base_param_value in base_param.items():
