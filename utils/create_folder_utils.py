@@ -1,7 +1,7 @@
 import os
 
 
-def create_param_folder(env_name, folder_name):
+def create_result_dir_path_folder(env_name, folder_name):
     result_dir_path = f'log/{env_name}/{folder_name}/'
     os.makedirs(result_dir_path, exist_ok=True)
     return result_dir_path

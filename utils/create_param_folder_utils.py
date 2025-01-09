@@ -1,6 +1,6 @@
 import os
 from utils.create_hyperparameter_list_utils import create_hyperparameter_list
-from utils.create_folder_utils import create_param_folder
+from utils.create_folder_utils import create_result_dir_path_folder
 
 
 def create_compare_base_param_folder(env_name, algo, ex_param):
@@ -93,7 +93,7 @@ def create_compare_base_param_folder(env_name, algo, ex_param):
         print(f'Cannot make file for algorithm {algo}')
         exit(1)
     
-    result_dir_path = create_param_folder(env_name, folder_name)
+    result_dir_path = create_result_dir_path_folder(env_name, folder_name)
     return result_dir_path
 
 def create_param_folder(env_name, algo, param):
