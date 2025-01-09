@@ -6,18 +6,20 @@ import glob
 import os
 import pandas as pd
 
+from utils.create_sim_folder_utils import create_sim_folder_utils
 from plot.save_episode_plot import save_episode_plot
 from plot.save_epi1000_plot import save_epi1000_plot
 from plot.save_simulation_plot import save_simulation_plot
 
 
 class Collector:
-    def __init__(self, sim, epi, param, agent, policy, sma_window=50):
+    def __init__(self, sim, epi, param, agent, policy, result_dir_path, sma_window=50):
         self.sim = sim
         self.epi = epi
         self.param = param
         self.agent = agent
         self.policy = policy
+        self.result_dir_path = result_dir_path
         self.sma_window = sma_window
 
         # step data
@@ -45,7 +47,8 @@ class Collector:
         data['loss_sma'] = self.loss_sma_step_list
         return data
 
-    def initialize(self):
+    def initialize(self, sim):
+        self.sim_dir_path = create_sim_folder_utils(self.result_dir_path, sim)
         self.reward_step_list = []
         self.survived_step_step_list = []
         self.q_value_step_list = []
@@ -81,43 +84,43 @@ class Collector:
         else:
             return np.mean(data_list[-self.sma_window:])
 
-    def save_epi1000_data(self, sim_dir_path, epi):
-        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'model_episode{epi}.pth')
-        np.savetxt(sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + f'reward_sma_epi{epi}.csv', self.reward_sma_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + f'q_value{epi}.csv', self.q_value_step_list, delimiter=',')
-        np.savetxt(sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
-        np.savetxt(sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
-        save_epi1000_plot(self, sim_dir_path, epi)
+    def save_epi1000_data(self, epi):
+        torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_episode{epi}.pth')
+        np.savetxt(self.sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'reward_sma_epi{epi}.csv', self.reward_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'q_value{epi}.csv', self.q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
+        save_epi1000_plot(self, self.sim_dir_path, epi)
         
         episode_data = self.format()
-        with open(sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
+        with open(self.sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
 
-    def save_episode_data(self, sim_dir_path):
-        torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'model_epi{self.epi}.pth')
-        np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'reward_sma.csv', self.reward_sma_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'survived_step_sma.csv', self.survived_step_sma_epi_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
-        np.savetxt(sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
-        save_episode_plot(self, sim_dir_path)
+    def save_episode_data(self):
+        torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_epi{self.epi}.pth')
+        np.savetxt(self.sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'reward_sma.csv', self.reward_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'survived_step_sma.csv', self.survived_step_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
+        save_episode_plot(self, self.sim_dir_path)
 
         episode_data = self.format()
-        with open(sim_dir_path + f'episode{self.epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
+        with open(self.sim_dir_path + f'episode{self.epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
 
-    def save_simulation_data(self, result_dir_path):
-        average_sim_dir_path = result_dir_path + 'average/'
+    def save_simulation_data(self):
+        average_sim_dir_path = self.result_dir_path + 'average/'
         os.makedirs(average_sim_dir_path, exist_ok=True)
 
         metrics_list = ['reward', 'reward_sma', 'survived_step', 'survived_step_sma', 'q_value', 'loss', 'loss_sma']
         for metrics in metrics_list:
-            search_pattern = os.path.join(result_dir_path, '**', f'{metrics}.csv')
+            search_pattern = os.path.join(self.result_dir_path, '**', f'{metrics}.csv')
             csv_files = glob.glob(search_pattern, recursive=True)
             df = [pd.read_csv(csv_file, header=None) for csv_file in csv_files]
             df_concat = pd.concat(df, axis=1)
