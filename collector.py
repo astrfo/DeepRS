@@ -61,8 +61,9 @@ class Collector:
         self.survived_step_step_list.append(survived_step)
         q_value = self.policy.q_value(self.agent.current_state)
         self.q_value_step_list.append(q_value)
-        self.loss_step_list.append(self.policy.loss.item())
-        self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
+        if self.policy.loss is not None:
+            self.loss_step_list.append(self.policy.loss.item())
+            self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
 
     def collect_episode_data(self, total_reward, survived_step):
         self.reward_epi_list.append(total_reward)
