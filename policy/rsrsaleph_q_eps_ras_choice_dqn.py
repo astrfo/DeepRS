@@ -33,32 +33,32 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.criterion = nn.SmoothL1Loss()
+        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
         self.total_steps = 0
         self.loss = None
 
     def reset(self):
         self.replay_buffer.reset()
         self.episodic_memory.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.total_steps = 0
 
     def q_value(self, state):
-        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def embed(self, state):
-        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
@@ -70,22 +70,17 @@ class RSRSAlephQEpsRASChoiceDQN:
             self.episodic_memory.add(controllable_state, action)
         else:
             q_values = self.q_value(state)
-            aleph = q_values.max() + self.epsilon_dash
-            controllable_state = self.embed(state)
-            ras = self.calculate_reliability(controllable_state)
+            aleph = q_values.max() + np.float64(1e-10)
             diff = aleph - q_values
             z = 1.0 / np.sum(1.0 / diff)
             rho = z / diff
-            rsrs = ((ras / rho).max() + sys.float_info.epsilon) * rho - ras
+            b = self.ras / rho - 1.0 + np.float64(1e-10)
+            rsrs = (1.0 + max(b)) * rho - self.ras
 
-            if np.any(rsrs <= 0):
-                rsrs -= np.min(rsrs)
-                rsrs += sys.float_info.epsilon
+            if min(rsrs) < 0:
+                rsrs -= min(rsrs)
 
-            log_rsrs = np.log(rsrs)
-            exp_rsrs = np.exp(log_rsrs - log_rsrs.max())
-            pi = exp_rsrs / np.sum(exp_rsrs)
-
+            pi = rsrs / np.sum(rsrs)
             action = np.random.choice(self.action_space, p=pi)
             self.episodic_memory.add(controllable_state, action)
         return action
@@ -96,11 +91,11 @@ class RSRSAlephQEpsRASChoiceDQN:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        s = torch.tensor(s, dtype=torch.float64).to(self.device)
         a = torch.tensor(a, dtype=torch.long).to(self.device)
-        r = torch.tensor(r, dtype=torch.float32).to(self.device)
-        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
-        d = torch.tensor(d, dtype=torch.float32).to(self.device)
+        r = torch.tensor(r, dtype=torch.float64).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
+        d = torch.tensor(d, dtype=torch.float64).to(self.device)
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]
@@ -122,7 +117,7 @@ class RSRSAlephQEpsRASChoiceDQN:
             self.sync_model_soft()
 
     def calculate_reliability(self, controllable_state):
-        controllable_state_and_action = np.array(self.episodic_memory.memory, dtype=np.float32)
+        controllable_state_and_action = np.array(self.episodic_memory.memory, dtype=np.float64)
         controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
         action_vec = controllable_state_and_action[:, len(controllable_state):]
         controllable_state = np.expand_dims(controllable_state, axis=0)
@@ -148,4 +143,4 @@ class RSRSAlephQEpsRASChoiceDQN:
     def sync_model_soft(self):
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (np.float32(1.0)-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
