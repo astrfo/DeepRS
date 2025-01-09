@@ -2,6 +2,9 @@ import uuid
 import pickle as pkl
 import numpy as np
 import torch
+import glob
+import os
+import pandas as pd
 
 
 class Collector:
@@ -30,10 +33,6 @@ class Collector:
         self.reward_sma_epi_list = []
         self.survived_step_epi_list = []
         self.survived_step_sma_epi_list = []
-
-        # simulation data
-        self.reward_sim_list = np.zeros(self.epi)
-        self.survived_step_sim_list = np.zeros(self.epi)
     
     def format(self):
         data = {}
@@ -111,8 +110,6 @@ class Collector:
             pkl.dump(episode_data, f)
 
     def save_episode_data(self, sim_dir_path):
-        self.reward_sim_list += self.reward_epi_list
-        self.survived_step_sim_list += self.survived_step_epi_list
         torch.save(self.agent.policy.model.state_dict(), sim_dir_path + f'{self.policy.__class__.__name__}_sim{self.sim}_epi{self.epi}.pth')
         np.savetxt(sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(sim_dir_path + 'reward_sma.csv', self.reward_sma_epi_list, delimiter=',')
@@ -127,13 +124,16 @@ class Collector:
             np.savetxt(sim_dir_path + 'satisfy_unsatisfy_count.csv', self.satisfy_unsatisfy_count_list, delimiter=',')
 
         episode_data = self.format()
-        with open(sim_dir_path + f'episode_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
+        with open(sim_dir_path + f'episode{self.epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
 
-    def collect_simulation_data(self):
-        self.reward_sim_list /= self.sim
-        self.survived_step_sim_list /= self.sim
+    def save_simulation_data(self, result_dir_path):
+        reward_search_pattern = os.path.join(result_dir_path, '**', 'reward.csv')
+        reward_csv_files = glob.glob(reward_search_pattern, recursive=True)
+        df_reward = [pd.read_csv(reward_csv_file, header=None) for reward_csv_file in reward_csv_files]
+        df_concat_reward = pd.concat(df_reward, axis=1)
+        df_average_reward = df_concat_reward.mean(axis=1)
 
-    def save_simulation_data(self, average_sim_dir_path):
-        np.savetxt(average_sim_dir_path + 'average_reward.csv', self.reward_sim_list, delimiter=',')
-        np.savetxt(average_sim_dir_path + 'average_survived_step.csv', self.survived_step_sim_list, delimiter=',')
+        average_sim_dir_path = result_dir_path + 'average/'
+        os.makedirs(average_sim_dir_path, exist_ok=True)
+        np.savetxt(average_sim_dir_path + 'average_reward.csv', df_average_reward, delimiter=',')
