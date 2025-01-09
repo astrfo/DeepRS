@@ -25,25 +25,25 @@ class DQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.criterion = nn.SmoothL1Loss()
+        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
         self.total_steps = 0
         self.loss = None
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
 
     def q_value(self, state):
-        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
@@ -62,11 +62,11 @@ class DQN:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        s = torch.tensor(s, dtype=torch.float64).to(self.device)
         a = torch.tensor(a, dtype=torch.long).to(self.device)
-        r = torch.tensor(r, dtype=torch.float32).to(self.device)
-        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
-        d = torch.tensor(d, dtype=torch.float32).to(self.device)
+        r = torch.tensor(r, dtype=torch.float64).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
+        d = torch.tensor(d, dtype=torch.float64).to(self.device)
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]
@@ -93,4 +93,4 @@ class DQN:
     def sync_model_soft(self):
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (np.float32(1.0)-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)

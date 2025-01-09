@@ -33,12 +33,12 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
-        self.criterion = nn.SmoothL1Loss()
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
+        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
@@ -49,11 +49,11 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space).float()
+        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
@@ -61,12 +61,12 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.ras = np.zeros(self.action_space)
 
     def q_value(self, state):
-        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
 
     def embed(self, state):
-        s = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
@@ -76,20 +76,17 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
-            aleph = q_values.max() + self.epsilon_dash
+            aleph = q_values.max() + np.float64(1e-10)
             diff = aleph - q_values
             z = 1.0 / np.sum(1.0 / diff)
             rho = z / diff
-            rsrs = ((self.ras / rho).max() + sys.float_info.epsilon) * rho - self.ras
-            
-            if np.any(rsrs <= 0):
-                rsrs -= np.min(rsrs)
-                rsrs += sys.float_info.epsilon
-            
-            log_rsrs = np.log(rsrs)
-            exp_rsrs = np.exp(log_rsrs - log_rsrs.max())
-            pi = exp_rsrs / np.sum(exp_rsrs)
+            b = self.ras / rho - 1.0 + np.float64(1e-10)
+            rsrs = (1.0 + max(b)) * rho - self.ras
 
+            if min(rsrs) < 0:
+                rsrs -= min(rsrs)
+
+            pi = rsrs / np.sum(rsrs)
             action = np.random.choice(self.action_space, p=pi)
         return action
 
@@ -102,11 +99,11 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.calculate_reliability(controllable_state, action)
 
         s, a, r, ns, d = self.replay_buffer.encode()
-        s = torch.tensor(s, dtype=torch.float32).to(self.device)
+        s = torch.tensor(s, dtype=torch.float64).to(self.device)
         a = torch.tensor(a, dtype=torch.long).to(self.device)
-        r = torch.tensor(r, dtype=torch.float32).to(self.device)
-        ns = torch.tensor(ns, dtype=torch.float32).to(self.device)
-        d = torch.tensor(d, dtype=torch.float32).to(self.device)
+        r = torch.tensor(r, dtype=torch.float64).to(self.device)
+        ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
+        d = torch.tensor(d, dtype=torch.float64).to(self.device)
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]
@@ -157,4 +154,4 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
     def sync_model_soft(self):
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (np.float32(1.0)-self.tau)*target_param.data)
+                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
