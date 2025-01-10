@@ -23,7 +23,7 @@ from network.conv_rsrsalephnet import ConvRSRSAlephNet
 from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 
 
-algo_class = {
+ALGO_CLASS = {
     'DQN': (QNet, DQN),
     'DDQN': (QNet, DDQN),
     'RSRSAlephQEpsRASChoiceDQN': (RSRSNet, RSRSAlephQEpsRASChoiceDQN),
