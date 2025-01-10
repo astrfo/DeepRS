@@ -31,7 +31,6 @@ DEFAULT_PARAMS = {
 
 def apply_default_params(param):
     for key, default_value in DEFAULT_PARAMS.items():
-        print(key, default_value)
         if param[key] is None:
             param[key] = [default_value]
         elif key not in param:
