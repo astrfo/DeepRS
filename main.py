@@ -1,7 +1,3 @@
-import gymnasium as gym
-from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation
-import ale_py
-
 from simulator import simulation, conv_simulation, atari_simulation
 from agent import Agent
 from collector import Collector
@@ -9,6 +5,7 @@ from utils.get_screen_utils import get_screen
 from utils.space2size_utils import space2size
 from utils.create_param_folder_utils import create_param_folder
 from utils.calculate_executed_sim_utils import calculate_executed_sim
+from utils.create_env_utils import create_env
 
 from policy.dqn import DQN
 from policy.ddqn import DDQN
@@ -91,18 +88,7 @@ if __name__ == '__main__':
     
 
     for algo in algos:
-        if 'Conv' in algo:
-            if 'Atari' in algo:
-                env = gym.make(env_name, render_mode='rgb_array')
-                env = AtariPreprocessing(env, frame_skip=4, grayscale_newaxis=False, scale_obs=True)
-                env = FrameStackObservation(env, stack_size=4)
-            else:
-                env = gym.make(env_name, render_mode='rgb_array', frameskip=4).unwrapped
-        else:
-            if 'ALE' in env_name:
-                env = gym.make(env_name, render_mode='rgb_array', obs_type='ram')
-            else:
-                env = gym.make(env_name, render_mode='rgb_array')
+        env = create_env(env_name, algo)
         env.reset()
         init_frame = get_screen(env)
 
