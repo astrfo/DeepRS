@@ -1,0 +1,6 @@
+{
+    "experiments": [
+        "config/param_setting1.json",
+        "config/param_setting2.json"
+    ]
+}
