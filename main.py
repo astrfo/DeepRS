@@ -1,35 +1,12 @@
 from simulator import simulation, conv_simulation, atari_simulation
 from agent import Agent
 from collector import Collector
-from utils.get_screen_utils import get_screen
+from utils.get_screen_utils import get_screen  # TODO: frame_shape廃止時に削除
 from utils.space2size_utils import space2size
 from utils.create_param_folder_utils import create_param_folder
 from utils.calculate_executed_sim_utils import calculate_executed_sim
 from utils.create_env_utils import create_env
-
-from policy.dqn import DQN
-from policy.ddqn import DDQN
-from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
-from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
-from policy.conv_dqn import ConvDQN
-from policy.conv_ddqn import ConvDDQN
-from policy.conv_dqn_rnd import ConvDQN_RND
-from policy.conv_dqn_atari import ConvDQNAtari
-from policy.conv_rsrs_dqn import ConvRSRSDQN
-from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
-from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
-from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_rnd import ConvRSRSAlephQEpsRASChoiceDQN_RND
-from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_atari import ConvRSRSAlephQEpsRASChoiceDQNAtari
-from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
-
-from network.qnet import QNet
-from network.rsrsnet import RSRSNet
-from network.rsrsdqnnet import RSRSDQNNet
-from network.conv_qnet import ConvQNet
-from network.conv_atari_qnet import ConvQAtariNet
-from network.conv_rsrsnet import ConvRSRSNet
-from network.conv_rsrsalephnet import ConvRSRSAlephNet
-from network.conv_atari_rsrsnet import ConvRSRSAtariNet
+from utils.algo_class_utils import algo_class
 
 
 if __name__ == '__main__':
@@ -90,27 +67,9 @@ if __name__ == '__main__':
     for algo in algos:
         env = create_env(env_name, algo)
         env.reset()
-        init_frame = get_screen(env)
+        init_frame = get_screen(env)  # TODO: frame_shape廃止時に削除
 
-        if algo == 'DQN' or algo == 'DDQN':
-            model = QNet
-        elif algo == 'ConvDQN' or algo == 'ConvDDQN' or algo == 'ConvDQN_RND':
-            model = ConvQNet
-        elif algo == 'ConvDQNAtari':
-            model = ConvQAtariNet
-        elif algo == 'RSRSAlephQEpsRASChoiceDQN':
-            model = RSRSNet
-        elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
-            model = RSRSDQNNet
-        elif algo == 'ConvRSRSDQN' or algo == 'ConvRSRSDynDQN' or algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND':
-            model = ConvRSRSNet
-        elif algo == 'ConvRSRSAlephDQN':
-            model = ConvRSRSAlephNet
-        elif algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari' or algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
-            model = ConvRSRSAtariNet
-        else:
-            print(f'Not found network {algo}')
-            exit(1)
+        model, policy_class = algo_class.get(algo)
 
         param = {
             'env': env_name,
@@ -146,98 +105,21 @@ if __name__ == '__main__':
             'target_update_freq': target_update_freq,
             'action_space': space2size(env.action_space),
             'state_space': space2size(env.observation_space),
-            'frame_shape': init_frame.shape,
+            'frame_shape': init_frame.shape,  # TODO: frame_shape廃止時に削除
             'model': model
         }
 
-        if algo == 'DQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = DQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'DDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = DDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsRASChoiceDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsRASChoiceDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'RSRSAlephQEpsRASChoiceCentroidDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            executed_sims = calculate_executed_sim(result_dir_path)
-            policy = RSRSAlephQEpsRASChoiceCentroidDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
-        elif algo == 'ConvDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvDDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvDDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvDQN_RND':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvDQN_RND(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvDQNAtari':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvDQNAtari(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
-        elif algo == 'ConvRSRSDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvRSRSDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvRSRSDynDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvRSRSDynDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvRSRSAlephDQN':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvRSRSAlephDQN(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvRSRSAlephQEpsRASChoiceDQN_RND':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvRSRSAlephQEpsRASChoiceDQN_RND(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
-        elif algo == 'ConvRSRSAlephQEpsRASChoiceDQNAtari':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvRSRSAlephQEpsRASChoiceDQNAtari(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
-        elif algo == 'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari':
-            result_dir_path = create_param_folder(env_name, algo, param)
-            policy = ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari(**param)
-            agent = Agent(policy)
-            collector = Collector(sim, epi, param, agent, policy, result_dir_path)
-            atari_simulation(sim, epi, env, agent, collector, result_dir_path)
+        result_dir_path = create_param_folder(env_name, algo, param)
+        executed_sims = calculate_executed_sim(result_dir_path)
+        policy = policy_class(**param)
+        agent = Agent(policy)
+        collector = Collector(sim, epi, param, agent, policy, result_dir_path)
+
+        # TODO: Atariアルゴリズムを採用，Convを削除，のちにAtari→Convに変更
+        if 'Conv' in algo:
+            if 'Atari' in algo:
+                atari_simulation(sim, epi, env, agent, collector, result_dir_path)
+            else:
+                conv_simulation(sim, epi, env, agent, collector, neighbor_frames, result_dir_path)
         else:
-            print(f'Not found algorithm {algo}')
-            exit(1)
+            simulation(sim, executed_sims, epi, env, agent, collector, result_dir_path)
