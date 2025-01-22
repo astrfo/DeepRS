@@ -69,7 +69,7 @@ class RSRSAlephQEpsRASChoiceDQN:
             action = np.random.choice(self.action_space)
         else:
             q_values = self.q_value(state)
-            aleph = max(q_values) + 0.0001
+            aleph = max(q_values) + 0.001
             controllable_state = self.embed(state)
             diff = aleph - q_values
             Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
@@ -107,8 +107,8 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.sync_model()
 
     def calculate_reliability(self, controllable_state, action):
-        self.pseudo_counts *= 0.9
-        self.weights *= 0.9
+        self.pseudo_counts *= 0.99
+        self.weights *= 0.99
 
         controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + 0.0001)
 
