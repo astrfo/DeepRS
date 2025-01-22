@@ -26,7 +26,6 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.memory_capacity = kwargs.get('memory_capacity', 10**4)
         self.batch_size = kwargs.get('batch_size', 32)
         self.replay_buffer = ReplayBuffer(self.memory_capacity, self.batch_size)
-        self.episodic_memory = EpisodicMemory(self.memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
@@ -43,7 +42,6 @@ class RSRSAlephQEpsRASChoiceDQN:
 
     def reset(self):
         self.replay_buffer.reset()
-        self.episodic_memory.reset()
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
@@ -66,15 +64,13 @@ class RSRSAlephQEpsRASChoiceDQN:
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
-        if len(self.episodic_memory.memory) < self.warmup:
+        if len(self.replay_buffer.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
-            self.episodic_memory.add(controllable_state, action)
         else:
             q_values = self.q_value(state)
             aleph = max(q_values) + 0.0001
             controllable_state = self.embed(state)
-            self.calculate_reliability(controllable_state)
             diff = aleph - q_values
             Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
             rho = Z / diff
@@ -84,7 +80,7 @@ class RSRSAlephQEpsRASChoiceDQN:
             pi = SRS / np.sum(SRS)
 
             action = np.random.choice(self.action_space, p=pi)
-            self.episodic_memory.add(controllable_state, action)
+            self.calculate_reliability(controllable_state, action)
         return action
 
     def update(self, state, action, reward, next_state, done):
