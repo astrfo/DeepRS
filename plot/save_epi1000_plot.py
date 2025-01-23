@@ -50,6 +50,14 @@ def save_epi1000_plot(collector, epi):
     plt.close()
 
     plt.figure(figsize=(12, 8))
+    plt.plot(collector.pi_step_list)
+    plt.title(f'Pi epi{epi}')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.pi_step_list) + 1)
+    plt.savefig(collector.sim_dir_path + f'pi_epi{epi}.png')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
     plt.plot(collector.q_value_step_list, alpha=0.4)
     plt.title(f'Q value epi{epi}')
     plt.xlabel('Step')

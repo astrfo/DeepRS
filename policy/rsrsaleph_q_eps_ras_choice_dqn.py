@@ -43,6 +43,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.criterion = None
         self.total_steps = None
         self.loss = None
+        self.pi = None
 
     def reset(self):
         self.replay_buffer.reset()
@@ -97,8 +98,8 @@ class RSRSAlephQEpsRASChoiceDQN:
             if min(rsrs) < 0:
                 rsrs -= min(rsrs)
 
-            pi = rsrs / np.sum(rsrs)
-            action = np.random.choice(self.action_space, p=pi)
+            self.pi = rsrs / np.sum(rsrs)
+            action = np.random.choice(self.action_space, p=self.pi)
             self.episodic_memory.add(controllable_state, action)
         return action
 
