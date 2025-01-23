@@ -15,7 +15,12 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
+        self.optimizer_name = kwargs['optimizer']
         self.adam_learning_rate = kwargs['adam_learning_rate']
+        self.rmsprop_learning_rate = kwargs['rmsprop_learning_rate']
+        self.rmsprop_alpha = kwargs['rmsprop_alpha']
+        self.rmsprop_eps = kwargs['rmsprop_eps']
+        self.criterion_name = kwargs['criterion']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
         self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
@@ -32,12 +37,10 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
-        self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
-        self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
+        self.model = None
+        self.model_target = None
+        self.optimizer = None
+        self.criterion = None
         self.total_steps = 0
         self.loss = None
 
@@ -48,8 +51,21 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, embedding_size=self.embedding_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
         self.total_steps = 0
+
+        if self.optimizer_name == 'adam':
+            self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
+        elif self.optimizer_name == 'rmsprop':
+            self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        else:
+            raise ValueError(f'Invalid optimizer: {self.optimizer_name}')
+
+        if self.criterion_name == 'mseloss':
+            self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
+        elif self.criterion_name == 'smoothl1loss':
+            self.criterion = nn.SmoothL1Loss()
+        else:
+            raise ValueError(f'Invalid criterion: {self.criterion_name}')
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -116,6 +132,8 @@ class RSRSAlephQEpsRASChoiceDQN:
                 self.sync_model_hard()
         elif self.sync_model_update == 'soft':
             self.sync_model_soft()
+        else:
+            raise ValueError(f'Invalid sync_model_update: {self.sync_model_update}')
 
     def calculate_reliability(self, controllable_state):
         controllable_state_and_action = np.array(self.episodic_memory.memory, dtype=np.float64)
