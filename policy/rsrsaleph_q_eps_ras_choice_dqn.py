@@ -34,8 +34,12 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.criterion = nn.MSELoss(reduction='sum')
-        self.n = np.zeros(self.action_space)
+        self.criterion = nn.MSELoss(reduction='mean')
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+        self.pseudo_counts = np.zeros(self.action_space * self.k)
+        self.weights = np.zeros(self.action_space * self.k)
+        self.ras = np.zeros(self.action_space)
 
     def reset(self):
         self.replay_buffer.reset()
@@ -45,7 +49,11 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.n = np.zeros(self.action_space)
+        self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+        self.pseudo_counts = np.zeros(self.action_space * self.k)
+        self.weights = np.zeros(self.action_space * self.k)
+        self.ras = np.zeros(self.action_space)
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -102,25 +110,29 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.optimizer.step()
         self.sync_model()
 
-    def calculate_reliability(self, controllable_state):
-        controllable_state_and_action = np.array(self.episodic_memory.memory, dtype=np.float32)
-        controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
-        action_vec = controllable_state_and_action[:, len(controllable_state):]
-        controllable_state = np.expand_dims(controllable_state, axis=0)
-        
-        index = faiss.IndexFlatL2(controllable_state_vec.shape[1])
-        index.add(controllable_state_vec)
-        D, I = index.search(controllable_state, self.k)
+    def calculate_reliability(self, controllable_state, action):
+        self.pseudo_counts *= self.gamma
+        self.weights *= self.gamma
 
-        squared_distance = D.flatten() ** 2
-        average_squared_distance = np.average(squared_distance)
-        regularization_squared_distance = squared_distance / average_squared_distance
-        regularization_squared_distance = np.maximum(regularization_squared_distance, 0)
+        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + self.epsilon)
 
-        inverse_kernel_function = self.epsilon / (regularization_squared_distance + self.epsilon)
-        sum_kernel = np.sum(inverse_kernel_function)
-        weight = inverse_kernel_function / sum_kernel
-        self.n = np.average(action_vec[I.flatten()], weights=weight, axis=0)
+        distances = np.linalg.norm(self.centroids - controllable_state_norm, axis=1)
+        weight = 1 / (distances + self.epsilon)
+
+        denom = (self.weights[:, None] + weight[:, None] + self.epsilon)
+        self.centroids = (self.weights[:, None] * self.centroids + weight[:, None] * controllable_state_norm) / denom
+
+        self.weights += weight
+        self.pseudo_counts[action] += 1
+
+        self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
+
+        reliability_scores = self.weights / (self.pseudo_counts + self.epsilon)
+        action_reliability_scores = reliability_scores.reshape(self.action_space, self.k).mean(axis=1)
+        action_reliability_scores_norm = action_reliability_scores / np.linalg.norm(action_reliability_scores)
+        exp_scores = np.exp(action_reliability_scores_norm - np.max(action_reliability_scores_norm))
+        action_reliability_softmax_scores = exp_scores / np.sum(exp_scores)
+        self.ras = action_reliability_softmax_scores
 
     def sync_model(self):
         with torch.no_grad():
