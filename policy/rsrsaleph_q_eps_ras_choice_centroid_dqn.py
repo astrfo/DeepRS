@@ -14,6 +14,7 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
         self.zeta = kwargs['zeta']
+        self.centroids_decay = kwargs['centroids_decay']
         self.optimizer_name = kwargs['optimizer']
         self.adam_learning_rate = kwargs['adam_learning_rate']
         self.rmsprop_learning_rate = kwargs['rmsprop_learning_rate']
@@ -86,11 +87,11 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
             action = np.random.choice(self.action_space)
         else:
             q_value = self.calc_q_value(state)
-            aleph = q_value.max() + np.float64(1e-10)
+            aleph = q_value.max() + self.epsilon_dash
             diff = aleph - q_value
             z = 1.0 / np.sum(1.0 / diff)
             rho = z / diff
-            b = self.ras / rho - 1.0 + np.float64(1e-10)
+            b = self.ras / rho - 1.0 + sys.float_info.epsilon
             rsrs = (1.0 + max(b)) * rho - self.ras
 
             if min(rsrs) < 0:
@@ -137,15 +138,15 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
             raise ValueError(f'Invalid sync_model_update: {self.sync_model_update}')
 
     def calculate_reliability(self, controllable_state, action):
-        self.pseudo_counts *= self.gamma
-        self.weights *= self.gamma
+        self.pseudo_counts *= self.centroids_decay
+        self.weights *= self.centroids_decay
 
-        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + self.epsilon_dash)
+        controllable_state_norm = controllable_state / (np.linalg.norm(controllable_state) + sys.float_info.epsilon)
 
         distances = np.linalg.norm(self.centroids - controllable_state_norm, axis=1)
-        weight = 1 / (distances + self.epsilon_dash)
+        weight = 1 / (distances + sys.float_info.epsilon)
 
-        denom = (self.weights[:, None] + weight[:, None] + self.epsilon_dash)
+        denom = (self.weights[:, None] + weight[:, None] + sys.float_info.epsilon)
         self.centroids = (self.weights[:, None] * self.centroids + weight[:, None] * controllable_state_norm) / denom
 
         self.weights += weight
@@ -153,7 +154,7 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
 
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
 
-        reliability_scores = self.weights / (self.pseudo_counts + self.epsilon_dash)
+        reliability_scores = self.weights / (self.pseudo_counts + sys.float_info.epsilon)
         action_reliability_scores = reliability_scores.reshape(self.action_space, self.k).mean(axis=1)
         action_reliability_scores_norm = action_reliability_scores / np.linalg.norm(action_reliability_scores)
         exp_scores = np.exp(action_reliability_scores_norm - np.max(action_reliability_scores_norm))
