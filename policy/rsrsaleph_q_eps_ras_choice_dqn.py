@@ -74,16 +74,16 @@ class RSRSAlephQEpsRASChoiceDQN:
             q_values = self.q_value(state)
             aleph = max(q_values) + np.float64(1e-10)
             controllable_state = self.embed(state)
-            self.calculate_reliability(controllable_state)
             diff = aleph - q_values
             Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
             rho = Z / diff
-            b = self.n / rho - np.float64(1.0) + np.float64(1e-10)
-            SRS = (np.float64(1.0) + max(b)) * rho - self.n
+            b = self.ras / rho - np.float64(1.0) + np.float64(1e-10)
+            SRS = (np.float64(1.0) + max(b)) * rho - self.ras
             if min(SRS) < 0: SRS -= min(SRS)
             pi = SRS / np.sum(SRS)
 
             action = np.random.choice(self.action_space, p=pi)
+            self.calculate_reliability(controllable_state, action)
             self.episodic_memory.add(controllable_state, action)
         return action
 
