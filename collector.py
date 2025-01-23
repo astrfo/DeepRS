@@ -71,10 +71,10 @@ class Collector:
         self.survived_step_step_list.append(survived_step)
         q_value = self.policy.calc_q_value(self.agent.current_state)
         self.q_value_step_list.append(q_value)
-        if self.policy.loss is not None:
+        if hasattr(self.policy, 'loss') and self.policy.loss is not None:
             self.loss_step_list.append(self.policy.loss.item())
             self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
-        if self.policy.pi is not None:
+        if hasattr(self.policy, 'pi') and self.policy.pi is not None:
             self.pi_step_list.append(self.policy.pi)
 
     def collect_episode_data(self, total_reward, survived_step):
@@ -124,7 +124,7 @@ class Collector:
     def save_simulation_data(self):
         average_sim_dir_path = create_average_folder(self.result_dir_path)
 
-        metrics_list = ['reward', 'reward_sma', 'survived_step', 'survived_step_sma', 'q_value', 'loss', 'loss_sma', 'pi']
+        metrics_list = ['reward', 'reward_sma', 'survived_step', 'survived_step_sma']
         for metrics in metrics_list:
             search_pattern = os.path.join(self.result_dir_path, '**', f'{metrics}.csv')
             csv_files = glob.glob(search_pattern, recursive=True)
