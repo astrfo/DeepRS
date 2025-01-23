@@ -67,7 +67,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         else:
             raise ValueError(f'Invalid criterion: {self.criterion_name}')
 
-    def q_value(self, state):
+    def calc_q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
@@ -84,11 +84,11 @@ class RSRSAlephQEpsRASChoiceDQN:
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
-            q_values = self.q_value(state)
+            q_value = self.calc_q_value(state)
             controllable_state = self.embed(state)
             ras = self.calculate_reliability(controllable_state)
-            aleph = q_values.max() + np.float64(1e-10)
-            diff = aleph - q_values
+            aleph = q_value.max() + np.float64(1e-10)
+            diff = aleph - q_value
             z = 1.0 / np.sum(1.0 / diff)
             rho = z / diff
             b = ras / rho - 1.0 + np.float64(1e-10)

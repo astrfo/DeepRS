@@ -59,7 +59,7 @@ class DDQN:
         else:
             raise ValueError(f'Invalid criterion: {self.criterion_name}')
 
-    def q_value(self, state):
+    def calc_q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
@@ -69,8 +69,8 @@ class DDQN:
         if np.random.rand() < self.epsilon_fixed:
             action = np.random.choice(self.action_space)
         else:
-            q_values = self.q_value(state)
-            action = np.random.choice(np.where(q_values == max(q_values))[0])
+            q_value = self.calc_q_value(state)
+            action = np.random.choice(np.where(q_value == max(q_value))[0])
         return action
 
     def update(self, state, action, reward, next_state, done):
