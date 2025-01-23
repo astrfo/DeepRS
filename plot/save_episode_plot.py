@@ -50,6 +50,14 @@ def save_episode_plot(collector):
     plt.close()
 
     plt.figure(figsize=(12, 8))
+    plt.plot(collector.pi_step_list)
+    plt.title('Pi')
+    plt.xlabel('Step')
+    plt.xlim(-1, len(collector.pi_step_list) + 1)
+    plt.savefig(collector.sim_dir_path + 'pi.png')
+    plt.close()
+
+    plt.figure(figsize=(12, 8))
     plt.plot(collector.q_value_step_list, alpha=0.4)
     plt.title('Q value')
     plt.xlabel('Step')
