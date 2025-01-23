@@ -44,9 +44,9 @@ if __name__ == '__main__':
     ConvDQN or ConvDDQN or ConvRSRSDQN or ConvRSRSDynDQN or ConvRSRSAlephDQN
     """
     env_name = 'CartPole-v1'
-    algos = ['RSRSAlephQEpsDQN']
-    sim = 1
-    epi = 500
+    algos = ['RSRSAlephQEpsRASChoiceDQN']
+    sim = 10
+    epi = 1021
     alpha = 0.001
     gamma = 0.99
     epsilon = 0.01
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     memory_capacity = 10**4
     batch_size = 32
     neighbor_frames = 4
-    warmup = 10
+    warmup = 50
     k = 5
     zeta = 0.01
     aleph_G = 0
