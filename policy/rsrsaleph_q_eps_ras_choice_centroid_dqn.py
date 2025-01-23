@@ -41,6 +41,7 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.ras = None
         self.total_steps = None
         self.loss = None
+        self.pi = None
 
     def reset(self):
         self.replay_buffer.reset()
@@ -95,8 +96,8 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
             if min(rsrs) < 0:
                 rsrs -= min(rsrs)
 
-            pi = rsrs / np.sum(rsrs)
-            action = np.random.choice(self.action_space, p=pi)
+            self.pi = rsrs / np.sum(rsrs)
+            action = np.random.choice(self.action_space, p=self.pi)
         return action
 
     def update(self, state, action, reward, next_state, done):
