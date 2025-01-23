@@ -39,6 +39,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
         self.ras = np.zeros(self.action_space)
+        self.total_steps = 0
 
     def reset(self):
         self.replay_buffer.reset()
@@ -52,6 +53,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
         self.ras = np.zeros(self.action_space)
+        self.total_steps = 0
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -64,6 +66,7 @@ class RSRSAlephQEpsRASChoiceDQN:
             return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
 
     def action(self, state):
+        self.total_steps += 1
         if len(self.replay_buffer.memory) < self.warmup:
             controllable_state = self.embed(state)
             action = np.random.choice(self.action_space)
@@ -104,7 +107,8 @@ class RSRSAlephQEpsRASChoiceDQN:
         loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
-        self.sync_model()
+        if self.total_steps % 500 == 0:
+            self.sync_model_hard()
 
     def calculate_reliability(self, controllable_state, action):
         self.pseudo_counts *= 0.99
@@ -134,3 +138,6 @@ class RSRSAlephQEpsRASChoiceDQN:
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
                 target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
+
+    def sync_model_hard(self):
+        self.model_target.load_state_dict(self.model.state_dict())
