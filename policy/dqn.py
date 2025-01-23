@@ -11,7 +11,12 @@ class DQN:
     def __init__(self, model=QNet, **kwargs):
         self.gamma = kwargs['gamma']
         self.epsilon_fixed = kwargs['epsilon_fixed']
+        self.optimizer_name = kwargs['optimizer']
         self.adam_learning_rate = kwargs['adam_learning_rate']
+        self.rmsprop_learning_rate = kwargs['rmsprop_learning_rate']
+        self.rmsprop_alpha = kwargs['rmsprop_alpha']
+        self.rmsprop_eps = kwargs['rmsprop_eps']
+        self.criterion_name = kwargs['criterion']
         self.mseloss_reduction = kwargs['mseloss_reduction']
         self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
         self.hidden_size = kwargs['hidden_size']
@@ -25,13 +30,9 @@ class DQN:
         self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
-        self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
-        self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
-        self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
-        self.total_steps = 0
+        self.model = None
+        self.model_target = None
+        self.total_steps = None
         self.loss = None
 
     def reset(self):
@@ -40,7 +41,21 @@ class DQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
+        self.total_steps = 0
+        
+        if self.optimizer_name == 'adam':
+            self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)
+        elif self.optimizer_name == 'rmsprop':
+            self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.rmsprop_learning_rate, alpha=self.rmsprop_alpha, eps=self.rmsprop_eps)
+        else:
+            raise ValueError(f'Invalid optimizer: {self.optimizer_name}')
+
+        if self.criterion_name == 'mseloss':
+            self.criterion = nn.MSELoss(reduction=self.mseloss_reduction)
+        elif self.criterion_name == 'smoothl1loss':
+            self.criterion = nn.SmoothL1Loss()
+        else:
+            raise ValueError(f'Invalid criterion: {self.criterion_name}')
 
     def q_value(self, state):
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
@@ -86,6 +101,8 @@ class DQN:
                 self.sync_model_hard()
         elif self.sync_model_update == 'soft':
             self.sync_model_soft()
+        else:
+            raise ValueError(f'Invalid sync_model_update: {self.sync_model_update}')
     
     def sync_model_hard(self):
         self.model_target.load_state_dict(self.model.state_dict())
