@@ -32,7 +32,9 @@ class DDQN:
         self.model_class = model
         self.model = None
         self.model_target = None
-        self.total_steps = 0
+        self.optimizer = None
+        self.criterion = None
+        self.total_steps = None
         self.loss = None
 
     def reset(self):
@@ -41,6 +43,7 @@ class DDQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
+        self.total_steps = 0
         
         if self.optimizer_name == 'adam':
             self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)

@@ -35,7 +35,11 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.model_class = model
         self.model = None
         self.model_target = None
-        self.total_steps = 0
+        self.centroids = None
+        self.pseudo_counts = None
+        self.weights = None
+        self.ras = None
+        self.total_steps = None
         self.loss = None
 
     def reset(self):
@@ -49,6 +53,7 @@ class RSRSAlephQEpsRASChoiceCentroidDQN:
         self.pseudo_counts = np.zeros(self.action_space * self.k)
         self.weights = np.zeros(self.action_space * self.k)
         self.ras = np.zeros(self.action_space)
+        self.total_steps = 0
 
         if self.optimizer_name == 'adam':
             self.optimizer = optim.Adam(self.model.parameters(), lr=self.adam_learning_rate)

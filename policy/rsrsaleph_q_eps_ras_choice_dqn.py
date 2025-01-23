@@ -41,7 +41,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model_target = None
         self.optimizer = None
         self.criterion = None
-        self.total_steps = 0
+        self.total_steps = None
         self.loss = None
 
     def reset(self):
