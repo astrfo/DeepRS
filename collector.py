@@ -66,7 +66,7 @@ class Collector:
     def collect_step_data(self, reward, survived_step):
         self.reward_step_list.append(reward)
         self.survived_step_step_list.append(survived_step)
-        q_value = self.policy.q_value(self.agent.current_state)
+        q_value = self.policy.calc_q_value(self.agent.current_state)
         self.q_value_step_list.append(q_value)
         if self.policy.loss is not None:
             self.loss_step_list.append(self.policy.loss.item())
