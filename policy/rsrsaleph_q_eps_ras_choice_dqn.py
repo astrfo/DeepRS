@@ -72,7 +72,7 @@ class RSRSAlephQEpsRASChoiceDQN:
             self.episodic_memory.add(controllable_state, action)
         else:
             q_values = self.q_value(state)
-            aleph = max(q_values) + np.float64(1e-10)
+            aleph = max(q_values) + 0.001
             controllable_state = self.embed(state)
             diff = aleph - q_values
             Z = np.float64(1.0) / np.sum(np.float64(1.0) / diff)
