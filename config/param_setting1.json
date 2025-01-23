@@ -21,7 +21,7 @@
 		"rmsprop_alpha": null,
 		"rmsprop_eps": null,
 		"max_grad_norm": null,
-		"critertion": null,
+		"criterion": null,
 		"mseloss_reduction": null,
 		"replay_buffer_capacity": null,
 		"episodic_memory_capacity": null,

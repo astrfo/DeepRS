@@ -16,7 +16,7 @@ DEFAULT_PARAMS = {
     'rmsprop_alpha': 0.95,
     'rmsprop_eps': 0.01,
     'max_grad_norm': 40,
-    'critertion': 'mseloss',
+    'criterion': 'mseloss',
     'mseloss_reduction': 'mean',
     'replay_buffer_capacity': 10000,
     'episodic_memory_capacity': 10000,
