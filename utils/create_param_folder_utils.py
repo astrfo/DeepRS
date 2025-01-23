@@ -5,11 +5,11 @@ from utils.default_param_utils import DEFAULT_PARAMS
 
 
 def create_compare_base_param_folder(env_name, algo, ex_param):
-    base_param = DEFAULT_PARAMS.copy()
-    base_param.update({
+    base_param = {
         'epi': 0,
         'algo': algo,
-    })
+    }
+    base_param.update(DEFAULT_PARAMS)
     
     folder_name = algo
     for base_param_key, base_param_value in base_param.items():
