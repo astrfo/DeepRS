@@ -85,7 +85,7 @@ class RSRSAlephQEpsRASChoiceDQN:
 
     def update(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
-        if len(self.replay_buffer.memory) < self.batch_size:
+        if len(self.replay_buffer.memory) < self.batch_size or len(self.replay_buffer.memory) < self.warmup:
             return
 
         s, a, r, ns, d = self.replay_buffer.encode()
