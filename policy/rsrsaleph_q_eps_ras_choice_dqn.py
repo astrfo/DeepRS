@@ -32,8 +32,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
-        self.criterion = nn.MSELoss(reduction='sum')
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
@@ -47,7 +46,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model_target.to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.alpha)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)
@@ -107,8 +106,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         loss = self.criterion(qa, target)
         loss.backward()
         self.optimizer.step()
-        if self.total_steps % 500 == 0:
-            self.sync_model_hard()
+        self.sync_model()
 
     def calculate_reliability(self, controllable_state, action):
         self.pseudo_counts *= 0.99
@@ -138,6 +136,3 @@ class RSRSAlephQEpsRASChoiceDQN:
         with torch.no_grad():
             for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
                 target_param.data.copy_(self.tau*local_param.data + (np.float64(1.0)-self.tau)*target_param.data)
-
-    def sync_model_hard(self):
-        self.model_target.load_state_dict(self.model.state_dict())
