@@ -9,7 +9,7 @@ DEFAULT_PARAMS = {
     'zeta': 0.01,
     'global_aleph': 500,
     'global_value_size': 500,
-    'centroids_decay': 0.9,
+    'centroids_decay': 0.99,
     'optimizer': 'rmsprop',
     'adam_learning_rate': 0.001,
     'rmsprop_learning_rate': 0.00025,
