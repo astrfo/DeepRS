@@ -1,4 +1,4 @@
-import json
+import yaml
 import itertools
 
 from simulator import simulation, conv_simulation, atari_simulation
@@ -14,15 +14,15 @@ from utils.default_param_utils import apply_default_params
 
 
 if __name__ == '__main__':
-    main_json_path = 'config/main.json'
-    with open(main_json_path, 'r') as f:
-        main_config = json.load(f)
+    main_yaml_path = 'config/main.yaml'
+    with open(main_yaml_path, 'r') as f:
+        main_config = yaml.safe_load(f)
 
-    expt_json_files = main_config['experiments']
+    expt_yaml_files = main_config['experiments']
 
-    for expt_json_file in expt_json_files:
-        with open(expt_json_file, 'r') as f:
-            expt_config = json.load(f)
+    for expt_yaml_file in expt_yaml_files:
+        with open(expt_yaml_file, 'r') as f:
+            expt_config = yaml.safe_load(f)
 
         expt_config['param'] = apply_default_params(expt_config['param'])
         algo_list = expt_config['algo']
@@ -62,6 +62,9 @@ if __name__ == '__main__':
             policy = policy_class(**param)
             agent = Agent(policy)
             collector = Collector(param['sim'], param['epi'], param, agent, policy, result_dir_path)
+
+            with open(result_dir_path + 'config.yaml', 'w') as f:
+                yaml.dump(expt_config, f, allow_unicode=True, default_flow_style=False)
 
             # TODO: Atariアルゴリズムを採用，Convを削除，のちにAtari→Convに変更
             if 'Conv' in param['algo']:
