@@ -63,6 +63,9 @@ if __name__ == '__main__':
             agent = Agent(policy)
             collector = Collector(param['sim'], param['epi'], param, agent, policy, result_dir_path)
 
+            with open(result_dir_path + 'config.yaml', 'w') as f:
+                yaml.dump(expt_config, f, allow_unicode=True, default_flow_style=False)
+
             # TODO: Atariアルゴリズムを採用，Convを削除，のちにAtari→Convに変更
             if 'Conv' in param['algo']:
                 if 'Atari' in param['algo']:
