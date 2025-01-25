@@ -1,7 +1,7 @@
 algo:
   - RSRSAlephQEpsRASChoiceCentroidDQN
 env: CartPole-v1
-sim: 10
+sim: 5
 epi: 1000
 param:
   # q-learning parameters
@@ -13,15 +13,15 @@ param:
 
   # rsrs parameters
   epsilon_dash: null
-  k: [1, 3, 5, 10, 20]
+  k: null
   zeta: null
   global_aleph: null
   global_value_size: null
   centroids_decay: null
 
   # optimizer parameters
-  optimizer: null
-  adam_learning_rate: null
+  optimizer: [adam]
+  adam_learning_rate: [0.00001, 0.0001, 0.001, 0.01]
   rmsprop_learning_rate: null
   rmsprop_alpha: null
   rmsprop_eps: null
