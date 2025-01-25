@@ -1,0 +1,48 @@
+algo:
+  - RSRSAlephQEpsRASChoiceCentroidDQN
+env: MountainCar-v0
+sim: 5
+epi: 1000
+param:
+  # q-learning parameters
+  gamma: null
+  epsilon_fixed: null
+  epsilon_start: null
+  epsilon_end: null
+  epsilon_decay: null
+
+  # rsrs parameters
+  epsilon_dash: null
+  k: null
+  zeta: null
+  global_aleph: null
+  global_value_size: null
+  centroids_decay: [0, 0.1, 0.5, 0.9, 0.95, 0.99, 1]
+
+  # optimizer parameters
+  optimizer: null
+  adam_learning_rate: null
+  rmsprop_learning_rate: null
+  rmsprop_alpha: null
+  rmsprop_eps: null
+  max_grad_norm: null
+
+  # loss function parameters
+  criterion: null
+  mseloss_reduction: null
+
+  # memory parameters
+  replay_buffer_capacity: null
+  episodic_memory_capacity: null
+
+  # network parameters
+  hidden_size: null
+  embedding_size: null
+  neighbor_frames: null
+
+  # etc parameters
+  sync_model_update: null
+  warmup: null
+  tau: null
+  batch_size: null
+  target_update_freq: null
