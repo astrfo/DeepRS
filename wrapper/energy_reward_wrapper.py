@@ -1,7 +1,7 @@
 import numpy as np
 from gymnasium import RewardWrapper
 
-class MountainCarRewardWrapper(RewardWrapper):
+class EnergyRewardWrapper(RewardWrapper):
     """
     位置エネルギーと運動エネルギーに基づく報酬を計算
     位置エネルギー: mgh, 運動エネルギー: 0.5mv^2
@@ -32,6 +32,8 @@ class MountainCarRewardWrapper(RewardWrapper):
 
         modified_reward = (reward * 0.01) + (self.energy(current_position, current_velocity) - self.energy(self.initial_position, self.initial_velocity))
         if current_position >= 0.5:  # ゴール位置 (0.5)
-            modified_reward += 1.0
+            modified_reward += 50
+        else:
+            modified_reward -= 0.5
 
         return modified_reward
