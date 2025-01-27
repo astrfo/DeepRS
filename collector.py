@@ -24,7 +24,9 @@ class Collector:
 
         # step data
         self.reward_step_list = []
+        self.reward_greedy_step_list = []
         self.survived_step_step_list = []
+        self.survived_step_greedy_step_list = []
         self.q_value_step_list = []
         self.loss_step_list = []
         self.loss_sma_step_list = []
@@ -32,17 +34,25 @@ class Collector:
 
         # episode data
         self.reward_epi_list = []
+        self.reward_greedy_epi_list = []
         self.reward_sma_epi_list = []
+        self.reward_greedy_sma_epi_list = []
         self.survived_step_epi_list = []
+        self.survived_step_greedy_epi_list = []
         self.survived_step_sma_epi_list = []
+        self.survived_step_greedy_sma_epi_list = []
     
     def format(self):
         data = {}
         data['param'] = self.param
         data['reward'] = self.reward_epi_list
+        data['reward_greedy'] = self.reward_greedy_epi_list
         data['reward_sma'] = self.reward_sma_epi_list
+        data['reward_greedy_sma'] = self.reward_greedy_sma_epi_list
         data['survived_step'] = self.survived_step_epi_list
+        data['survived_step_greedy'] = self.survived_step_greedy_epi_list
         data['survived_step_sma'] = self.survived_step_sma_epi_list
+        data['survived_step_greedy_sma'] = self.survived_step_greedy_sma_epi_list
         data['q_value'] = self.q_value_step_list
         data['loss'] = self.loss_step_list
         data['loss_sma'] = self.loss_sma_step_list
@@ -52,19 +62,27 @@ class Collector:
     def initialize(self, sim):
         self.sim_dir_path = create_sim_folder(self.result_dir_path, sim)
         self.reward_step_list = []
+        self.reward_greedy_step_list = []
         self.survived_step_step_list = []
+        self.survived_step_greedy_step_list = []
         self.q_value_step_list = []
         self.loss_step_list = []
         self.loss_sma_step_list = []
         self.pi_step_list = []
         self.reward_epi_list = []
+        self.reward_greedy_epi_list = []
         self.reward_sma_epi_list = []
+        self.reward_greedy_sma_epi_list = []
         self.survived_step_epi_list = []
+        self.survived_step_greedy_epi_list = []
         self.survived_step_sma_epi_list = []
+        self.survived_step_greedy_sma_epi_list = []
 
     def reset(self):
         self.reward_step_list = []
+        self.reward_greedy_step_list = []
         self.survived_step_step_list = []
+        self.survived_step_greedy_step_list = []
 
     def collect_step_data(self, reward, survived_step):
         self.reward_step_list.append(reward)
@@ -76,12 +94,22 @@ class Collector:
             self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
         if hasattr(self.policy, 'pi') and self.policy.pi is not None:
             self.pi_step_list.append(self.policy.pi)
+    
+    def collect_greedy_step_data(self, reward_greedy, survived_step_greedy):
+        self.reward_greedy_step_list.append(reward_greedy)
+        self.survived_step_greedy_step_list.append(survived_step_greedy)
 
     def collect_episode_data(self, total_reward, survived_step):
         self.reward_epi_list.append(total_reward)
-        self.survived_step_epi_list.append(survived_step)
         self.reward_sma_epi_list.append(self.calculate_sma(self.reward_epi_list))
+        self.survived_step_epi_list.append(survived_step)
         self.survived_step_sma_epi_list.append(self.calculate_sma(self.survived_step_epi_list))
+
+    def collect_greedy_episode_data(self, total_reward_greedy, survived_step_greedy):
+        self.reward_greedy_epi_list.append(total_reward_greedy)
+        self.reward_greedy_sma_epi_list.append(self.calculate_sma(self.reward_greedy_epi_list))
+        self.survived_step_greedy_epi_list.append(survived_step_greedy)
+        self.survived_step_greedy_sma_epi_list.append(self.calculate_sma(self.survived_step_greedy_epi_list))
 
     def calculate_sma(self, data_list):
         if len(data_list) < self.sma_window:
@@ -92,10 +120,14 @@ class Collector:
     def save_epi1000_data(self, epi):
         torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_episode{epi}.pth')
         np.savetxt(self.sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'reward_greedy_epi{epi}.csv', self.reward_greedy_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'reward_sma_epi{epi}.csv', self.reward_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'reward_greedy_sma_epi{epi}.csv', self.reward_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'survived_step_greedy_epi{epi}.csv', self.survived_step_greedy_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'q_value{epi}.csv', self.q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'survived_step_greedy_sma_epi{epi}.csv', self.survived_step_greedy_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'q_value_epi{epi}.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'pi{epi}.csv', self.pi_step_list, delimiter=',')
@@ -108,9 +140,13 @@ class Collector:
     def save_episode_data(self):
         torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_epi{self.epi}.pth')
         np.savetxt(self.sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'reward_greedy.csv', self.reward_greedy_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'reward_sma.csv', self.reward_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'reward_greedy_sma.csv', self.reward_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'survived_step_greedy.csv', self.survived_step_greedy_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'survived_step_sma.csv', self.survived_step_sma_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'survived_step_greedy_sma.csv', self.survived_step_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
@@ -124,7 +160,7 @@ class Collector:
     def save_simulation_data(self):
         average_sim_dir_path = create_average_folder(self.result_dir_path)
 
-        metrics_list = ['reward', 'reward_sma', 'survived_step', 'survived_step_sma']
+        metrics_list = ['reward', 'reward_greedy', 'reward_sma', 'reward_greedy_sma', 'survived_step', 'survived_step_greedy', 'survived_step_sma', 'survived_step_greedy_sma']
         for metrics in metrics_list:
             search_pattern = os.path.join(self.result_dir_path, '**', f'{metrics}.csv')
             csv_files = glob.glob(search_pattern, recursive=True)
