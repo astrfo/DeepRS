@@ -3,6 +3,7 @@ from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation
 import ale_py
 
 from wrapper.mountain_car_reward_wrapper import MountainCarRewardWrapper
+from wrapper.onehot_observation_wrapper import OneHotObservationWrapper
 
 
 def create_env(env_name, algo):
@@ -15,4 +16,7 @@ def create_env(env_name, algo):
         env = gym.make(env_name, render_mode='rgb_array')
         if 'MountainCar' in env_name:
             env = MountainCarRewardWrapper(env)
+        elif 'FrozenLake' in env_name:
+            env = gym.make(env_name, render_mode='rgb_array', map_name='4x4', is_slippery=False)
+            env = OneHotObservationWrapper(env)
     return env
