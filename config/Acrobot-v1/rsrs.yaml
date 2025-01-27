@@ -1,6 +1,6 @@
 algo:
-  - DQN
-env: CartPole-v1
+  - RSRSAlephQEpsRASChoiceCentroidDQN
+env: Acrobot-v1
 sim: 30
 epi: 1000
 param:

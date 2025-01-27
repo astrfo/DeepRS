@@ -1,7 +1,7 @@
 algo:
-  - DQN
-env: CartPole-v1
-sim: 30
+  - RSRSAlephQEpsRASChoiceCentroidDQN
+env: Acrobot-v1
+sim: 5
 epi: 1000
 param:
   # q-learning parameters
@@ -17,7 +17,7 @@ param:
   zeta: null
   global_aleph: null
   global_value_size: null
-  centroids_decay: null
+  centroids_decay: [0, 0.1, 0.5, 0.9, 0.95, 0.99, 1]
 
   # optimizer parameters
   optimizer: null
