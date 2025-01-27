@@ -30,10 +30,23 @@ def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path
                 survived_step += 1
                 collector.collect_step_data(reward, survived_step)
             collector.collect_episode_data(total_reward, survived_step)
+            
+            state, _ = env.reset()
+            total_reward_greedy, survived_step_greedy = 0, 0
+            terminated, truncated = False, False
+            while not (terminated or truncated):
+                action = agent.greedy_action(state)
+                next_state, reward_greedy, terminated, truncated, _ = env.step(action)
+                state = next_state
+                total_reward_greedy += reward_greedy
+                survived_step_greedy += 1
+                collector.collect_greedy_step_data(reward_greedy, survived_step_greedy)
+            collector.collect_greedy_episode_data(total_reward_greedy, survived_step_greedy)
+
             if epi % 1000 == 0 and epi != 0:
                 collector.save_epi1000_data(epi)
-            if hasattr(agent.policy, 'update_global_value'):
-                agent.policy.update_global_value(total_reward)
+            if hasattr(agent.policy, 'update_episode'):
+                agent.policy.update_episode(total_reward)
         collector.save_episode_data()
     collector.save_simulation_data()
     env.close()
