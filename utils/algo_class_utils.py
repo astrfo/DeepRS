@@ -2,6 +2,7 @@ from policy.dqn import DQN
 from policy.ddqn import DDQN
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
 from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
+from policy.rsrsaleph_q_eps_ras_choice_centroid_grcw_dqn import RSRSAlephQEpsRASChoiceCentroidGRCwDQN
 from policy.conv_dqn import ConvDQN
 from policy.conv_ddqn import ConvDDQN
 from policy.conv_dqn_rnd import ConvDQN_RND
@@ -28,6 +29,7 @@ ALGO_CLASS = {
     'DDQN': (QNet, DDQN),
     'RSRSAlephQEpsRASChoiceDQN': (RSRSNet, RSRSAlephQEpsRASChoiceDQN),
     'RSRSAlephQEpsRASChoiceCentroidDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidDQN),
+    'RSRSAlephQEpsRASChoiceCentroidGRCwDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidGRCwDQN),
     'ConvDQN': (ConvQNet, ConvDQN),
     'ConvDDQN': (ConvQNet, ConvDDQN),
     'ConvDQN_RND': (ConvQNet, ConvDQN_RND),
