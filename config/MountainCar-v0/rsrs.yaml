@@ -1,8 +1,8 @@
 algo:
-  - DQN
-env: CartPole-v1
-sim: 30
-epi: 1000
+  - RSRSAlephQEpsRASChoiceCentroidDQN
+env: MountainCar-v0
+sim: 1
+epi: 2000
 param:
   # q-learning parameters
   gamma: null
@@ -44,5 +44,5 @@ param:
   sync_model_update: null
   warmup: null
   tau: null
-  batch_size: null
+  batch_size: [64]
   target_update_freq: null

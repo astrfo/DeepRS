@@ -1,5 +1,5 @@
 algo:
-  - DQN
+  - RSRSAlephQEpsRASChoiceCentroidDQN
 env: CartPole-v1
 sim: 30
 epi: 1000
