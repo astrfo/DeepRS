@@ -130,7 +130,7 @@ class Collector:
         np.savetxt(self.sim_dir_path + f'q_value_epi{epi}.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'pi{epi}.csv', self.pi_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'pi_epi{epi}.csv', self.pi_step_list, delimiter=',')
         save_epi1000_plot(self, epi)
         
         episode_data = self.format()
