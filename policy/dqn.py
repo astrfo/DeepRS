@@ -61,6 +61,15 @@ class DQN:
         s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return self.model(s).squeeze().to('cpu').detach().numpy().copy()
+    
+    def embed(self, state):
+        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
+        with torch.no_grad():
+            return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
+
+    def greedy_action(self, state):
+        q_value = self.calc_q_value(state)
+        return np.random.choice(np.where(q_value == max(q_value))[0])
 
     def action(self, state):
         self.total_steps += 1
