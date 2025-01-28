@@ -14,3 +14,8 @@ class QNet(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+    def embedding(self, x):
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x

@@ -28,6 +28,7 @@ class Collector:
         self.survived_step_step_list = []
         self.survived_step_greedy_step_list = []
         self.q_value_step_list = []
+        self.embed_step_list = []
         self.loss_step_list = []
         self.loss_sma_step_list = []
         self.pi_step_list = []
@@ -54,6 +55,7 @@ class Collector:
         data['survived_step_sma'] = self.survived_step_sma_epi_list
         data['survived_step_greedy_sma'] = self.survived_step_greedy_sma_epi_list
         data['q_value'] = self.q_value_step_list
+        data['embed'] = self.embed_step_list
         data['loss'] = self.loss_step_list
         data['loss_sma'] = self.loss_sma_step_list
         data['pi'] = self.pi_step_list
@@ -66,6 +68,9 @@ class Collector:
         self.survived_step_step_list = []
         self.survived_step_greedy_step_list = []
         self.q_value_step_list = []
+        self.selected_q_value_step_list = []
+        self.embed_step_list = []
+        self.action_step_list = []
         self.loss_step_list = []
         self.loss_sma_step_list = []
         self.pi_step_list = []
@@ -89,6 +94,11 @@ class Collector:
         self.survived_step_step_list.append(survived_step)
         q_value = self.policy.calc_q_value(self.agent.current_state)
         self.q_value_step_list.append(q_value)
+        self.selected_q_value_step_list.append(q_value[self.agent.current_action])
+        self.action_step_list.append(self.agent.current_action)
+        if hasattr(self.policy, 'embed') and self.policy.embed is not None:
+            embed = self.policy.embed(self.agent.current_state)
+            self.embed_step_list.append(embed)
         if hasattr(self.policy, 'loss') and self.policy.loss is not None:
             self.loss_step_list.append(self.policy.loss.item())
             self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
@@ -128,6 +138,9 @@ class Collector:
         np.savetxt(self.sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'survived_step_greedy_sma_epi{epi}.csv', self.survived_step_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'q_value_epi{epi}.csv', self.q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'selected_q_value_epi{epi}.csv', self.selected_q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'embed_epi{epi}.csv', self.embed_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'action_epi{epi}.csv', self.action_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'pi_epi{epi}.csv', self.pi_step_list, delimiter=',')
@@ -148,6 +161,9 @@ class Collector:
         np.savetxt(self.sim_dir_path + 'survived_step_sma.csv', self.survived_step_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'survived_step_greedy_sma.csv', self.survived_step_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'selected_q_value.csv', self.selected_q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'embed.csv', self.embed_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'action.csv', self.action_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'pi.csv', self.pi_step_list, delimiter=',')
