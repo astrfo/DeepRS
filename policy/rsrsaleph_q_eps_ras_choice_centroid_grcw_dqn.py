@@ -198,13 +198,13 @@ class RSRSAlephQEpsRASChoiceCentroidGRCwDQN:
         centroids = torch.tensor(centroids, dtype=torch.float32).to(self.device)
 
         # 2) Centroid と距離を計算して類似度を求める
-        distances = np.linalg.norm(latent[:, np.newaxis] - centroids, axis=2)  # shape=(1, n_centroids)
+        distances = torch.norm(latent[:, None] - centroids, dim=2)  # shape=(1, n_centroids)
         similarities = 1.0 / (distances + 1e-10)
-        similarities = torch.tensor(similarities, dtype=torch.float32).to(self.device)
+        similarities = similarities.cpu().numpy()
 
         # 3) 類似度に問題がある箇所は補正
-        similarities[torch.isnan(similarities)] = 0.0
-        similarities = similarities.numpy().T
+        similarities[np.isnan(similarities)] = 0.0
+        similarities = similarities.T
         similarities[similarities<=0] = 1e-8  # 負値があれば補正
         
         # 4) アクションごとに「類似したCentroidの疑似試行回数」を重み付き平均
