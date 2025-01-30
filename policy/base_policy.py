@@ -33,6 +33,7 @@ class BasePolicy(ABC):
         self.model_target = None
         self.total_steps = None
         self.loss = None
+        self.pi = None
 
     def reset(self):
         self.replay_buffer.reset()
