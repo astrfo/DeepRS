@@ -48,13 +48,13 @@ if __name__ == '__main__':
             env.reset()
             init_frame = get_screen(env)  # TODO: frame_shape廃止時に削除
 
-            model, policy_class = ALGO_CLASS.get(param['algo'])
+            model_class, policy_class = ALGO_CLASS.get(param['algo'])
 
             param.update({
                 'action_space': space2size(env.action_space),
                 'state_space': space2size(env.observation_space),
                 'frame_shape': init_frame.shape,  # TODO: frame_shape廃止時に削除
-                'model': model
+                'model_class': model_class
             })
 
             result_dir_path = create_param_folder(param['env'], param['algo'], param)
