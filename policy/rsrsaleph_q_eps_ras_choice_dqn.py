@@ -4,46 +4,18 @@ import torch.nn as nn
 import torch.optim as optim
 import faiss
 
-from memory.replay_buffer import ReplayBuffer
+from policy.base_policy import BasePolicy
 from memory.episodic_memory import EpisodicMemory
-from network.rsrsnet import RSRSNet
 
 
-class RSRSAlephQEpsRASChoiceDQN:
-    def __init__(self, model=RSRSNet, **kwargs):
-        self.gamma = kwargs['gamma']
+class RSRSAlephQEpsRASChoiceDQN(BasePolicy):
+    def __init__(self, model_class, **kwargs):
+        super().__init__(model_class, **kwargs)
         self.epsilon_dash = kwargs['epsilon_dash']
         self.k = kwargs['k']
-        self.zeta = kwargs['zeta']
-        self.optimizer_name = kwargs['optimizer']
-        self.adam_learning_rate = kwargs['adam_learning_rate']
-        self.rmsprop_learning_rate = kwargs['rmsprop_learning_rate']
-        self.rmsprop_alpha = kwargs['rmsprop_alpha']
-        self.rmsprop_eps = kwargs['rmsprop_eps']
-        self.criterion_name = kwargs['criterion']
-        self.mseloss_reduction = kwargs['mseloss_reduction']
-        self.replay_buffer_capacity = kwargs['replay_buffer_capacity']
         self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
-        self.hidden_size = kwargs['hidden_size']
         self.embedding_size = kwargs['embedding_size']
-        self.sync_model_update = kwargs['sync_model_update']
-        self.warmup = kwargs['warmup']
-        self.tau = kwargs['tau']
-        self.batch_size = kwargs['batch_size']
-        self.target_update_freq = kwargs['target_update_freq']
-        self.state_space = kwargs['state_space']
-        self.action_space = kwargs['action_space']
-        self.replay_buffer = ReplayBuffer(self.replay_buffer_capacity, self.batch_size)
         self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model_class = model
-        self.model = None
-        self.model_target = None
-        self.optimizer = None
-        self.criterion = None
-        self.total_steps = None
-        self.loss = None
-        self.pi = None
 
     def reset(self):
         self.replay_buffer.reset()
@@ -68,26 +40,16 @@ class RSRSAlephQEpsRASChoiceDQN:
         else:
             raise ValueError(f'Invalid criterion: {self.criterion_name}')
 
-    def calc_q_value(self, state):
-        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
-        with torch.no_grad():
-            return self.model(s).squeeze().to('cpu').detach().numpy().copy()
-
-    def embed(self, state):
-        s = torch.tensor(state, dtype=torch.float64).to(self.device).unsqueeze(0)
-        with torch.no_grad():
-            return self.model.embedding(s).squeeze().to('cpu').detach().numpy().copy()
-
     def action(self, state):
         self.total_steps += 1
         if self.total_steps < self.warmup:
-            controllable_state = self.embed(state)
+            controllable_state = self.calc_embed(state)
             action = np.random.choice(self.action_space)
             self.episodic_memory.add(controllable_state, action)
         else:
             q_value = self.calc_q_value(state)
-            controllable_state = self.embed(state)
-            ras = self.calculate_reliability(controllable_state)
+            controllable_state = self.calc_embed(state)
+            ras = self.calc_reliability(controllable_state)
             aleph = q_value.max() + np.float64(1e-10)
             diff = aleph - q_value
             z = 1.0 / np.sum(1.0 / diff)
@@ -136,7 +98,7 @@ class RSRSAlephQEpsRASChoiceDQN:
         else:
             raise ValueError(f'Invalid sync_model_update: {self.sync_model_update}')
 
-    def calculate_reliability(self, controllable_state):
+    def calc_reliability(self, controllable_state):
         controllable_state_and_action = np.array(self.episodic_memory.memory, dtype=np.float64)
         controllable_state_vec = controllable_state_and_action[:, :len(controllable_state)]
         action_vec = controllable_state_and_action[:, len(controllable_state):]
@@ -156,11 +118,3 @@ class RSRSAlephQEpsRASChoiceDQN:
         weight = inverse_kernel_function / sum_kernel
         ras = np.average(action_vec[I.flatten()], weights=weight, axis=0)
         return ras
-
-    def sync_model_hard(self):
-        self.model_target.load_state_dict(self.model.state_dict())
-
-    def sync_model_soft(self):
-        with torch.no_grad():
-            for target_param, local_param in zip(self.model_target.parameters(), self.model.parameters()):
-                target_param.data.copy_(self.tau*local_param.data + (1.0-self.tau)*target_param.data)
