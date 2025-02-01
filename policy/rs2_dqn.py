@@ -6,7 +6,7 @@ from collections import deque
 from policy.base_policy import BasePolicy
 
 
-class RSRSAlephQEpsRASChoiceCentroidGRCwDQN(BasePolicy):
+class RS2DQN(BasePolicy):
     def __init__(self, model_class, **kwargs):
         super().__init__(model_class, **kwargs)
         self.epsilon_dash = kwargs['epsilon_dash']

@@ -3,7 +3,7 @@ from policy.ddqn import DDQN
 from policy.ps import PS
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
 from policy.rs2_ambition_dqn import RS2AmbitionDQN
-from policy.rsrsaleph_q_eps_ras_choice_centroid_grcw_dqn import RSRSAlephQEpsRASChoiceCentroidGRCwDQN
+from policy.rs2_dqn import RS2DQN
 from policy.conv_dqn_atari import ConvDQNAtari
 from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_atari import ConvRSRSAlephQEpsRASChoiceDQNAtari
 from policy.conv_rs2_ambition_dqn import ConvRS2AmbitionDQN
@@ -21,7 +21,7 @@ ALGO_CLASS = {
     'PS': (QNet, PS),
     'RSRSAlephQEpsRASChoiceDQN': (RSRSNet, RSRSAlephQEpsRASChoiceDQN),
     'RS2AmbitionDQN': (RSRSDQNNet, RS2AmbitionDQN),
-    'RSRSAlephQEpsRASChoiceCentroidGRCwDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidGRCwDQN),
+    'RS2DQN': (RSRSDQNNet, RS2DQN),
     'ConvDQNAtari': (ConvQAtariNet, ConvDQNAtari),
     'ConvRSRSAlephQEpsRASChoiceDQNAtari': (ConvRSRSAtariNet, ConvRSRSAlephQEpsRASChoiceDQNAtari),
     'ConvRS2AmbitionDQN': (ConvRSRSAtariNet, ConvRS2AmbitionDQN)
