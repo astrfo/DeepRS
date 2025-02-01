@@ -11,10 +11,7 @@ from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAl
 from network.qnet import QNet
 from network.rsrsnet import RSRSNet
 from network.rsrsdqnnet import RSRSDQNNet
-from network.conv_qnet import ConvQNet
 from network.conv_atari_qnet import ConvQAtariNet
-from network.conv_rsrsnet import ConvRSRSNet
-from network.conv_rsrsalephnet import ConvRSRSAlephNet
 from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 
 
