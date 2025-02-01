@@ -6,7 +6,7 @@ from policy.base_policy import BasePolicy
 
 class DDQN(BasePolicy):
     def __init__(self, model_class, **kwargs):
-        super().__init__(model_class, **kwargs)  # BasePolicy のコンストラクタを呼び出す
+        super().__init__(model_class, **kwargs)
         self.epsilon_fixed = kwargs['epsilon_fixed']
 
     def action(self, state):
