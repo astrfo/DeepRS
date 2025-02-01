@@ -6,11 +6,11 @@ import faiss
 
 from memory.replay_buffer import ReplayBuffer
 from memory.episodic_memory import EpisodicMemory
-from network.conv_atari_rsrsnet import ConvRSRSAtariNet
+from network.conv_rs2net import ConvRS2Net
 
 
 class ConvRS2AmbitionEMDQN:
-    def __init__(self, model=ConvRSRSAtariNet, **kwargs):
+    def __init__(self, model=ConvRS2Net, **kwargs):
         super().__init__()
         self.warmup = kwargs['warmup']
         self.k = kwargs['k']

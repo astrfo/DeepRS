@@ -4,11 +4,11 @@ import torch.nn as nn
 import torch.optim as optim
 
 from memory.replay_buffer import ReplayBuffer
-from network.conv_atari_qnet import ConvQAtariNet
+from network.conv_qnet import ConvQNet
 
 
 class ConvDQN(nn.Module):
-    def __init__(self, model=ConvQAtariNet, **kwargs):
+    def __init__(self, model=ConvQNet, **kwargs):
         super().__init__()
         self.gamma = kwargs['gamma']
         self.epsilon_start = kwargs['epsilon_start']
