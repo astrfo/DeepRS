@@ -7,7 +7,7 @@ from memory.replay_buffer import ReplayBuffer
 from network.conv_atari_qnet import ConvQAtariNet
 
 
-class ConvDQNAtari(nn.Module):
+class ConvDQN(nn.Module):
     def __init__(self, model=ConvQAtariNet, **kwargs):
         super().__init__()
         self.gamma = kwargs['gamma']

@@ -4,7 +4,7 @@ from policy.ps import PS
 from policy.rs2_ambition_em_dqn import RS2AmbitionEMDQN
 from policy.rs2_ambition_dqn import RS2AmbitionDQN
 from policy.rs2_dqn import RS2DQN
-from policy.conv_dqn_atari import ConvDQNAtari
+from policy.conv_dqn import ConvDQN
 from policy.conv_rs2_ambition_em_dqn import ConvRS2AmbitionEMDQN
 from policy.conv_rs2_ambition_dqn import ConvRS2AmbitionDQN
 
@@ -22,7 +22,7 @@ ALGO_CLASS = {
     'RS2AmbitionEMDQN': (RSRSNet, RS2AmbitionEMDQN),
     'RS2AmbitionDQN': (RSRSDQNNet, RS2AmbitionDQN),
     'RS2DQN': (RSRSDQNNet, RS2DQN),
-    'ConvDQNAtari': (ConvQAtariNet, ConvDQNAtari),
+    'ConvDQN': (ConvQAtariNet, ConvDQN),
     'ConvRS2AmbitionEMDQN': (ConvRSRSAtariNet, ConvRS2AmbitionEMDQN),
     'ConvRS2AmbitionDQN': (ConvRSRSAtariNet, ConvRS2AmbitionDQN)
 }
