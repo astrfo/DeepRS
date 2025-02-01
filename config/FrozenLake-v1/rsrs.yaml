@@ -1,5 +1,5 @@
 algo:
-  - RSRSAlephQEpsRASChoiceCentroidDQN
+  - RS2AmbitionDQN
 env: FrozenLake-v1
 sim: 30
 epi: 1000

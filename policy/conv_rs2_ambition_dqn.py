@@ -7,7 +7,7 @@ from memory.replay_buffer import ReplayBuffer
 from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 
 
-class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
+class ConvRS2AmbitionDQN:
     def __init__(self, model=ConvRSRSAtariNet, **kwargs):
         super().__init__()
         self.gamma = kwargs['gamma']

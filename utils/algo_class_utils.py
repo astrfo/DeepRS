@@ -2,11 +2,11 @@ from policy.dqn import DQN
 from policy.ddqn import DDQN
 from policy.ps import PS
 from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
-from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
+from policy.rs2_ambition_dqn import RS2AmbitionDQN
 from policy.rsrsaleph_q_eps_ras_choice_centroid_grcw_dqn import RSRSAlephQEpsRASChoiceCentroidGRCwDQN
 from policy.conv_dqn_atari import ConvDQNAtari
 from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_atari import ConvRSRSAlephQEpsRASChoiceDQNAtari
-from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
+from policy.conv_rs2_ambition_dqn import ConvRS2AmbitionDQN
 
 from network.qnet import QNet
 from network.rsrsnet import RSRSNet
@@ -20,9 +20,9 @@ ALGO_CLASS = {
     'DDQN': (QNet, DDQN),
     'PS': (QNet, PS),
     'RSRSAlephQEpsRASChoiceDQN': (RSRSNet, RSRSAlephQEpsRASChoiceDQN),
-    'RSRSAlephQEpsRASChoiceCentroidDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidDQN),
+    'RS2AmbitionDQN': (RSRSDQNNet, RS2AmbitionDQN),
     'RSRSAlephQEpsRASChoiceCentroidGRCwDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidGRCwDQN),
     'ConvDQNAtari': (ConvQAtariNet, ConvDQNAtari),
     'ConvRSRSAlephQEpsRASChoiceDQNAtari': (ConvRSRSAtariNet, ConvRSRSAlephQEpsRASChoiceDQNAtari),
-    'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari': (ConvRSRSAtariNet, ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari)
+    'ConvRS2AmbitionDQN': (ConvRSRSAtariNet, ConvRS2AmbitionDQN)
 }
