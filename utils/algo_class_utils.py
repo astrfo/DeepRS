@@ -1,45 +1,29 @@
 from policy.dqn import DQN
 from policy.ddqn import DDQN
 from policy.ps import PS
-from policy.rsrsaleph_q_eps_ras_choice_dqn import RSRSAlephQEpsRASChoiceDQN
-from policy.rsrsaleph_q_eps_ras_choice_centroid_dqn import RSRSAlephQEpsRASChoiceCentroidDQN
-from policy.rsrsaleph_q_eps_ras_choice_centroid_grcw_dqn import RSRSAlephQEpsRASChoiceCentroidGRCwDQN
+from policy.rs2_ambition_em_dqn import RS2AmbitionEMDQN
+from policy.rs2_ambition_dqn import RS2AmbitionDQN
+from policy.rs2_dqn import RS2DQN
 from policy.conv_dqn import ConvDQN
-from policy.conv_ddqn import ConvDDQN
-from policy.conv_dqn_rnd import ConvDQN_RND
-from policy.conv_dqn_atari import ConvDQNAtari
-from policy.conv_rsrs_dqn import ConvRSRSDQN
-from policy.conv_rsrsdyn_dqn import ConvRSRSDynDQN
-from policy.conv_rsrsaleph_dqn import ConvRSRSAlephDQN
-from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_rnd import ConvRSRSAlephQEpsRASChoiceDQN_RND
-from policy.conv_rsrsaleph_q_eps_ras_choice_dqn_atari import ConvRSRSAlephQEpsRASChoiceDQNAtari
-from policy.conv_rsrsaleph_q_eps_ras_choice_centroid_dqn_atari import ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari
+from policy.conv_rs2_ambition_em_dqn import ConvRS2AmbitionEMDQN
+from policy.conv_rs2_ambition_dqn import ConvRS2AmbitionDQN
 
 from network.qnet import QNet
-from network.rsrsnet import RSRSNet
-from network.rsrsdqnnet import RSRSDQNNet
+from network.rs2emnet import RS2EMNet
+from network.rs2net import RS2Net
 from network.conv_qnet import ConvQNet
-from network.conv_atari_qnet import ConvQAtariNet
-from network.conv_rsrsnet import ConvRSRSNet
-from network.conv_rsrsalephnet import ConvRSRSAlephNet
-from network.conv_atari_rsrsnet import ConvRSRSAtariNet
+from network.conv_rs2emnet import ConvRS2EMNet
+from network.conv_rs2net import ConvRS2Net
 
 
 ALGO_CLASS = {
     'DQN': (QNet, DQN),
     'DDQN': (QNet, DDQN),
     'PS': (QNet, PS),
-    'RSRSAlephQEpsRASChoiceDQN': (RSRSNet, RSRSAlephQEpsRASChoiceDQN),
-    'RSRSAlephQEpsRASChoiceCentroidDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidDQN),
-    'RSRSAlephQEpsRASChoiceCentroidGRCwDQN': (RSRSDQNNet, RSRSAlephQEpsRASChoiceCentroidGRCwDQN),
+    'RS2AmbitionEMDQN': (RS2EMNet, RS2AmbitionEMDQN),
+    'RS2AmbitionDQN': (RS2Net, RS2AmbitionDQN),
+    'RS2DQN': (RS2Net, RS2DQN),
     'ConvDQN': (ConvQNet, ConvDQN),
-    'ConvDDQN': (ConvQNet, ConvDDQN),
-    'ConvDQN_RND': (ConvQNet, ConvDQN_RND),
-    'ConvDQNAtari': (ConvQAtariNet, ConvDQNAtari),
-    'ConvRSRSDQN': (ConvRSRSNet, ConvRSRSDQN),
-    'ConvRSRSDynDQN': (ConvRSRSNet, ConvRSRSDynDQN),
-    'ConvRSRSAlephDQN': (ConvRSRSAlephNet, ConvRSRSAlephDQN),
-    'ConvRSRSAlephQEpsRASChoiceDQN_RND': (ConvRSRSNet, ConvRSRSAlephQEpsRASChoiceDQN_RND),
-    'ConvRSRSAlephQEpsRASChoiceDQNAtari': (ConvRSRSAtariNet, ConvRSRSAlephQEpsRASChoiceDQNAtari),
-    'ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari': (ConvRSRSAtariNet, ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari)
+    'ConvRS2AmbitionEMDQN': (ConvRS2EMNet, ConvRS2AmbitionEMDQN),
+    'ConvRS2AmbitionDQN': (ConvRS2Net, ConvRS2AmbitionDQN)
 }

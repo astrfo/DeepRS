@@ -4,11 +4,11 @@ import torch.nn as nn
 import torch.optim as optim
 
 from memory.replay_buffer import ReplayBuffer
-from network.conv_atari_rsrsnet import ConvRSRSAtariNet
+from network.conv_rs2net import ConvRS2Net
 
 
-class ConvRSRSAlephQEpsRASChoiceCentroidDQNAtari:
-    def __init__(self, model=ConvRSRSAtariNet, **kwargs):
+class ConvRS2AmbitionDQN:
+    def __init__(self, model=ConvRS2Net, **kwargs):
         super().__init__()
         self.gamma = kwargs['gamma']
         self.epsilon_dash = kwargs['epsilon_dash']

@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-class ConvRSRSAtariNet(nn.Module):
+class ConvRS2EMNet(nn.Module):
     def __init__(self, input_size, embedding_size, output_size):
-        super(ConvRSRSAtariNet, self).__init__()
+        super(ConvRS2EMNet, self).__init__()
         self.conv1 = nn.Conv2d(4, 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)

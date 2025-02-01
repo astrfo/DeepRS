@@ -8,7 +8,7 @@ from policy.base_policy import BasePolicy
 from memory.episodic_memory import EpisodicMemory
 
 
-class RSRSAlephQEpsRASChoiceDQN(BasePolicy):
+class RS2AmbitionEMDQN(BasePolicy):
     def __init__(self, model_class, **kwargs):
         super().__init__(model_class, **kwargs)
         self.epsilon_dash = kwargs['epsilon_dash']

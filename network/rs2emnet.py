@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class RSRSNet(nn.Module):
+class RS2EMNet(nn.Module):
     def __init__(self, input_size, hidden_size, embedding_size, output_size):
         super().__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)

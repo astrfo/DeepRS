@@ -5,7 +5,7 @@ import torch
 from policy.base_policy import BasePolicy
 
 
-class RSRSAlephQEpsRASChoiceCentroidDQN(BasePolicy):
+class RS2AmbitionDQN(BasePolicy):
     def __init__(self, model_class, **kwargs):
         super().__init__(model_class, **kwargs)
         self.epsilon_dash = kwargs['epsilon_dash']

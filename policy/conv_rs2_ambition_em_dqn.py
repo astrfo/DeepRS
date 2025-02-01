@@ -6,11 +6,11 @@ import faiss
 
 from memory.replay_buffer import ReplayBuffer
 from memory.episodic_memory import EpisodicMemory
-from network.conv_atari_rsrsnet import ConvRSRSAtariNet
+from network.conv_rs2emnet import ConvRS2EMNet
 
 
-class ConvRSRSAlephQEpsRASChoiceDQNAtari:
-    def __init__(self, model=ConvRSRSAtariNet, **kwargs):
+class ConvRS2AmbitionEMDQN:
+    def __init__(self, model=ConvRS2EMNet, **kwargs):
         super().__init__()
         self.warmup = kwargs['warmup']
         self.k = kwargs['k']
@@ -20,7 +20,7 @@ class ConvRSRSAlephQEpsRASChoiceDQNAtari:
         self.epsilon_dash = kwargs['epsilon_dash']
         self.target_update_freq = kwargs['target_update_freq']
         self.tau = kwargs['tau']
-        self.hidden_size = kwargs['hidden_size']
+        self.embedding_size = kwargs['embedding_size']
         self.action_space = kwargs['action_space']
         self.state_space = kwargs['state_space']
         self.frame_shape = kwargs['frame_shape']
@@ -32,9 +32,9 @@ class ConvRSRSAlephQEpsRASChoiceDQNAtari:
         self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_class = model
-        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model = self.model_class(input_size=self.frame_shape, embedding_size=self.embedding_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model_target = self.model_class(input_size=self.frame_shape, embedding_size=self.embedding_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model_target.to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
         self.criterion = nn.SmoothL1Loss()
@@ -45,9 +45,9 @@ class ConvRSRSAlephQEpsRASChoiceDQNAtari:
     def reset(self):
         self.replay_buffer.reset()
         self.episodic_memory.reset()
-        self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model = self.model_class(input_size=self.frame_shape, embedding_size=self.embedding_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model.to(self.device)
-        self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
+        self.model_target = self.model_class(input_size=self.frame_shape, embedding_size=self.embedding_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model_target.to(self.device)
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
         self.n = np.zeros(self.action_space)

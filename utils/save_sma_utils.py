@@ -19,7 +19,7 @@ def process_and_save_sma(csv_path, sma_window, output_dir):
     plt.close()
 
 if __name__ == '__main__':
-    csv_path = 'log/CartPole-v1/RSRSAlephQEpsRASChoiceCentroidDQN/202412091421/1/loss_epi200.csv'
+    csv_path = 'log/CartPole-v1/RS2AmbitionDQN/202412091421/1/loss_epi200.csv'
     output_dir = 'sma_log/'
     sma_window = 50
     
