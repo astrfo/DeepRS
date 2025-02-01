@@ -10,7 +10,7 @@ from plot.save_epi1000_plot import save_epi1000_plot
 from plot.save_simulation_plot import save_simulation_plot
 
 
-def simulation(sims, executed_sims, epis, env, agent, collector, result_dir_path):
+def simulation(sims, executed_sims, epis, env, agent, collector):
     for sim in range(executed_sims+1, sims+1):
         agent.initialize()
         collector.initialize(sim)

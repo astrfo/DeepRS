@@ -73,4 +73,4 @@ if __name__ == '__main__':
                 else:
                     conv_simulation(param['sim'], param['epi'], env, agent, collector, param['neighbor_frames'], result_dir_path)
             else:
-                simulation(param['sim'], executed_sims, param['epi'], env, agent, collector, result_dir_path)
+                simulation(param['sim'], executed_sims, param['epi'], env, agent, collector)
