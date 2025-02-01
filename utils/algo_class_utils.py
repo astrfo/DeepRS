@@ -12,6 +12,7 @@ from network.qnet import QNet
 from network.rs2emnet import RS2EMNet
 from network.rs2net import RS2Net
 from network.conv_qnet import ConvQNet
+from network.conv_rs2emnet import ConvRS2EMNet
 from network.conv_rs2net import ConvRS2Net
 
 
@@ -23,6 +24,6 @@ ALGO_CLASS = {
     'RS2AmbitionDQN': (RS2Net, RS2AmbitionDQN),
     'RS2DQN': (RS2Net, RS2DQN),
     'ConvDQN': (ConvQNet, ConvDQN),
-    'ConvRS2AmbitionEMDQN': (ConvRS2Net, ConvRS2AmbitionEMDQN),
+    'ConvRS2AmbitionEMDQN': (ConvRS2EMNet, ConvRS2AmbitionEMDQN),
     'ConvRS2AmbitionDQN': (ConvRS2Net, ConvRS2AmbitionDQN)
 }
