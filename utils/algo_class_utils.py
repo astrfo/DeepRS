@@ -9,7 +9,7 @@ from policy.conv_rs2_ambition_em_dqn import ConvRS2AmbitionEMDQN
 from policy.conv_rs2_ambition_dqn import ConvRS2AmbitionDQN
 
 from network.qnet import QNet
-from network.rsrsnet import RSRSNet
+from network.rs2emnet import RS2EMNet
 from network.rsrsdqnnet import RSRSDQNNet
 from network.conv_qnet import ConvQNet
 from network.conv_rs2net import ConvRS2Net
@@ -19,7 +19,7 @@ ALGO_CLASS = {
     'DQN': (QNet, DQN),
     'DDQN': (QNet, DDQN),
     'PS': (QNet, PS),
-    'RS2AmbitionEMDQN': (RSRSNet, RS2AmbitionEMDQN),
+    'RS2AmbitionEMDQN': (RS2EMNet, RS2AmbitionEMDQN),
     'RS2AmbitionDQN': (RSRSDQNNet, RS2AmbitionDQN),
     'RS2DQN': (RSRSDQNNet, RS2DQN),
     'ConvDQN': (ConvQNet, ConvDQN),
