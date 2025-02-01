@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 
 from memory.replay_buffer import ReplayBuffer
 
+torch.set_default_dtype(torch.float64)
+
 
 class BasePolicy(ABC):
     def __init__(self, model_class, **kwargs):
