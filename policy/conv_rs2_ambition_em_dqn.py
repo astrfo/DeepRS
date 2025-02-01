@@ -9,7 +9,7 @@ from memory.episodic_memory import EpisodicMemory
 from network.conv_atari_rsrsnet import ConvRSRSAtariNet
 
 
-class ConvRSRSAlephQEpsRASChoiceDQNAtari:
+class ConvRS2AmbitionEMDQN:
     def __init__(self, model=ConvRSRSAtariNet, **kwargs):
         super().__init__()
         self.warmup = kwargs['warmup']
