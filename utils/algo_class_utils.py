@@ -1,4 +1,5 @@
 from policy.random_dqn import RandomDQN
+from policy.lr_dqn import LRDQN
 from policy.dqn import DQN
 from policy.ddqn import DDQN
 from policy.ps import PS
@@ -19,6 +20,7 @@ from network.conv_rs2net import ConvRS2Net
 
 ALGO_CLASS = {
     'RandomDQN': (QNet, RandomDQN),
+    'LRDQN': (QNet, LRDQN),
     'DQN': (QNet, DQN),
     'DDQN': (QNet, DDQN),
     'PS': (QNet, PS),
