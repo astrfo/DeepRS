@@ -24,6 +24,7 @@ class RandomDQN(BasePolicy):
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         d = torch.tensor(d, dtype=torch.float64).to(self.device)
+        self.terminal_state_count = torch.sum(d).item()
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]

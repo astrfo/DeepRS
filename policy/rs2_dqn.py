@@ -28,7 +28,6 @@ class RS2DQN(BasePolicy):
         self.centroids = None
         self.ras = None
         self.aleph = None
-        self.terminal_state_count = 0
 
     def initialize(self):
         super().initialize()

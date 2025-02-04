@@ -36,6 +36,7 @@ class BasePolicy(ABC):
         self.total_steps = None
         self.loss = None
         self.pi = None
+        self.terminal_state_count = 0
 
     def initialize(self):
         self.replay_buffer.initialize()
