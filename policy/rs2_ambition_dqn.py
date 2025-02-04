@@ -16,8 +16,8 @@ class RS2AmbitionDQN(BasePolicy):
         self.weights = None
         self.ras = None
 
-    def reset(self):
-        super().reset()
+    def initialize(self):
+        super().initialize()
         self.centroids = np.random.randn(self.action_space * self.k, self.hidden_size)
         self.centroids /= np.linalg.norm(self.centroids, axis=1, keepdims=True)
         self.pseudo_counts = np.zeros(self.action_space * self.k)

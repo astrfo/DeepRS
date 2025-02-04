@@ -5,7 +5,12 @@ class Agent:
         self.current_action = None
 
     def initialize(self):
+        self.policy.initialize()
+
+    def reset(self):
         self.policy.reset()
+        self.current_state = None
+        self.current_action = None
 
     def action(self, state):
         action = self.policy.action(state)

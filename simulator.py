@@ -17,6 +17,7 @@ def simulation(sims, executed_sims, epis, env, agent, collector):
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim}/{sims} agent]'):
+            agent.reset()
             collector.reset()
             state, _ = env.reset()
             total_reward, survived_step = 0, 0
@@ -99,6 +100,7 @@ def atari_simulation(sims, epis, env, agent, collector, result_dir_path):
         for epi in tqdm(range(epis), 
                         bar_format='{desc}:{percentage:3.0f}% | {bar} | {n_fmt}/{total_fmt} episode, {elapsed}/{remaining}, {rate_fmt}{postfix}',
                         desc=f'[{sys._getframe().f_code.co_name}_{agent.policy.__class__.__name__} {sim+1}/{sims} agent]'):
+            agent.reset()
             collector.reset()
             env.reset()
             total_reward, survived_step = 0, 0

@@ -42,9 +42,9 @@ class ConvRS2AmbitionEMDQN:
         self.total_steps = 0
         self.loss = None
 
-    def reset(self):
-        self.replay_buffer.reset()
-        self.episodic_memory.reset()
+    def initialize(self):
+        self.replay_buffer.initialize()
+        self.episodic_memory.initialize()
         self.model = self.model_class(input_size=self.frame_shape, embedding_size=self.embedding_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.frame_shape, embedding_size=self.embedding_size, output_size=self.action_space, neighbor_frames=self.neighbor_frames).float()

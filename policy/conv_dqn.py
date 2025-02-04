@@ -39,8 +39,8 @@ class ConvDQN(nn.Module):
         self.total_steps = 0
         self.loss = None
 
-    def reset(self):
-        self.replay_buffer.reset()
+    def initialize(self):
+        self.replay_buffer.initialize()
         self.model = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space).float()
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.frame_shape, hidden_size=self.hidden_size, output_size=self.action_space).float()

@@ -29,8 +29,8 @@ class RS2DQN(BasePolicy):
         self.ras = None
         self.aleph = None
 
-    def reset(self):
-        super().reset()
+    def initialize(self):
+        super().initialize()
         self.global_value = 0
         self.global_value_list = deque(maxlen=self.global_value_size)
         self.current_episode_actions = deque()
