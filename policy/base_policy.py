@@ -37,8 +37,8 @@ class BasePolicy(ABC):
         self.loss = None
         self.pi = None
 
-    def reset(self):
-        self.replay_buffer.reset()
+    def initialize(self):
+        self.replay_buffer.initialize()
         self.model = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
         self.model.to(self.device)
         self.model_target = self.model_class(input_size=self.state_space, hidden_size=self.hidden_size, output_size=self.action_space)
@@ -58,7 +58,10 @@ class BasePolicy(ABC):
             self.criterion = nn.SmoothL1Loss()
         else:
             raise ValueError(f'Invalid criterion: {self.criterion_name}')
-        
+
+    def reset(self):
+        pass
+
     def greedy_action(self, state):
         q_value = self.calc_q_value(state)
         return np.random.choice(np.where(q_value == max(q_value))[0])

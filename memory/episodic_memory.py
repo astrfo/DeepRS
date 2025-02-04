@@ -9,7 +9,7 @@ class EpisodicMemory:
         self.memory = []
         self.index = 0
 
-    def reset(self):
+    def initialize(self):
         self.memory = []
         self.index = 0
 
