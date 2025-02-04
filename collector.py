@@ -32,6 +32,7 @@ class Collector:
         self.loss_step_list = []
         self.loss_sma_step_list = []
         self.pi_step_list = []
+        self.terminal_state_count_step_list = []
 
         # episode data
         self.reward_epi_list = []
@@ -42,7 +43,8 @@ class Collector:
         self.survived_step_greedy_epi_list = []
         self.survived_step_sma_epi_list = []
         self.survived_step_greedy_sma_epi_list = []
-    
+        self.terminal_state_ratio_epi_list = []
+
     def format(self):
         data = {}
         data['param'] = self.param
@@ -74,6 +76,7 @@ class Collector:
         self.loss_step_list = []
         self.loss_sma_step_list = []
         self.pi_step_list = []
+        self.terminal_state_count_step_list = []
         self.reward_epi_list = []
         self.reward_greedy_epi_list = []
         self.reward_sma_epi_list = []
@@ -82,12 +85,14 @@ class Collector:
         self.survived_step_greedy_epi_list = []
         self.survived_step_sma_epi_list = []
         self.survived_step_greedy_sma_epi_list = []
+        self.terminal_state_ratio_epi_list = []
 
     def reset(self):
         self.reward_step_list = []
         self.reward_greedy_step_list = []
         self.survived_step_step_list = []
         self.survived_step_greedy_step_list = []
+        self.terminal_state_count_step_list = []
 
     def collect_step_data(self, reward, survived_step):
         self.reward_step_list.append(reward)
@@ -104,6 +109,8 @@ class Collector:
             self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
         if hasattr(self.policy, 'pi') and self.policy.pi is not None:
             self.pi_step_list.append(self.policy.pi)
+        if hasattr(self.policy, 'terminal_state_count'):
+            self.terminal_state_count_step_list.append(self.policy.terminal_state_count)
     
     def collect_greedy_step_data(self, reward_greedy, survived_step_greedy):
         self.reward_greedy_step_list.append(reward_greedy)
@@ -114,6 +121,7 @@ class Collector:
         self.reward_sma_epi_list.append(self.calculate_sma(self.reward_epi_list))
         self.survived_step_epi_list.append(survived_step)
         self.survived_step_sma_epi_list.append(self.calculate_sma(self.survived_step_epi_list))
+        self.terminal_state_ratio_epi_list.append(sum(self.terminal_state_count_step_list) / (survived_step * self.param['batch_size']))
 
     def collect_greedy_episode_data(self, total_reward_greedy, survived_step_greedy):
         self.reward_greedy_epi_list.append(total_reward_greedy)
@@ -144,6 +152,7 @@ class Collector:
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'pi_epi{epi}.csv', self.pi_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'terminal_state_ratio_epi{epi}.csv', self.terminal_state_ratio_epi_list, delimiter=',')
         save_epi1000_plot(self, epi)
         
         episode_data = self.format()
@@ -167,6 +176,7 @@ class Collector:
         np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'pi.csv', self.pi_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'terminal_state_ratio.csv', self.terminal_state_ratio_epi_list, delimiter=',')
         save_episode_plot(self)
 
         episode_data = self.format()
@@ -176,7 +186,7 @@ class Collector:
     def save_simulation_data(self):
         average_sim_dir_path = create_average_folder(self.result_dir_path)
 
-        metrics_list = ['reward', 'reward_greedy', 'reward_sma', 'reward_greedy_sma', 'survived_step', 'survived_step_greedy', 'survived_step_sma', 'survived_step_greedy_sma']
+        metrics_list = ['reward', 'reward_greedy', 'reward_sma', 'reward_greedy_sma', 'survived_step', 'survived_step_greedy', 'survived_step_sma', 'survived_step_greedy_sma', 'terminal_state_ratio']
         for metrics in metrics_list:
             search_pattern = os.path.join(self.result_dir_path, '**', f'{metrics}.csv')
             csv_files = glob.glob(search_pattern, recursive=True)

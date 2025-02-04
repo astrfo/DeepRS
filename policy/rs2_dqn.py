@@ -28,6 +28,7 @@ class RS2DQN(BasePolicy):
         self.centroids = None
         self.ras = None
         self.aleph = None
+        self.terminal_state_count = 0
 
     def initialize(self):
         super().initialize()
@@ -95,6 +96,7 @@ class RS2DQN(BasePolicy):
         r = torch.tensor(r, dtype=torch.float64).to(self.device)
         ns = torch.tensor(ns, dtype=torch.float64).to(self.device)
         d = torch.tensor(d, dtype=torch.float64).to(self.device)
+        self.terminal_state_count = torch.sum(d).item()
 
         q = self.model(s)
         qa = q[np.arange(self.batch_size), a]
