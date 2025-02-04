@@ -96,3 +96,11 @@ def save_episode_plot(collector):
     plt.xlim(-1, len(collector.q_value_step_list) + 1)
     plt.savefig(collector.sim_dir_path + 'q_value.png')
     plt.close()
+
+    plt.figure(figsize=(12, 8))
+    plt.plot(collector.terminal_state_ratio_epi_list, alpha=0.4)
+    plt.title('Count of done=1 in 1 update')
+    plt.xlabel('Count')
+    plt.xlim(-1, len(collector.terminal_state_ratio_epi_list) + 1)
+    plt.savefig(collector.sim_dir_path + 'terminal_state_ratio.png')
+    plt.close()
