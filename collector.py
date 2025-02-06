@@ -194,4 +194,4 @@ class Collector:
             df_concat = pd.concat(df, axis=1)
             df_average = df_concat.mean(axis=1)
             np.savetxt(average_sim_dir_path + f'average_{metrics}.csv', df_average, delimiter=',')
-            save_simulation_plot(average_sim_dir_path, metrics, df_average)
+            save_simulation_plot(average_sim_dir_path, metrics, df_concat)
