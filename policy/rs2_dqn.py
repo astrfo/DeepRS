@@ -108,7 +108,6 @@ class RS2DQN(BasePolicy):
 
         self.optimizer.zero_grad()
         self.loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=4.0)
         self.optimizer.step()
         
         if self.sync_model_update == 'hard':
