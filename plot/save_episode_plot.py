@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 def save_episode_plot(collector):
@@ -103,4 +104,25 @@ def save_episode_plot(collector):
     plt.xlabel('Count')
     plt.xlim(-1, len(collector.terminal_state_ratio_epi_list) + 1)
     plt.savefig(collector.sim_dir_path + 'terminal_state_ratio.png')
+    plt.close()
+
+    states_array = np.array(collector.state_step_list)
+    x = states_array[:, 0]
+    theta = states_array[:, 2]
+    plt.figure(figsize=(6, 6))
+    plt.hist2d(x, theta, bins=40, range=[[-4.8, 4.8], [-0.42, 0.42]])
+    plt.colorbar(label='Count')
+    plt.title(f'State Distribution (Episode {collector.epi})')
+    plt.xlabel('Cart Position (x)')
+    plt.ylabel('Pole Angle (theta)')
+    plt.savefig(collector.sim_dir_path + 'state_x_theta.png')
+    plt.close()
+
+    plt.figure(figsize=(6, 6))
+    plt.hist(theta, bins=50, range=(-0.5, 0.5))
+    plt.colorbar(label='Count')
+    plt.title(f'Theta Distribution (Episode {collector.epi})')
+    plt.xlabel("Pole Angle (theta)")
+    plt.ylabel("Frequency")
+    plt.savefig(collector.sim_dir_path + 'state_theta.png')
     plt.close()
