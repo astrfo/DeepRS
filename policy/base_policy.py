@@ -35,7 +35,6 @@ class BasePolicy(ABC):
         self.model_target = None
         self.total_steps = None
         self.loss = None
-        self.pi = None
         self.terminal_state_count = 0
 
     def initialize(self):

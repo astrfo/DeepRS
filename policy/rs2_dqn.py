@@ -28,6 +28,7 @@ class RS2DQN(BasePolicy):
         self.centroids = None
         self.ras = None
         self.aleph = None
+        self.pi = None
 
     def initialize(self):
         super().initialize()

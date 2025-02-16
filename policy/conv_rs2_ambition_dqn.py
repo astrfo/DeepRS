@@ -43,6 +43,7 @@ class ConvRS2AmbitionDQN:
         self.ras = np.zeros(self.action_space)
         self.total_steps = 0
         self.loss = None
+        self.pi = None
 
     def initialize(self):
         self.replay_buffer.initialize()

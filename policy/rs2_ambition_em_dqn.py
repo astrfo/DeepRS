@@ -16,6 +16,7 @@ class RS2AmbitionEMDQN(BasePolicy):
         self.episodic_memory_capacity = kwargs['episodic_memory_capacity']
         self.embedding_size = kwargs['embedding_size']
         self.episodic_memory = EpisodicMemory(self.episodic_memory_capacity, self.batch_size, self.action_space)
+        self.pi = None
 
     def initialize(self):
         self.replay_buffer.initialize()

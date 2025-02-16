@@ -15,6 +15,7 @@ class RS2AmbitionDQN(BasePolicy):
         self.pseudo_counts = None
         self.weights = None
         self.ras = None
+        self.pi = None
 
     def initialize(self):
         super().initialize()

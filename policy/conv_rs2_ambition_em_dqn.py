@@ -41,6 +41,7 @@ class ConvRS2AmbitionEMDQN:
         self.n = np.zeros(self.action_space)
         self.total_steps = 0
         self.loss = None
+        self.pi = None
 
     def initialize(self):
         self.replay_buffer.initialize()
