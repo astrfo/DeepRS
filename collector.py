@@ -7,9 +7,6 @@ import os
 import pandas as pd
 
 from utils.create_folder_utils import create_sim_folder, create_average_folder
-from plot.save_episode_plot import save_episode_plot
-from plot.save_epi1000_plot import save_epi1000_plot
-from plot.save_simulation_plot import save_simulation_plot
 
 
 class Collector:
