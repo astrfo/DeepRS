@@ -13,14 +13,13 @@ from plot.save_simulation_plot import save_simulation_plot
 
 
 class Collector:
-    def __init__(self, sim, epi, param, agent, policy, result_dir_path, sma_window=50):
+    def __init__(self, sim, epi, param, agent, policy, result_dir_path):
         self.sim = sim
         self.epi = epi
         self.param = param
         self.agent = agent
         self.policy = policy
         self.result_dir_path = result_dir_path
-        self.sma_window = sma_window
 
         # step data
         self.reward_step_list = []
@@ -30,7 +29,6 @@ class Collector:
         self.q_value_step_list = []
         self.embed_step_list = []
         self.loss_step_list = []
-        self.loss_sma_step_list = []
         self.pi_step_list = []
         self.terminal_state_count_step_list = []
         self.state_step_list = []
@@ -38,12 +36,8 @@ class Collector:
         # episode data
         self.reward_epi_list = []
         self.reward_greedy_epi_list = []
-        self.reward_sma_epi_list = []
-        self.reward_greedy_sma_epi_list = []
         self.survived_step_epi_list = []
         self.survived_step_greedy_epi_list = []
-        self.survived_step_sma_epi_list = []
-        self.survived_step_greedy_sma_epi_list = []
         self.terminal_state_ratio_epi_list = []
 
     def format(self):
@@ -51,16 +45,11 @@ class Collector:
         data['param'] = self.param
         data['reward'] = self.reward_epi_list
         data['reward_greedy'] = self.reward_greedy_epi_list
-        data['reward_sma'] = self.reward_sma_epi_list
-        data['reward_greedy_sma'] = self.reward_greedy_sma_epi_list
         data['survived_step'] = self.survived_step_epi_list
         data['survived_step_greedy'] = self.survived_step_greedy_epi_list
-        data['survived_step_sma'] = self.survived_step_sma_epi_list
-        data['survived_step_greedy_sma'] = self.survived_step_greedy_sma_epi_list
         data['q_value'] = self.q_value_step_list
         data['embed'] = self.embed_step_list
         data['loss'] = self.loss_step_list
-        data['loss_sma'] = self.loss_sma_step_list
         data['pi'] = self.pi_step_list
         return data
 
@@ -75,18 +64,13 @@ class Collector:
         self.embed_step_list = []
         self.action_step_list = []
         self.loss_step_list = []
-        self.loss_sma_step_list = []
         self.pi_step_list = []
         self.terminal_state_count_step_list = []
         self.state_step_list = []
         self.reward_epi_list = []
         self.reward_greedy_epi_list = []
-        self.reward_sma_epi_list = []
-        self.reward_greedy_sma_epi_list = []
         self.survived_step_epi_list = []
         self.survived_step_greedy_epi_list = []
-        self.survived_step_sma_epi_list = []
-        self.survived_step_greedy_sma_epi_list = []
         self.terminal_state_ratio_epi_list = []
 
     def reset(self):
@@ -109,7 +93,6 @@ class Collector:
             self.embed_step_list.append(embed)
         if hasattr(self.policy, 'loss') and self.policy.loss is not None:
             self.loss_step_list.append(self.policy.loss.item())
-            self.loss_sma_step_list.append(self.calculate_sma(self.loss_step_list))
         if hasattr(self.policy, 'pi') and self.policy.pi is not None:
             self.pi_step_list.append(self.policy.pi)
         if hasattr(self.policy, 'terminal_state_count'):
@@ -121,39 +104,24 @@ class Collector:
 
     def collect_episode_data(self, total_reward, survived_step):
         self.reward_epi_list.append(total_reward)
-        self.reward_sma_epi_list.append(self.calculate_sma(self.reward_epi_list))
         self.survived_step_epi_list.append(survived_step)
-        self.survived_step_sma_epi_list.append(self.calculate_sma(self.survived_step_epi_list))
         self.terminal_state_ratio_epi_list.append(sum(self.terminal_state_count_step_list) / (survived_step * self.param['batch_size']))
 
     def collect_greedy_episode_data(self, total_reward_greedy, survived_step_greedy):
         self.reward_greedy_epi_list.append(total_reward_greedy)
-        self.reward_greedy_sma_epi_list.append(self.calculate_sma(self.reward_greedy_epi_list))
         self.survived_step_greedy_epi_list.append(survived_step_greedy)
-        self.survived_step_greedy_sma_epi_list.append(self.calculate_sma(self.survived_step_greedy_epi_list))
-
-    def calculate_sma(self, data_list):
-        if len(data_list) < self.sma_window:
-            return np.mean(data_list) if len(data_list) > 0 else 0
-        else:
-            return np.mean(data_list[-self.sma_window:])
 
     def save_epi1000_data(self, epi):
         torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_episode{epi}.pth')
         np.savetxt(self.sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'reward_greedy_epi{epi}.csv', self.reward_greedy_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'reward_sma_epi{epi}.csv', self.reward_sma_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'reward_greedy_sma_epi{epi}.csv', self.reward_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'survived_step_greedy_epi{epi}.csv', self.survived_step_greedy_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'survived_step_sma_epi{epi}.csv', self.survived_step_sma_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'survived_step_greedy_sma_epi{epi}.csv', self.survived_step_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'q_value_epi{epi}.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'selected_q_value_epi{epi}.csv', self.selected_q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'embed_epi{epi}.csv', self.embed_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'action_epi{epi}.csv', self.action_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'loss_sma_epi{epi}.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'pi_epi{epi}.csv', self.pi_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'terminal_state_ratio_epi{epi}.csv', self.terminal_state_ratio_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'state_epi{epi}.csv', self.state_step_list, delimiter=',')
@@ -167,18 +135,13 @@ class Collector:
         torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_epi{self.epi}.pth')
         np.savetxt(self.sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'reward_greedy.csv', self.reward_greedy_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'reward_sma.csv', self.reward_sma_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'reward_greedy_sma.csv', self.reward_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'survived_step_greedy.csv', self.survived_step_greedy_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'survived_step_sma.csv', self.survived_step_sma_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'survived_step_greedy_sma.csv', self.survived_step_greedy_sma_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'selected_q_value.csv', self.selected_q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'embed.csv', self.embed_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'action.csv', self.action_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'loss_sma.csv', self.loss_sma_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'pi.csv', self.pi_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'terminal_state_ratio.csv', self.terminal_state_ratio_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'state.csv', self.state_step_list, delimiter=',')
@@ -191,7 +154,7 @@ class Collector:
     def save_simulation_data(self):
         average_sim_dir_path = create_average_folder(self.result_dir_path)
 
-        metrics_list = ['reward', 'reward_greedy', 'reward_sma', 'reward_greedy_sma', 'survived_step', 'survived_step_greedy', 'survived_step_sma', 'survived_step_greedy_sma', 'terminal_state_ratio']
+        metrics_list = ['reward', 'reward_greedy', 'survived_step', 'survived_step_greedy', 'terminal_state_ratio']
         for metrics in metrics_list:
             search_pattern = os.path.join(self.result_dir_path, '**', f'{metrics}.csv')
             csv_files = glob.glob(search_pattern, recursive=True)
