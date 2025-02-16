@@ -40,6 +40,7 @@ class Collector:
         self.reward_greedy_epi_list = []
         self.survived_step_epi_list = []
         self.survived_step_greedy_epi_list = []
+        self.selected_q_value_epi_list = []
         self.terminal_state_ratio_epi_list = []
 
     def initialize(self, sim):
@@ -61,6 +62,7 @@ class Collector:
         self.reward_greedy_epi_list = []
         self.survived_step_epi_list = []
         self.survived_step_greedy_epi_list = []
+        self.selected_q_value_epi_list = []
         self.terminal_state_ratio_epi_list = []
 
     def reset(self):
@@ -69,6 +71,7 @@ class Collector:
         self.reward_greedy_step_list = []
         self.survived_step_step_list = []
         self.survived_step_greedy_step_list = []
+        self.selected_q_value_step_list = []
         self.terminal_state_count_step_list = []
 
     def collect_step_data(self, reward, survived_step):
@@ -95,6 +98,7 @@ class Collector:
     def collect_episode_data(self, total_reward, survived_step):
         self.reward_epi_list.append(total_reward)
         self.survived_step_epi_list.append(survived_step)
+        self.selected_q_value_epi_list.append(np.average(self.selected_q_value_step_list))
         self.terminal_state_ratio_epi_list.append(sum(self.terminal_state_count_step_list) / (survived_step * self.param['batch_size']))
 
     def collect_greedy_episode_data(self, total_reward_greedy, survived_step_greedy):
@@ -102,11 +106,7 @@ class Collector:
         self.survived_step_greedy_epi_list.append(survived_step_greedy)
 
     def save_epi1000_data(self, epi):
-        torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_episode{epi}.pth')
-        np.savetxt(self.sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'reward_greedy_epi{epi}.csv', self.reward_greedy_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + f'survived_step_greedy_epi{epi}.csv', self.survived_step_greedy_epi_list, delimiter=',')
+        # step data
         np.savetxt(self.sim_dir_path + f'state_epi{epi}.csv', self.state_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'action_epi{epi}.csv', self.action_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'q_value_epi{epi}.csv', self.q_value_step_list, delimiter=',')
@@ -114,25 +114,37 @@ class Collector:
         np.savetxt(self.sim_dir_path + f'embed_epi{epi}.csv', self.embed_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'loss_epi{epi}.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'pi_epi{epi}.csv', self.pi_step_list, delimiter=',')
+
+        # episode data
+        torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_episode{epi}.pth')
+        np.savetxt(self.sim_dir_path + f'reward_epi{epi}.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'reward_greedy_epi{epi}.csv', self.reward_greedy_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'survived_step_epi{epi}.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + f'survived_step_greedy_epi{epi}.csv', self.survived_step_greedy_epi_list, delimiter=',')
         np.savetxt(self.sim_dir_path + f'terminal_state_ratio_epi{epi}.csv', self.terminal_state_ratio_epi_list, delimiter=',')
+
         episode_data = self.format()
         with open(self.sim_dir_path + f'episode{epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
 
     def save_episode_data(self):
-        torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_epi{self.epi}.pth')
-        np.savetxt(self.sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'reward_greedy.csv', self.reward_greedy_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'survived_step_greedy.csv', self.survived_step_greedy_epi_list, delimiter=',')
+        # step data
         np.savetxt(self.sim_dir_path + 'state.csv', self.state_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'action.csv', self.action_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'q_value.csv', self.q_value_step_list, delimiter=',')
-        np.savetxt(self.sim_dir_path + 'selected_q_value.csv', self.selected_q_value_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'embed.csv', self.embed_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'loss.csv', self.loss_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'pi.csv', self.pi_step_list, delimiter=',')
         np.savetxt(self.sim_dir_path + 'terminal_state_ratio.csv', self.terminal_state_ratio_epi_list, delimiter=',')
+
+        # episode data
+        np.savetxt(self.sim_dir_path + 'reward.csv', self.reward_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'reward_greedy.csv', self.reward_greedy_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'survived_step.csv', self.survived_step_epi_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'selected_q_value.csv', self.selected_q_value_step_list, delimiter=',')
+        np.savetxt(self.sim_dir_path + 'survived_step_greedy.csv', self.survived_step_greedy_epi_list, delimiter=',')
+        torch.save(self.agent.policy.model.state_dict(), self.sim_dir_path + f'model_epi{self.epi}.pth')
+
         episode_data = self.format()
         with open(self.sim_dir_path + f'episode{self.epi}_{uuid.uuid4().hex[:6]}.pickle', 'wb') as f:
             pkl.dump(episode_data, f)
